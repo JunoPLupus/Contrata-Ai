@@ -56,7 +56,7 @@ Arquitetura **monolítica com separação lógica em camadas**: o frontend _Angu
 ## ✅ Funcionalidades do MVP
 
 ### 🔐 Gestão de Conta
-- Cadastro único com perfis **Cliente** e **Prestador** na mesma conta (RF01)
+- Cadastro único com perfis **Cliente** e **Prestador** na mesma conta (`RF01`)
 - Login/logout seguro com JWT (`RF02`)
 - Edição e exclusão de perfil (`RF03`, `RF04`)
 - Alternância entre perfis sem logout (`RF05`)

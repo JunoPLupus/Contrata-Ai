@@ -1,6 +1,3 @@
----
-sticker: lucide//file-text
----
 # Projeto de Extensão II - Plataforma de Prestadores de Serviço
 
 | Versão | 0.0.1 |
@@ -432,10 +429,10 @@ sticker: lucide//file-text
 ##### UC07 - Buscar por localização
 
 | **Requisitos**    | RF07, RNF01                                                                                                           |
-| ----------------- | --------------------------------------------------------------------------------------------------------------------- |
+| ----------------- |-----------------------------------------------------------------------------------------------------------------------|
 | **Atores**        | Cliente                                                                                                               |
 | **Objetivo**      | Permitir que o cliente encontre prestadores próximos à sua localização.                                               |
-| **Pré-condições** | - Usuário autenticado como cliente.<br>- Permissão de geolocalização concedida ou localização informada manualmente.  |
+| **Pré-condições** | - Usuário autenticado como cliente.<br>- Localização informada manualmente.                                           |
 | **Pós-condições** | - Prestadores próximos exibidos em ordem de proximidade.<br>- Cliente apto a visualizar perfis e solicitar orçamento. |
 
 ###### Fluxo Principal
@@ -444,7 +441,7 @@ sticker: lucide//file-text
     
 2. O sistema solicita a localização atual do usuário.
     
-3. O cliente autoriza a geolocalização ou informa manualmente sua região.
+3. O cliente informa manualmente sua região.
     
 4. O sistema identifica a posição de referência.
     
@@ -462,23 +459,11 @@ sticker: lucide//file-text
     - No `passo 1`, o cliente combina a localização com uma categoria.
         
     - O sistema retorna apenas prestadores próximos daquela categoria.
-        
-- **A02 - Busca por bairro/cidade manual**
-    
-    - No `passo 3`, o cliente informa bairro, CEP ou cidade.
-        
-    - O sistema usa a localização informada como referência.
-        
+
 
 ###### Fluxos de Exceção
-
-- **E01 - Geolocalização negada**
     
-    - No `passo 3`, o cliente nega a permissão.
-        
-    - O sistema solicita a localização manual.
-        
-- **E02 - Nenhum prestador próximo**
+- **E01 - Nenhum prestador próximo**
     
     - No `passo 5`, nenhum resultado é encontrado.
         
@@ -633,9 +618,9 @@ sticker: lucide//file-text
 
 - **E01 - Prestador indisponível**
     
-    - No `passo 7`, o sistema detecta que o prestador está inativo.
+    - No `passo 2`, o sistema detecta que o prestador está inativo.
         
-    - O sistema impede o envio e sugere outros profissionais.
+    - O sistema impede o envio da solicitação e sugere outros profissionais.
 
 
 ---
@@ -923,11 +908,15 @@ sticker: lucide//file-text
 
 ###### Fluxos de Exceção
 
-- **E01 - Solicitação não cancelável**
+- **E01 - Cancelamento com flag negativa**
     
     - No `passo 3`, existe orçamento aceito dentro do prazo.
         
-    - O sistema impede o cancelamento.
+    - O sistema exibe um aviso de que caso cancele, vai gerar uma flag negativa no perfil e pede confirmação.
+  
+    - O cliente confirma o cancelamento mesmo assim.
+  
+    - O sistema registra o cancelamento e aplica a flag de reputação.
         
 
 ---
@@ -1100,15 +1089,7 @@ sticker: lucide//file-text
     
 6. O sistema libera a funcionalidade de avaliação.
     
-
-###### Fluxos de Exceção
-
-- **E01 - Serviço ainda incompatível para conclusão**
-    
-    - No `passo 2`, o serviço ainda está em status anterior (`Em andamento`, por exemplo).
-        
-    - O sistema bloqueia a confirmação manual.
-        
+7. O sistema notifica ambas as partes sobre a conclusão.
 
 ---
 
