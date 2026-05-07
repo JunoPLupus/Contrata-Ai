@@ -1,0 +1,26 @@
+= ADR-001: Uso de CommonJS em vez de ES Modules
+:date: 2026-05-07
+:status: Accepted
+
+== Contexto
+
+O Node.js suporta dois sistemas de módulos: CommonJS (CJS), usando `require`/`module.exports`,
+e ES Modules (ESM), usando `import`/`export`. O ESM é o padrão moderno e recomendado para
+projetos novos, mas o Jest — ferramenta escolhida para testes — foi construído originalmente
+para CommonJS e exige configuração experimental adicional para funcionar com ESM
+(`--experimental-vm-modules`), aumentando a complexidade do ambiente de testes em um momento
+em que a equipe ainda está aprendendo a stack.
+
+== Decisão
+
+Adotar CommonJS como sistema de módulos da API. O `tsconfig.json` foi configurado com
+`"module": "commonjs"` e o `package.json` não declara `"type": "module"`.
+
+== Consequências
+
+* O Jest e o ts-jest funcionam sem configuração experimental adicional.
+* A sintaxe utilizada será `require`/`module.exports` no JavaScript gerado, embora o
+  TypeScript permita escrever `import`/`export` normalmente (compilados para CJS).
+* Migração futura para ESM é possível, porém exigirá atualização do `tsconfig.json`,
+  do `package.json` e da configuração do Jest, sendo mais fácil de fazer antes do
+  projeto crescer.

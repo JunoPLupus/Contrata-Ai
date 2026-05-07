@@ -1,0 +1,36 @@
+= ADR-003: Separação dos use cases de cadastro de usuário e prestador
+:date: 2026-05-07
+:status: Accepted
+
+== Contexto
+
+O sistema permite que um usuário tenha perfil de Cliente e/ou Prestador na mesma conta
+(link:../../../docs/requisitos-e-casos-de-uso.md[RF01]). No cadastro, o perfil Cliente é sempre criado. O perfil Prestador é opcional no
+cadastro inicial e pode ser ativado posteriormente (link:../../../docs/requisitos-e-casos-de-uso.md[RF05]). No banco de dados, `usuarios`
+e `prestadores` são coleções separadas, com `prestadores` contendo uma referência ao
+`usuario` correspondente.
+
+Avaliou-se criar um único use case `CadastrarUsuario` com lógica condicional para lidar
+com ambos os casos, ou separar em dois use cases distintos.
+
+== Decisão
+
+Criar dois use cases independentes:
+
+* `CadastrarUsuario` — sempre executado no cadastro. Cria a conta base com perfil Cliente
+  ativo por padrão.
+* `CadastrarPrestador` — cria o perfil Prestador e vincula ao usuário existente.
+  Executado no cadastro quando o usuário escolhe se registrar como prestador, e também
+  reutilizado quando um cliente existente ativa o perfil de prestador posteriormente (link:../../../docs/requisitos-e-casos-de-uso.md[RF05]).
+
+Quando o cadastro inicial é feito como prestador, o controller chama os dois use cases
+em sequência: primeiro `CadastrarUsuario`, depois `CadastrarPrestador`.
+
+== Consequências
+
+* Cada use case tem responsabilidade única, sem lógica condicional de tipo de perfil.
+* `CadastrarPrestador` é reutilizável para a ativação posterior do perfil (link:../../../docs/requisitos-e-casos-de-uso.md[RF05]),
+  evitando duplicação de código.
+* O controller assume a responsabilidade de orquestrar os dois use cases quando necessário,
+  o que é coerente com seu papel na arquitetura adotada (link:002-arquitetura-em-camadas-sem-facade.adoc[ADR-002]).
+* Testes de cada use case são isolados e independentes entre si.
