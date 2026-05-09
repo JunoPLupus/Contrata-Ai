@@ -45,3 +45,5 @@ Thumbs.db
 
 # Sensitive files
 .envweb/.angular
+.vscode
+.angular
