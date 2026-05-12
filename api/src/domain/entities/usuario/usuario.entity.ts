@@ -38,4 +38,22 @@ export class Usuario {
     set perfis(perfis: Array<'cliente' | 'prestador'>) {
         this.props.perfis = perfis;
     }
+
+    get data_cadastro() : Date {
+        return this.props.data_cadastro;
+    }
+
+    get ativo() : boolean {
+        return this.props.ativo;
+    }
+    set ativo (ativo : boolean) {
+        this.props.ativo = ativo;
+    }
+
+    get reputacao_flag_cancelamento() : number {
+        return this.props.reputacao_flag_cancelamento;
+    }
+    set reputacao_flag_cancelamento(flag : number) {
+        this.props.reputacao_flag_cancelamento = flag;
+    }
 }
