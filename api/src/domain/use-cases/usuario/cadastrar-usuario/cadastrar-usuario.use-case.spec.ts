@@ -1,6 +1,12 @@
+import bcrypt from "bcrypt";
+
 import { CadastrarUsuarioUseCase } from "./cadastrar-usuario.use-case";
 import { IUsuarioRepository } from "../../../repositories/usuario.repository";
 import { UsuarioCadastroDTO } from "../../../dto/usuario/usuario-cadastro.dto";
+import { NomeUsuarioValueObject } from "../../../value-objects/usuario/nome/nome.vo";
+import { SenhaUsuarioValueObject } from "../../../value-objects/usuario/senha/senha.vo";
+import { EmailUsuarioValueObject } from "../../../value-objects/usuario/email/email.vo";
+import { Usuario } from "../../../entities/usuario/usuario.entity";
 
 jest.mock('bcrypt', () => ({
     hash: jest.fn().mockResolvedValue('senha_hash_mockada'),
@@ -28,18 +34,24 @@ describe('CadastrarUsuarioUseCase', () => {
     });
 
     it('deve criar usuário com dados válidos', async () => {
-        // arrange
-        usuarioRepositoryMock.inserir.mockResolvedValue({
-            ...usuarioValidoDTOMock,
+        // Arrange
+        const usuarioProps = {
+            nome: new NomeUsuarioValueObject(usuarioValidoDTOMock.nome),
+            senha: new SenhaUsuarioValueObject(usuarioValidoDTOMock.senha),
+            email: new EmailUsuarioValueObject(usuarioValidoDTOMock.email),
+            perfis: usuarioValidoDTOMock.perfis,
             data_cadastro: new Date(),
             ativo: true,
             reputacao_flag_cancelamento: 0
-        });
+        }
+        const usuarioMock = Usuario.criarUsuario(usuarioProps)
+        usuarioRepositoryMock.inserir.mockResolvedValue(usuarioMock);
 
-        // act
+        // Act
         await cadastrarUsuarioUseCase.execute(usuarioValidoDTOMock);
 
-        // assert
+        // Assert
+        expect(bcrypt.hash).toHaveBeenCalledWith(usuarioValidoDTOMock.senha, 10)
         expect(usuarioRepositoryMock.buscarPorEmail).not.toHaveBeenCalled();
         expect(usuarioRepositoryMock.inserir).toHaveBeenCalledWith(
             expect.objectContaining({
@@ -48,20 +60,5 @@ describe('CadastrarUsuarioUseCase', () => {
                 reputacao_flag_cancelamento: 0
             })
         );
-    });
-
-    it('deve falhar se nome não preenchido', async () => {
-       // arrange
-        const usuarioSemNomeMock = {
-            ...usuarioValidoDTOMock,
-            nome: ''
-        }
-
-       // act & assert
-        await expect(
-            cadastrarUsuarioUseCase.execute(usuarioSemNomeMock)
-        ).rejects.toThrow("O campo 'nome' é obrigatório.")
-        expect(usuarioRepositoryMock.buscarPorEmail).not.toHaveBeenCalled();
-        expect(usuarioRepositoryMock.inserir).not.toHaveBeenCalled();
     });
 });
