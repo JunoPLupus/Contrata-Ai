@@ -1,0 +1,60 @@
+= ADR-005: Exceções de domínio não carregam status HTTP
+:date: 2026-05-08
+:status: Accepted
+
+== Contexto
+
+Ao criar exceções de domínio como `EmailJaCadastradoError`, surgiu a questão de
+incluir o `statusCode` HTTP diretamente na classe de erro. Essa abordagem é comum
+em projetos Express e evita a necessidade de mapeamento explícito no controller.
+
+No entanto, exceções de domínio pertencem à camada de domínio, que não deve ter
+conhecimento sobre HTTP. Um use case pode ser invocado por uma rota HTTP, por um
+job de fila, por um CLI ou por um teste — em nenhum desses contextos o `statusCode`
+faz sentido fora do HTTP.
+
+== Decisão
+
+Exceções de domínio herdam de uma classe base `DomainException` e não carregam
+`statusCode` nem qualquer outro conceito HTTP. A estrutura base é:
+
+[source,typescript]
+----
+export abstract class DomainError extends Error {
+    protected constructor(name : string, message: string) {
+        super(message)
+        this.name = name;
+        Object.setPrototypeOf(this, new.target.prototype)
+    }
+}
+----
+
+O mapeamento de exceções para status HTTP é responsabilidade de um middleware
+centralizado de tratamento de erros (`error-handler.middleware.ts`), único lugar
+onde esse mapeamento existe:
+
+----
+Requisição → Controller → Use Case → (lança DomainException)
+                                           ↓
+                              error-handler.middleware.ts
+                              (mapeia exception → status HTTP)
+                                           ↓
+                                    Resposta HTTP
+----
+
+Referência de status codes adotados:
+
+* Conflito de recurso existente (ex: e-mail duplicado) → `409 Conflict`
+* Dados inválidos ou obrigatórios ausentes → `422 Unprocessable Entity`
+* Recurso não encontrado → `404 Not Found`
+* Não autenticado → `401 Unauthorized`
+* Autenticado, porém sem permissão → `403 Forbidden`
+
+== Consequências
+
+* Erros de domínio são testáveis sem qualquer dependência de HTTP.
+* O mapeamento de erros para HTTP existe em um único lugar, facilitando manutenção.
+* Adicionar um novo canal de consumo (fila, CLI) não exige alterar as exceções.
+* O middleware de erro precisa ser registrado no Express e cobrir todas as exceções
+  de domínio conhecidas. Exceções não mapeadas devem retornar `500 Internal Server Error`
+  como fallback.
