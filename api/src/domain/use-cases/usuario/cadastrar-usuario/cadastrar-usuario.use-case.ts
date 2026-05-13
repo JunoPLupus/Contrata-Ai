@@ -13,7 +13,7 @@ export class CadastrarUsuarioUseCase {
 
     }
 
-    async execute(usuarioDTO: UsuarioCadastroDTO): Promise<void> {
+    async execute(usuarioDTO: UsuarioCadastroDTO): Promise<Usuario> {
         const senhaHash = await bcrypt.hash(usuarioDTO.senha, 10);
         const usuarioProps = {
             nome: new NomeUsuarioValueObject(usuarioDTO.nome),
@@ -26,6 +26,6 @@ export class CadastrarUsuarioUseCase {
         }
         const usuario : Usuario = Usuario.criarUsuario(usuarioProps);
 
-        await this.usuarioRepository.inserir(usuario);
+        return this.usuarioRepository.inserir(usuario);
     }
 }

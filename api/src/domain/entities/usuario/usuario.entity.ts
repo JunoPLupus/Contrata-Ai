@@ -11,6 +11,10 @@ export class Usuario {
         return new Usuario(props)
     }
 
+    get id() : string | undefined {
+        return this.props.id;
+    }
+
     get nome() : string {
         return this.props.nome.nome;
     }

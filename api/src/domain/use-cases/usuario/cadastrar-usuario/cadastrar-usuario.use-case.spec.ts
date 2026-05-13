@@ -48,7 +48,7 @@ describe('CadastrarUsuarioUseCase', () => {
         usuarioRepositoryMock.inserir.mockResolvedValue(usuarioMock);
 
         // Act
-        await cadastrarUsuarioUseCase.execute(usuarioValidoDTOMock);
+        const usuarioCadastrado = await cadastrarUsuarioUseCase.execute(usuarioValidoDTOMock);
 
         // Assert
         expect(bcrypt.hash).toHaveBeenCalledWith(usuarioValidoDTOMock.senha, 10)
@@ -60,5 +60,7 @@ describe('CadastrarUsuarioUseCase', () => {
                 reputacao_flag_cancelamento: 0
             })
         );
+        expect(usuarioCadastrado).not.toBeNull()
+        expect(usuarioCadastrado).toBeInstanceOf(Usuario)
     });
 });

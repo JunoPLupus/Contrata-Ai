@@ -3,6 +3,7 @@ import { SenhaUsuarioValueObject } from "../../value-objects/usuario/senha/senha
 import { EmailUsuarioValueObject } from "../../value-objects/usuario/email/email.vo";
 
 export type UsuarioProps = {
+    id ?: string,
     nome : NomeUsuarioValueObject,
     senha : SenhaUsuarioValueObject,
     email : EmailUsuarioValueObject,
