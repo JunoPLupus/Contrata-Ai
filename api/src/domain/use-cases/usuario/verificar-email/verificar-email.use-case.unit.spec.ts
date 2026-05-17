@@ -5,6 +5,7 @@ import { Usuario } from "../../../entities/usuario/usuario.entity";
 import { NomeUsuarioValueObject } from "../../../value-objects/usuario/nome/nome.vo";
 import { SenhaUsuarioValueObject } from "../../../value-objects/usuario/senha/senha.vo";
 import { EmailUsuarioValueObject } from "../../../value-objects/usuario/email/email.vo";
+import { PerfisUsuarioValueObject } from "../../../value-objects/usuario/perfis/perfis.vo";
 
 describe('VerificarEmailUseCase', () => {
 
@@ -33,7 +34,7 @@ describe('VerificarEmailUseCase', () => {
             nome: new NomeUsuarioValueObject(usuarioValidoDTOMock.nome),
             senha: new SenhaUsuarioValueObject(usuarioValidoDTOMock.senha),
             email: new EmailUsuarioValueObject(usuarioValidoDTOMock.email),
-            perfis: usuarioValidoDTOMock.perfis,
+            perfis: new PerfisUsuarioValueObject(usuarioValidoDTOMock.perfis),
             data_cadastro: new Date(),
             ativo: true,
             reputacao_flag_cancelamento: 0

@@ -7,6 +7,7 @@ import { NomeUsuarioValueObject } from "../../../value-objects/usuario/nome/nome
 import { SenhaUsuarioValueObject } from "../../../value-objects/usuario/senha/senha.vo";
 import { EmailUsuarioValueObject } from "../../../value-objects/usuario/email/email.vo";
 import { Usuario } from "../../../entities/usuario/usuario.entity";
+import { PerfisUsuarioValueObject } from "../../../value-objects/usuario/perfis/perfis.vo";
 
 jest.mock('bcrypt', () => ({
     hash: jest.fn().mockResolvedValue('senha_hash_mockada'),
@@ -35,21 +36,18 @@ describe('CadastrarUsuarioUseCase', () => {
 
     it('deve criar usuário com dados válidos', async () => {
         // Arrange
-        const usuarioProps = {
+        const usuarioMock = Usuario.criarUsuario({
             nome: new NomeUsuarioValueObject(usuarioValidoDTOMock.nome),
             senha: new SenhaUsuarioValueObject(usuarioValidoDTOMock.senha),
             email: new EmailUsuarioValueObject(usuarioValidoDTOMock.email),
-            perfis: usuarioValidoDTOMock.perfis,
+            perfis: new PerfisUsuarioValueObject(usuarioValidoDTOMock.perfis),
             data_cadastro: new Date(),
             ativo: true,
             reputacao_flag_cancelamento: 0
-        }
-        const usuarioMock = Usuario.criarUsuario(usuarioProps)
+        })
         usuarioRepositoryMock.inserir.mockResolvedValue(usuarioMock);
-
         // Act
         const usuarioCadastrado = await cadastrarUsuarioUseCase.execute(usuarioValidoDTOMock);
-
         // Assert
         expect(bcrypt.hash).toHaveBeenCalledWith(usuarioValidoDTOMock.senha, 10)
         expect(usuarioRepositoryMock.buscarPorEmail).not.toHaveBeenCalled();

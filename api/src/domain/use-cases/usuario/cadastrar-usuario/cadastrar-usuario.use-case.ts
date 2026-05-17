@@ -1,5 +1,6 @@
 import bcrypt from 'bcrypt';
 
+import { config } from "../../../../shared/config"
 import { IUsuarioRepository } from "../../../repositories/usuario.repository";
 import { UsuarioCadastroDTO } from "../../../dto/usuario/usuario-cadastro.dto";
 import { Usuario } from "../../../entities/usuario/usuario.entity";
@@ -15,17 +16,16 @@ export class CadastrarUsuarioUseCase {
     }
 
     async execute(usuarioDTO: UsuarioCadastroDTO): Promise<Usuario> {
-        const senhaHash = await bcrypt.hash(usuarioDTO.senha, 10);
-        const usuarioProps = {
+        const usuario : Usuario = Usuario.criarUsuario({
             nome: new NomeUsuarioValueObject(usuarioDTO.nome),
-            senha: new SenhaUsuarioValueObject(senhaHash),
+            senha: new SenhaUsuarioValueObject(usuarioDTO.senha),
             email: new EmailUsuarioValueObject(usuarioDTO.email),
             perfis: new PerfisUsuarioValueObject(usuarioDTO.perfis),
             data_cadastro: new Date(),
             ativo: true,
             reputacao_flag_cancelamento: 0
-        }
-        const usuario : Usuario = Usuario.criarUsuario(usuarioProps);
+        });
+        usuario.senha = await bcrypt.hash(usuario.senha, config.bcryptSaltRounds)
 
         return this.usuarioRepository.inserir(usuario);
     }
