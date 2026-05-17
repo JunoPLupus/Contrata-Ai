@@ -1,6 +1,6 @@
 import { Schema, model, Types } from "mongoose";
 
-interface IPrestadorDocument {
+export interface IPrestadorDocument {
     id_cliente : Types.ObjectId,
     telefone ?: string,
     descricao ?: string,

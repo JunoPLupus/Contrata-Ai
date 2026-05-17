@@ -1,6 +1,6 @@
 import { Schema, model } from 'mongoose';
 
-interface IUsuarioDocument {
+export interface IUsuarioDocument {
     nome: string
     email: string
     senha: string
