@@ -7,6 +7,7 @@ import { UsuarioMongodbRepositoryImpl } from "./usuario-mongodb.repository.impl"
 
 import { MongoMemoryServer } from "mongodb-memory-server";
 import mongoose from "mongoose";
+import {PerfisUsuarioValueObject} from "../../../domain/value-objects/usuario/perfis/perfis.vo";
 
 describe('Usuario Mongodb Repository', () => {
 
@@ -66,7 +67,7 @@ describe('Usuario Mongodb Repository', () => {
             nome: new NomeUsuarioValueObject("Fulano Silva"),
             senha: new SenhaUsuarioValueObject("senha123"),
             email: new EmailUsuarioValueObject("fulano.silva@gmail.com"),
-            perfis: ['cliente', 'prestador'] as Array<'cliente' | 'prestador'>,
+            perfis: new PerfisUsuarioValueObject(['cliente', 'prestador']),
             data_cadastro: new Date(),
             ativo: true,
             reputacao_flag_cancelamento: 0

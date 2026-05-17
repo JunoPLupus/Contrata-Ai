@@ -4,6 +4,7 @@ import { UsuarioModel } from "../../models/usuario/usuario.model";
 import { NomeUsuarioValueObject } from "../../../domain/value-objects/usuario/nome/nome.vo";
 import { EmailUsuarioValueObject } from "../../../domain/value-objects/usuario/email/email.vo";
 import { SenhaUsuarioValueObject } from "../../../domain/value-objects/usuario/senha/senha.vo";
+import {PerfisUsuarioValueObject} from "../../../domain/value-objects/usuario/perfis/perfis.vo";
 
 export class UsuarioMongodbRepositoryImpl implements IUsuarioRepository {
     public async buscarPorEmail(email : string) : Promise< Usuario | null > {
@@ -15,7 +16,7 @@ export class UsuarioMongodbRepositoryImpl implements IUsuarioRepository {
             nome : new NomeUsuarioValueObject(documento.nome),
             email : new EmailUsuarioValueObject(documento.email),
             senha : new SenhaUsuarioValueObject(documento.senha),
-            perfis : documento.perfis as Array<'cliente' | 'prestador'>,
+            perfis : new PerfisUsuarioValueObject(documento.perfis),
             data_cadastro : documento.data_cadastro,
             ativo : documento.ativo,
             reputacao_flag_cancelamento : documento.reputacao_flag_cancelamento
@@ -27,7 +28,7 @@ export class UsuarioMongodbRepositoryImpl implements IUsuarioRepository {
             nome : usuario.nome,
             email : usuario.email,
             senha: usuario.senha,
-            perfis : usuario.perfis,
+            perfis : usuario.perfis as Array<'cliente' | 'prestador'>,
             data_cadastro : usuario.data_cadastro,
             ativo : usuario.ativo,
             reputacao_flag_cancelamento : usuario.reputacao_flag_cancelamento
@@ -38,7 +39,7 @@ export class UsuarioMongodbRepositoryImpl implements IUsuarioRepository {
             nome : new NomeUsuarioValueObject(documentoInserido.nome),
             email : new EmailUsuarioValueObject(documentoInserido.email),
             senha : new SenhaUsuarioValueObject(documentoInserido.senha),
-            perfis : documentoInserido.perfis,
+            perfis : new PerfisUsuarioValueObject(documentoInserido.perfis),
             data_cadastro : documentoInserido.data_cadastro,
             ativo : documentoInserido.ativo,
             reputacao_flag_cancelamento : documentoInserido.reputacao_flag_cancelamento
