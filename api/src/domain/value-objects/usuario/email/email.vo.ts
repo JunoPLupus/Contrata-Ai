@@ -1,13 +1,12 @@
 import validator from 'validator'
 
-import { CampoObrigatorioVazioError } from "../../../errors/campo-obrigatorio-vazio.error";
 import { FormatoInvalidoError } from "../../../errors/formato-invalido.error";
+import { ValueObjectBase } from "../../value-object.base";
 /**
- * E-mail do usuário.
+ * E-mail do usuário - `string`.
  * O campo email é validado pela biblioteca validator para maior simplicidade do código.
  */
-export class EmailUsuarioValueObject {
-    private readonly _campo : string = 'email'
+export class EmailUsuarioValueObject extends ValueObjectBase {
     readonly email: string
 
     /**
@@ -18,13 +17,11 @@ export class EmailUsuarioValueObject {
      * @throws {FormatoInvalidoError} Se o email não for uma `string` ou não passar na validação de formato.
      */
     constructor(email: any) {
-        if (this.isVazio(email)) throw new CampoObrigatorioVazioError(this._campo)
-        else if (typeof email != "string" || !validator.isEmail(email)) throw new FormatoInvalidoError(this._campo)
+        super('email')
+
+        this.validarString(email)
+        if (!validator.isEmail(email)) throw new FormatoInvalidoError(this._campo)
 
         this.email = email
-    }
-
-    private isVazio(email: string | undefined) : boolean {
-        return email == undefined || (typeof email == "string" && email.trim().length === 0)
     }
 }
