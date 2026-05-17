@@ -6,6 +6,7 @@ import { Usuario } from "../../../entities/usuario/usuario.entity";
 import { NomeUsuarioValueObject } from "../../../value-objects/usuario/nome/nome.vo";
 import { SenhaUsuarioValueObject } from "../../../value-objects/usuario/senha/senha.vo";
 import { EmailUsuarioValueObject } from "../../../value-objects/usuario/email/email.vo";
+import { PerfisUsuarioValueObject } from "../../../value-objects/usuario/perfis/perfis.vo";
 
 export class CadastrarUsuarioUseCase {
 
@@ -19,7 +20,7 @@ export class CadastrarUsuarioUseCase {
             nome: new NomeUsuarioValueObject(usuarioDTO.nome),
             senha: new SenhaUsuarioValueObject(senhaHash),
             email: new EmailUsuarioValueObject(usuarioDTO.email),
-            perfis: usuarioDTO.perfis,
+            perfis: new PerfisUsuarioValueObject(usuarioDTO.perfis),
             data_cadastro: new Date(),
             ativo: true,
             reputacao_flag_cancelamento: 0

@@ -2,6 +2,7 @@ import { UsuarioProps } from "./usuario.props";
 import { NomeUsuarioValueObject } from "../../value-objects/usuario/nome/nome.vo";
 import { SenhaUsuarioValueObject } from "../../value-objects/usuario/senha/senha.vo";
 import { EmailUsuarioValueObject } from "../../value-objects/usuario/email/email.vo";
+import { PerfisUsuarioValueObject } from "../../value-objects/usuario/perfis/perfis.vo";
 
 export class Usuario {
 
@@ -12,52 +13,52 @@ export class Usuario {
     }
 
     get id() : string | undefined {
-        return this.props.id;
+        return this.props.id
     }
 
     get nome() : string {
-        return this.props.nome.nome;
+        return this.props.nome.nome
     }
     set nome(nome : string) {
-        this.props.nome = new NomeUsuarioValueObject(nome);
+        this.props.nome = new NomeUsuarioValueObject(nome)
     }
 
     get senha() : string {
-        return this.props.senha.senha;
+        return this.props.senha.senha
     }
     set senha(senha : string) {
-        this.props.senha = new SenhaUsuarioValueObject(senha);
+        this.props.senha = new SenhaUsuarioValueObject(senha)
     }
 
     get email() : string {
-        return this.props.email.email;
+        return this.props.email.email
     }
     set email(email : string) {
-        this.props.email = new EmailUsuarioValueObject(email);
+        this.props.email = new EmailUsuarioValueObject(email)
     }
 
-    get perfis() : Array<'cliente' | 'prestador'>{
-        return this.props.perfis;
+    get perfis() : string[] {
+        return this.props.perfis.perfis
     }
-    set perfis(perfis: Array<'cliente' | 'prestador'>) {
-        this.props.perfis = perfis;
+    set perfis(perfis: string[]) {
+        this.props.perfis = new PerfisUsuarioValueObject(perfis)
     }
 
     get data_cadastro() : Date {
-        return this.props.data_cadastro;
+        return this.props.data_cadastro
     }
 
     get ativo() : boolean {
-        return this.props.ativo;
+        return this.props.ativo
     }
     set ativo (ativo : boolean) {
-        this.props.ativo = ativo;
+        this.props.ativo = ativo
     }
 
     get reputacao_flag_cancelamento() : number {
-        return this.props.reputacao_flag_cancelamento;
+        return this.props.reputacao_flag_cancelamento
     }
     set reputacao_flag_cancelamento(flag : number) {
-        this.props.reputacao_flag_cancelamento = flag;
+        this.props.reputacao_flag_cancelamento = flag
     }
 }
