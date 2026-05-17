@@ -9,10 +9,10 @@ export class Prestador {
     }
 
     get id() : string | undefined {
-        return this.props.id;
+        return this.props.id
     }
 
     get idCliente() : string {
-        return this.props.idCliente;
+        return this.props.idCliente.idCliente
     }
 }
