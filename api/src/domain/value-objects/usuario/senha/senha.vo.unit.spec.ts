@@ -16,12 +16,21 @@ describe('SenhaUsuarioValueObject', () => {
     })
 
     it.each([
+        ['undefined', undefined],
         ['vazia', ''],
         ['só espaços', '   ']
     ])('deve lançar erro quando senha for %s', (_, senhaInvalida) => {
         expect(() => new SenhaUsuarioValueObject(senhaInvalida))
             .toThrow(
                 expect.objectContaining({ message: "O campo 'senha' é obrigatório." })
+            )
+    })
+
+    it('deve lançar erro quando a senha não for string', () => {
+        const senhaInvalida = 24
+        expect(() => new SenhaUsuarioValueObject(senhaInvalida))
+            .toThrow(
+                expect.objectContaining({ message: "O 'senha' inserido é inválido. Verifique o formato e tente novamente." })
             )
     })
 

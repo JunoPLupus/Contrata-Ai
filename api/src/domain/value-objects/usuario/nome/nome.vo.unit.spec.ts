@@ -14,6 +14,7 @@ describe('NomeUsuarioValueObject', () => {
     })
 
     it.each([
+        ['undefined', undefined],
         ['vazio', ''],
         ['só espaços', '   ']
     ])('deve lançar erro quando nome for %s', (_, nomeInvalido) => {
@@ -21,6 +22,14 @@ describe('NomeUsuarioValueObject', () => {
             .toThrow(
                 expect.objectContaining({ message: "O campo 'nome' é obrigatório." })
         )
+    })
+
+    it('deve lançar erro quando nome não for string', () => {
+        const nomeInvalido = 34
+        expect(() => new NomeUsuarioValueObject(nomeInvalido))
+            .toThrow(
+                expect.objectContaining({ message: "O 'nome' inserido é inválido. Verifique o formato e tente novamente." })
+            )
     })
 
     it('deve lançar erro quando nome tiver menos de 3 caracteres', async () => {

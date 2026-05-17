@@ -14,6 +14,7 @@ describe('EmailUsuarioValueObject', () => {
     })
 
     it.each([
+        ['undefined', undefined],
         ['vazio', ''],
         ['só espaços', '   ']
     ])('deve lançar erro quando o e-mail for %s', async (_, emailInvalido) => {
@@ -24,6 +25,7 @@ describe('EmailUsuarioValueObject', () => {
     })
 
     it.each([
+        [423],
         [' email inválido'],
         ['exemplo@invalido']
     ])('deve lançar erro quando e-mail for inválido', async (emailInvalido) => {
