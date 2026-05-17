@@ -1,11 +1,11 @@
 import { CadastrarPrestadorUseCase } from "./cadastrar-prestador.use-case";
 import { IPrestadorRepository } from "../../../repositories/prestador.repository";
 import { Prestador } from "../../../entities/prestador/prestador.entity";
+import { PrestadorMother } from "../../../../test-helpers/prestador.mother";
 
 describe('CadastrarPrestadorUseCase', () => {
-
-    let cadastrarPrestadorUseCase : CadastrarPrestadorUseCase;
-    let prestadorRepositoryMock: jest.Mocked<IPrestadorRepository>;
+    let cadastrarPrestadorUseCase : CadastrarPrestadorUseCase
+    let prestadorRepositoryMock: jest.Mocked<IPrestadorRepository>
 
     beforeEach(() => {
         prestadorRepositoryMock = {
@@ -16,28 +16,25 @@ describe('CadastrarPrestadorUseCase', () => {
 
     it('deve criar um prestador com dados válidos', async () => {
         // Arrange
-        const idCliente = "321"
-        const propsPrestador = {
-            idCliente : idCliente
-        }
-        const prestadorMock : Prestador = Prestador.criarPrestador(propsPrestador);
-        prestadorRepositoryMock.inserir.mockResolvedValue(prestadorMock);
+        const dtoMock = PrestadorMother.criarDTO()
+        const prestadorMock : Prestador = PrestadorMother.criarValido(dtoMock)
+        prestadorRepositoryMock.inserir.mockResolvedValue(prestadorMock)
         // Act
-        const prestadorCriado = await cadastrarPrestadorUseCase.execute(idCliente);
+        const prestadorCriado = await cadastrarPrestadorUseCase.execute(dtoMock)
         // Assert
         expect(prestadorRepositoryMock.inserir).toHaveBeenCalled()
         expect(prestadorCriado).not.toBeNull()
         expect(prestadorCriado).toBeInstanceOf(Prestador)
-        expect(prestadorCriado.idCliente).toEqual(idCliente)
+        expect(prestadorCriado.idCliente).toEqual(dtoMock.idCliente)
     })
 
     it.each([
-        ['vazio', ''],
-        ['só espaços', '   ']
-    ])('deve lançar erro quando o id de cliente for %s', async (_, idClienteInvalido) => {
+        ['vazio', { idCliente : ''}],
+        ['só espaços', { idCliente : '   '}],
+    ])('deve lançar erro quando o id de cliente for %s', async (_, prestadorInvalido) => {
         await expect(
-            cadastrarPrestadorUseCase.execute(idClienteInvalido))
+            cadastrarPrestadorUseCase.execute(prestadorInvalido))
             .rejects.toThrow(
-                expect.objectContaining({message: "O campo 'idCliente' é obrigatório."}))
+                expect.objectContaining({ message: "O campo 'idCliente' é obrigatório." }))
     })
 })

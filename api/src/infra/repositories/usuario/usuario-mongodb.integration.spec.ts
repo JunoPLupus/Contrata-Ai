@@ -1,13 +1,11 @@
+import mongoose from "mongoose";
+import { MongoMemoryServer } from "mongodb-memory-server";
+
 import { Usuario } from "../../../domain/entities/usuario/usuario.entity";
 import { UsuarioModel } from "../../models/usuario/usuario.model";
-import { NomeUsuarioValueObject } from "../../../domain/value-objects/usuario/nome/nome.vo";
-import { SenhaUsuarioValueObject } from "../../../domain/value-objects/usuario/senha/senha.vo";
-import { EmailUsuarioValueObject } from "../../../domain/value-objects/usuario/email/email.vo";
 import { UsuarioMongodbRepositoryImpl } from "./usuario-mongodb.repository.impl";
-
-import { MongoMemoryServer } from "mongodb-memory-server";
-import mongoose from "mongoose";
-import {PerfisUsuarioValueObject} from "../../../domain/value-objects/usuario/perfis/perfis.vo";
+import { UsuarioMother } from "../../../test-helpers/usuario.mother";
+import { UsuarioMapper } from "./usuario.mapper";
 
 describe('Usuario Mongodb Repository', () => {
 
@@ -34,16 +32,9 @@ describe('Usuario Mongodb Repository', () => {
 
     it('deve buscar usuário por e-mail e retornar usuário', async () => {
         // Arrange
-        const email : string = "teste@gmail.com"
-        await UsuarioModel.create({
-            nome: 'Fulano',
-            email: 'teste@gmail.com',
-            senha: 'senha123',
-            perfis: ['cliente'],
-            data_cadastro: new Date(),
-            ativo: true,
-            reputacao_flag_cancelamento: 0
-        })
+        const documentoMock = UsuarioMapper.paraDocumento(UsuarioMother.criarUsuarioValido())
+        await UsuarioModel.create(documentoMock)
+        const email : string = documentoMock.email
         // Act
         const usuario = await repository.buscarPorEmail(email)
         // Assert
@@ -63,16 +54,7 @@ describe('Usuario Mongodb Repository', () => {
 
     it('deve inserir um usuário e retorná-lo com id', async () => {
         // Arrange
-        const propsUsuario = {
-            nome: new NomeUsuarioValueObject("Fulano Silva"),
-            senha: new SenhaUsuarioValueObject("senha123"),
-            email: new EmailUsuarioValueObject("fulano.silva@gmail.com"),
-            perfis: new PerfisUsuarioValueObject(['cliente', 'prestador']),
-            data_cadastro: new Date(),
-            ativo: true,
-            reputacao_flag_cancelamento: 0
-        }
-        const usuarioMock = Usuario.criarUsuario(propsUsuario)
+        const usuarioMock = UsuarioMother.criarUsuarioValido()
         // Act
         const usuarioInserido = await repository.inserir(usuarioMock)
         // Assert

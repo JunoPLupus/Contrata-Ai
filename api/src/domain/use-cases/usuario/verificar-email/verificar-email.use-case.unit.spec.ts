@@ -2,51 +2,33 @@ import { IUsuarioRepository } from "../../../repositories/usuario.repository";
 import { VerificarEmailUseCase } from "./verificar-email.use-case";
 import { UsuarioCadastroDTO } from "../../../dto/usuario/usuario-cadastro.dto";
 import { Usuario } from "../../../entities/usuario/usuario.entity";
-import { NomeUsuarioValueObject } from "../../../value-objects/usuario/nome/nome.vo";
-import { SenhaUsuarioValueObject } from "../../../value-objects/usuario/senha/senha.vo";
-import { EmailUsuarioValueObject } from "../../../value-objects/usuario/email/email.vo";
-import { PerfisUsuarioValueObject } from "../../../value-objects/usuario/perfis/perfis.vo";
+import { UsuarioMother } from "../../../../test-helpers/usuario.mother";
 
 describe('VerificarEmailUseCase', () => {
 
-    let verificarEmailUseCase : VerificarEmailUseCase;
-    let usuarioRepositoryMock : jest.Mocked<IUsuarioRepository>;
-    let usuarioValidoDTOMock : UsuarioCadastroDTO;
+    let verificarEmailUseCase : VerificarEmailUseCase
+    let usuarioRepositoryMock : jest.Mocked<IUsuarioRepository>
+    let dtoValidoMock : UsuarioCadastroDTO
 
     beforeEach(() => {
         usuarioRepositoryMock = {
             buscarPorEmail : jest.fn(),
             inserir: jest.fn()
         }
-        verificarEmailUseCase = new VerificarEmailUseCase(usuarioRepositoryMock);
-
-        usuarioValidoDTOMock = {
-            nome: 'Fulano',
-            email: 'fulano@gmail.com',
-            senha: '123456',
-            perfis: ['cliente', 'prestador']
-        }
+        dtoValidoMock = UsuarioMother.criarDTOValido()
+        verificarEmailUseCase = new VerificarEmailUseCase(usuarioRepositoryMock)
     })
 
     it('deve retornar um usuário caso existe uma conta com aquele e-mail', async () => {
         // Arrange
-        const usuarioProps = {
-            nome: new NomeUsuarioValueObject(usuarioValidoDTOMock.nome),
-            senha: new SenhaUsuarioValueObject(usuarioValidoDTOMock.senha),
-            email: new EmailUsuarioValueObject(usuarioValidoDTOMock.email),
-            perfis: new PerfisUsuarioValueObject(usuarioValidoDTOMock.perfis),
-            data_cadastro: new Date(),
-            ativo: true,
-            reputacao_flag_cancelamento: 0
-        }
-        const usuarioMock = Usuario.criarUsuario(usuarioProps)
+        const usuarioMock = UsuarioMother.criarUsuarioValido()
         usuarioRepositoryMock.buscarPorEmail.mockResolvedValue(usuarioMock)
 
         // Act
-        const usuarioEncontrado = await verificarEmailUseCase.execute(usuarioValidoDTOMock.email)
+        const usuarioEncontrado = await verificarEmailUseCase.execute(dtoValidoMock.email)
 
         // Assert
-        expect(usuarioRepositoryMock.buscarPorEmail).toHaveBeenCalledWith(usuarioValidoDTOMock.email)
+        expect(usuarioRepositoryMock.buscarPorEmail).toHaveBeenCalledWith(dtoValidoMock.email)
         expect(usuarioEncontrado).not.toBeNull()
         expect(usuarioEncontrado).toBeInstanceOf(Usuario)
     })
@@ -55,9 +37,9 @@ describe('VerificarEmailUseCase', () => {
         // Arrange
         usuarioRepositoryMock.buscarPorEmail.mockResolvedValue(null)
         // Act
-        const usuarioEncontrado = await verificarEmailUseCase.execute(usuarioValidoDTOMock.email)
+        const usuarioEncontrado = await verificarEmailUseCase.execute(dtoValidoMock.email)
         // Assert
-        expect(usuarioRepositoryMock.buscarPorEmail).toHaveBeenCalledWith(usuarioValidoDTOMock.email)
+        expect(usuarioRepositoryMock.buscarPorEmail).toHaveBeenCalledWith(dtoValidoMock.email)
         expect(usuarioEncontrado).toBeNull()
     })
 })

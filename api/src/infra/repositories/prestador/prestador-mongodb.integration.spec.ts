@@ -1,8 +1,9 @@
+import mongoose from "mongoose";
+import { MongoMemoryServer } from "mongodb-memory-server";
+
 import { PrestadorMongodbRepositoryImpl } from "./prestador-mongodb.repository.impl";
 import { Prestador } from "../../../domain/entities/prestador/prestador.entity";
-
-import { MongoMemoryServer } from "mongodb-memory-server";
-import mongoose, { Types } from "mongoose";
+import { PrestadorMother } from "../../../test-helpers/prestador.mother";
 
 describe('Prestador MongoDB Repository', () => {
 
@@ -29,9 +30,7 @@ describe('Prestador MongoDB Repository', () => {
 
     it('deve inserir um prestador e retoná-lo com id', async() => {
         // Arrange
-        const prestadorMock = Prestador.criarPrestador({
-            idCliente : new Types.ObjectId().toString()
-        })
+        const prestadorMock = PrestadorMother.criarValido()
         // Act
         const prestadorInserido = await repository.inserir(prestadorMock)
         // Assert
