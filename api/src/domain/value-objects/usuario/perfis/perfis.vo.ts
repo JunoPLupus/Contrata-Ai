@@ -3,9 +3,22 @@ import { FormatoInvalidoError } from "../../../errors/formato-invalido.error";
 
 export type PerfisValidos = 'cliente' | 'prestador'
 
+/**
+ * Perfis do usuário.
+ * Todo usuário deve ter ao menos o perfil 'cliente'.
+ * Valores permitidos: 'cliente', 'prestador'. Não permite duplicatas.
+ */
 export class PerfisUsuarioValueObject {
     private readonly _campo : string = 'perfis'
     readonly perfis: PerfisValidos[]
+
+    /**
+     * @param perfis - Aceita `any` para capturar inputs inválidos de runtime
+     * (ex: campos ausentes no body HTTP) e lançar erros de domínio
+     * em vez de `TypeError`.
+     * @throws {CampoObrigatorioVazioError} Se perfis for nulo, undefined, array vazio ou contiver elementos vazios.
+     * @throws {FormatoInvalidoError} Se perfis não for um array, contiver valores inválidos, duplicatas ou não incluir 'cliente'.
+     */
     constructor(perfis : any) {
         if (this.isVazio(perfis)) throw new CampoObrigatorioVazioError(this._campo)
         else if (this.isInvalido(perfis)) throw new FormatoInvalidoError(this._campo)
