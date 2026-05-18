@@ -1,0 +1,37 @@
+= ADR-009: Uso de Factory e Mapper para criação e conversão de entidades
+:date: 2026-05-17
+:status: Accepted
+
+== Contexto
+
+A criação de entidades de domínio a partir de dados brutos (primitivos ou documentos
+do banco) estava espalhada por use cases, repositories e testes — cada um instanciando
+Value Objects e chamando `Entity.criar()` diretamente. Qualquer mudança nos campos
+de uma entidade exigia atualizar múltiplos lugares.
+
+== Decisão
+
+Duas classes utilitárias centralizam a criação e conversão de entidades:
+
+* **Factory** (`src/domain/factories/`) — recebe dados primitivos, instancia os
+  Value Objects e retorna a entidade. É código de domínio puro, sem dependência
+  de infraestrutura. Use cases e Object Mothers delegam a criação de entidades
+  para a Factory.
+
+* **Mapper** (`src/infra/repositories/<entidade>/`) — converte documentos Mongoose
+  (`HydratedDocument`) em entidades de domínio delegando para a Factory, e converte
+  entidades em objetos prontos para persistência (`paraDocumento`). Pertence à camada
+  de infraestrutura por conhecer os tipos do Mongoose.
+
+Para testes, um **Object Mother** (`src/test-helpers/`) complementa a Factory
+fornecendo valores padrão prontos, eliminando dados hardcoded espalhados nos testes.
+
+== Consequências
+
+* Mudanças nos campos de uma entidade exigem atualização apenas na Factory e no
+  Mapper — use cases, repositories e testes permanecem intactos.
+* A Factory isola o domínio da infraestrutura: use cases não conhecem Mongoose,
+  apenas recebem e retornam entidades.
+* O Object Mother não é código de produção e não deve ser incluído no build final.
+* Se um novo repositório for adicionado, deve seguir o padrão criando seu próprio
+  Mapper que delega para a Factory correspondente.

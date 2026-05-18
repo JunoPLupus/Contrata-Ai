@@ -1,0 +1,32 @@
+= ADR-008: Separação de DTOs em camadas distintas
+:date: 2026-05-17
+:status: Accepted
+
+== Contexto
+
+O projeto possui dois tipos de DTOs com responsabilidades distintas: DTOs de entrada,
+que definem o contrato de dados recebidos pelos use cases, e DTOs de resposta, que
+definem o shape dos dados retornados pela camada HTTP ao cliente.
+
+Inicialmente todos os DTOs estavam agrupados em uma única pasta dentro de
+`domain/dto`, sem distinção de camada ou propósito.
+
+== Decisão
+
+Os DTOs são separados em duas localizações de acordo com sua responsabilidade:
+
+* **DTOs de entrada** permanecem em `src/domain/dto/` — fazem parte do contrato
+dos use cases e pertencem ao domínio. Use cases, testes de use cases e factories
+os referenciam diretamente.
+
+* **DTOs de resposta** ficam em `src/http/dto/` — são específicos da camada HTTP
+e definem o shape da resposta enviada ao cliente. Apenas controllers os referenciam.
+
+== Consequências
+
+* A localização do DTO comunica sua responsabilidade: `domain/dto` = contrato de
+entrada do use case, `http/dto` = formato de saída da API.
+* Controllers dependem de DTOs de ambas as camadas, o que é esperado — eles
+orquestram a fronteira entre HTTP e domínio.
+* DTOs de resposta podem evoluir independentemente do domínio, por exemplo
+adicionando campos de apresentação sem afetar os use cases.
