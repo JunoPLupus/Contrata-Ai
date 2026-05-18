@@ -1,0 +1,41 @@
+= ADR-002: Arquitetura em camadas sem Facade
+:date: 2026-05-07
+:status: Accepted
+
+== Contexto
+
+Em uma aplicação monolítica desenvolvida anteriormente, o padrão Facade foi utilizado para centralizar
+verificações de cache, chamadas ao serviço de autenticação e orquestração de use cases,
+criando um ponto de entrada único antes de qualquer operação. Avaliou-se se esse padrão
+deveria ser replicado nesta API REST.
+
+Em uma API REST, o "cliente" é sempre uma requisição HTTP externa — não há chamadas
+internas entre módulos como em um monolito. Isso muda onde cada responsabilidade deve viver.
+
+== Decisão
+
+Não utilizar a camada Facade. As responsabilidades que o Facade exercia são distribuídas
+entre camadas já existentes na arquitetura:
+
+* *Autenticação e autorização* → middlewares do Express, executados antes do controller.
+* *Cache* → implementação do repositório (o use case não sabe se o dado veio do cache ou
+  do banco).
+* *Orquestração de use cases* → controller, que coordena as chamadas necessárias para
+  atender uma requisição.
+
+O fluxo adotado é:
+
+----
+Requisição HTTP → Middleware(s) → Controller → Use Case(s) → Repository → Banco de dados
+----
+
+O controller nunca chama um repository diretamente, mesmo em operações de leitura simples.
+Todo acesso a dados passa por um use case.
+
+== Consequências
+
+* Cada camada tem responsabilidade única e bem definida.
+* Use cases são testáveis de forma isolada, sem dependência de HTTP ou banco real.
+* A ausência de uma camada extra reduz a complexidade para um time pequeno com prazo curto.
+* Se a orquestração de use cases crescer em complexidade, pode-se introduzir uma camada
+  de Application Service entre controller e use cases sem impactar o domínio.

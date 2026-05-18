@@ -1,0 +1,46 @@
+= ADR-006: DTOs definidos como type e não interface
+:date: 2026-05-08
+:status: Accepted
+
+== Contexto
+
+TypeScript oferece duas formas de descrever formatos de objetos: `interface` e `type`.
+Em muitos casos os dois são intercambiáveis, mas há diferenças relevantes que tornam
+um mais adequado que o outro dependendo do uso.
+
+DTOs (Data Transfer Objects) são estruturas de dados puros usados para transportar
+informações entre camadas — sem métodos, sem comportamento, sem classes que os
+implementem. Entidades e repositórios, por outro lado, têm classes que os implementam.
+
+== Decisão
+
+* **DTOs** são definidos com `type`, podendo usar utilitários como `Pick` e `Omit`
+  para derivar tipos a partir das entidades de domínio sem duplicar campos:
+
+[source,typescript]
+----
+type CadastrarUsuarioDTO = Pick<Usuario, 'nome' | 'email' | 'senha' | 'perfis'>
+----
+
+* **Contratos implementados por classes** (repositórios, serviços) são definidos
+  com `interface`, pois o TypeScript valida a implementação via `implements`:
+
+[source,typescript]
+----
+interface IUsuarioRepository {
+  buscarPorEmail(email: string): Promise<Usuario | null>
+  inserir(usuario: Usuario): Promise<Usuario>
+}
+----
+
+* **Entidades de domínio** são definidas como `class`, pois podem ter métodos,
+  lógica de construção e Value Objects como propriedades tipadas.
+
+== Consequências
+
+* DTOs derivados com `Pick`/`Omit` ficam automaticamente sincronizados com a
+  entidade — se um campo mudar na entidade, o DTO reflete a mudança.
+* A distinção `type` vs `interface` serve como sinal visual: `type` = dado puro,
+  `interface` = contrato com implementação.
+* `type` não permite declaration merging, o que é desejável para DTOs —
+  evita extensões acidentais em outros arquivos.
