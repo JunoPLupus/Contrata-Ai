@@ -1,5 +1,6 @@
 import Mocked = jest.Mocked;
 import { Request, Response } from "express";
+import { MongoServerError } from "mongodb";
 
 import { errorHandler } from "./error-handler.middleware";
 import { CampoObrigatorioVazioError } from "../../../domain/errors/campo-obrigatorio-vazio.error";
@@ -41,6 +42,16 @@ describe('Error Handler Middleware', () => {
     it('deve responder com código 422 quando capturar ValorLimiteError', () => {
         // Arrange
         const err = new ValorLimiteError('nome', 64, 'máximo')
+        // Act
+        errorHandler(err, req as any, res as any, nextMock)
+        // Assert
+        expect(res.status).toHaveBeenCalledWith(422)
+    })
+
+    it('deve responder com código 422 quando capturar código 11000 do MongoServerError', () => {
+        // Arrange
+        const err = new MongoServerError({ message: 'duplicate key error' })
+        err.code = 11000
         // Act
         errorHandler(err, req as any, res as any, nextMock)
         // Assert

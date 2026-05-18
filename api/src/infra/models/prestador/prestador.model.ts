@@ -9,11 +9,11 @@ export interface IPrestadorDocument {
 }
 
 const PrestadorSchema = new Schema<IPrestadorDocument>({
-    id_cliente : { type: Types.ObjectId, ref: 'Usuario', required: true },
+    id_cliente : { type: Types.ObjectId, ref: 'Usuario', required: true, unique: true },
     telefone : String,
     descricao : String,
     localizacao_latitude : { type: Number, default: 0 },
     localizacao_longitude : { type: Number, default: 0 }
 })
 
-export const PrestadorModel = model("Prestador", PrestadorSchema);
+export const PrestadorModel = model("Prestador", PrestadorSchema, "prestadores")
