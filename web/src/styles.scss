@@ -1,1 +1,54 @@
-/* You can add global styles to this file, and also import other style files */
+:root {
+  --color-navy: #0e2c5e;
+  --color-primary: #c84e1f;
+  --color-accent: #f39320;
+  --color-input-bg: #eef0fa;
+  --color-text-primary: #1a1a2e;
+  --color-text-secondary: #6b7280;
+  --color-border: #e5e7eb;
+  --color-white: #ffffff;
+  --color-surface: #f8f9fb;
+
+  --radius-card: 24px;
+  --radius-button: 12px;
+  --radius-input: 10px;
+
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  font-family: var(--font-sans);
+  color: var(--color-text-primary);
+  background: var(--color-surface);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+  border: none;
+  background: none;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+input {
+  font-family: inherit;
+}
