@@ -8,9 +8,11 @@ export class PrestadorController {
     constructor(private readonly cadastrarPrestadorUseCase : CadastrarPrestadorUseCase) {}
 
     public async cadastrar(request: Request, response: Response) : Promise<void> {
-        const idCliente = request.body.idCliente as string;
+        const prestadorCadastroDTO = {
+            idCliente : request.body.idCliente as string
+        }
 
-        const prestadorCadastrado : Prestador = await this.cadastrarPrestadorUseCase.execute(idCliente);
+        const prestadorCadastrado : Prestador = await this.cadastrarPrestadorUseCase.execute(prestadorCadastroDTO);
         const prestadorRespostaCadastroDTO : PrestadorRespostaCadastroDTO = {
             id : prestadorCadastrado.id,
             idCliente : prestadorCadastrado.idCliente

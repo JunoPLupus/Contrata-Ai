@@ -7,6 +7,7 @@ import { PrestadorCadastroDTO } from "../domain/dto/prestador/prestador-cadastro
 export class PrestadorMother {
     public static criarValido(dto ?: PrestadorCadastroDTO) : Prestador {
         return PrestadorFactory.criar({
+            id : (new Types.ObjectId).toString(),
             idCliente : dto?.idCliente ?? (new Types.ObjectId).toString()
         })
     }
