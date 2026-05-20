@@ -2,6 +2,7 @@ import jwt, { JsonWebTokenError, TokenExpiredError } from 'jsonwebtoken';
 import { Request, Response } from "express";
 
 import { bloqueiaUsuarioAutenticado } from "./bloqueia-usuario-autenticado.middleware";
+import { TokenPayload } from "../../types/token-payload.interface";
 
 jest.mock('jsonwebtoken', () => ({
     verify: jest.fn()
@@ -11,7 +12,7 @@ describe('BloqueiaUsuarioAutenticado Middleware', () => {
     let req: Partial<Request>
     let res: Partial<Response>
     let nextMock : jest.Mocked<any>
-    let payload: { idCliente: string }
+    let payload: TokenPayload
 
     beforeEach(() => {
         req = { headers: { authorization: undefined } }
@@ -21,7 +22,7 @@ describe('BloqueiaUsuarioAutenticado Middleware', () => {
         }
         nextMock = jest.fn()
         payload = {
-            idCliente : "123"
+            idCliente : '123'
         }
     })
 

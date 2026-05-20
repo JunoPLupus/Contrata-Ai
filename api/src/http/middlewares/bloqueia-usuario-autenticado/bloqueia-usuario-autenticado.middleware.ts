@@ -1,17 +1,15 @@
-import jwt from "jsonwebtoken";
 import { NextFunction, Request, Response } from "express";
 
-import { config } from "../../../shared/config";
+import { isTokenValido } from "../../utils/jwt.utils";
 
+/**
+ * Bloqueia se encontrar um _token JWT_ válido no header.
+ * @params `req` - Requisição que será usada para a verificação do _header_.
+ * @params `res` - Resposta que pode retornar `403` caso o _token_ seja válido.
+ * @params `next` - Usado para encerrar a execução do _middleware_ caso não encontre um _token_ válido.
+ */
 export function bloqueiaUsuarioAutenticado(req : Request, res : Response, next: NextFunction) : void {
-    const tokenEncontrado = req.headers.authorization
-    if (typeof tokenEncontrado != "string") return next()
+    if (isTokenValido(req.headers.authorization) == null) return next()
 
-    const tokenJWT = tokenEncontrado.split(' ')[1]
-    try {
-        jwt.verify(tokenJWT, config.jwtSecret)
-    } catch (error : any) {
-        return next()
-    }
     res.status(403).json({ message : "Login duplicado não permitido! Você já possui um login ativo." })
 }
