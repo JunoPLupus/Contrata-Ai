@@ -4,7 +4,6 @@ import app from './app'
 
 const port : string = process.env.PORT || '3000'
 const dbUri : string = process.env.MONGODB_URI || 'mongodb://localhost:27017'
-const jwtSecret = process.env.JWT_SECRET
 
 mongoose.connect(dbUri)
     .then(() => {

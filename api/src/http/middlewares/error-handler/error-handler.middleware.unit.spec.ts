@@ -6,6 +6,7 @@ import { errorHandler } from "./error-handler.middleware";
 import { CampoObrigatorioVazioError } from "../../../domain/errors/campo-obrigatorio-vazio.error";
 import { FormatoInvalidoError } from "../../../domain/errors/formato-invalido.error";
 import { ValorLimiteError } from "../../../domain/errors/valor-limite.error";
+import { CredenciaisInvalidasError } from "../../../domain/errors/credenciais-invalidas.error";
 
 describe('Error Handler Middleware', () => {
     let req: Partial<Request>
@@ -56,6 +57,15 @@ describe('Error Handler Middleware', () => {
         errorHandler(err, req as any, res as any, nextMock)
         // Assert
         expect(res.status).toHaveBeenCalledWith(422)
+    })
+
+    it('deve responder com código 401 quando capturar CredenciaisInvalidasError', () => {
+        // Arrange
+        const err = new CredenciaisInvalidasError()
+        // Act
+        errorHandler(err, req as any, res as any, nextMock)
+        // Assert
+        expect(res.status).toHaveBeenCalledWith(401)
     })
 
     it('deve responder com código 500 quando capturar qualquer outro tipo de erro', () => {
