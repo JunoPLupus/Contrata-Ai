@@ -9,7 +9,7 @@ export class PrestadorController {
 
     public async cadastrar(request: Request, response: Response) : Promise<void> {
         const prestadorCadastroDTO = {
-            idCliente : request.body.idCliente as string
+            idCliente : request.user!.idCliente
         }
 
         const prestadorCadastrado : Prestador = await this.cadastrarPrestadorUseCase.execute(prestadorCadastroDTO);

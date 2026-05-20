@@ -14,7 +14,7 @@ describe('Prestador Controller', () => {
         cadastrarPrestadorUseCaseMock = { execute: jest.fn() } as any
         controller = new PrestadorController(cadastrarPrestadorUseCaseMock)
 
-        req = { body: PrestadorMother.criarDTO() }
+        req = { user: PrestadorMother.criarDTO() }
         res = {
             status: jest.fn().mockReturnThis(),
             json: jest.fn().mockReturnThis()
@@ -23,7 +23,7 @@ describe('Prestador Controller', () => {
 
     it('deve retornar resposta com sucesso 201 e objeto prestadorRespostaCadastroDTO ao cadastrar', async () => {
         // Arrange
-        const prestadorMock = PrestadorMother.criarValido(req.body)
+        const prestadorMock = PrestadorMother.criarValido(req.user)
         cadastrarPrestadorUseCaseMock.execute.mockResolvedValue(prestadorMock)
         // Act
         await controller.cadastrar(req as any, res as any)
