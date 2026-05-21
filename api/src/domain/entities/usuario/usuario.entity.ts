@@ -1,5 +1,5 @@
 import { UsuarioProps } from "./usuario.props";
-import { NomeUsuarioValueObject } from "../../value-objects/usuario/nome/nome.vo";
+import { NomeValueObject } from "../../value-objects/shared/nome/nome.vo";
 import { SenhaUsuarioValueObject } from "../../value-objects/usuario/senha/senha.vo";
 import { EmailUsuarioValueObject } from "../../value-objects/usuario/email/email.vo";
 import { PerfisUsuarioValueObject } from "../../value-objects/usuario/perfis/perfis.vo";
@@ -20,7 +20,7 @@ export class Usuario {
         return this.props.nome.nome
     }
     set nome(nome : string) {
-        this.props.nome = new NomeUsuarioValueObject(nome)
+        this.props.nome = new NomeValueObject(nome)
     }
 
     get senha() : string {

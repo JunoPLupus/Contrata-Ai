@@ -1,11 +1,11 @@
 import { ValueObjectBase } from "../../value-object.base";
 
 /**
- * Nome do usuário - `string`.
+ * Nome - `string`.
  * Valor é armazenado sem espaços nas extremidades (trim aplicado na construção).
  * Mínimo: 3 caracteres. Máximo: 150 caracteres.
  */
-export class NomeUsuarioValueObject extends ValueObjectBase {
+export class NomeValueObject extends ValueObjectBase {
     readonly nome: string
 
     /**

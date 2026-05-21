@@ -1,5 +1,5 @@
 import { Usuario } from "../entities/usuario/usuario.entity";
-import { NomeUsuarioValueObject } from "../value-objects/usuario/nome/nome.vo";
+import { NomeValueObject } from "../value-objects/shared/nome/nome.vo";
 import { EmailUsuarioValueObject } from "../value-objects/usuario/email/email.vo";
 import { SenhaUsuarioValueObject } from "../value-objects/usuario/senha/senha.vo";
 import { PerfisUsuarioValueObject } from "../value-objects/usuario/perfis/perfis.vo";
@@ -17,7 +17,7 @@ export class UsuarioFactory {
     }) : Usuario {
         return Usuario.criarUsuario({
             id : dados.id,
-            nome : new NomeUsuarioValueObject(dados.nome),
+            nome : new NomeValueObject(dados.nome),
             email : new EmailUsuarioValueObject(dados.email),
             senha : new SenhaUsuarioValueObject(dados.senha),
             perfis : new PerfisUsuarioValueObject(dados.perfis),
