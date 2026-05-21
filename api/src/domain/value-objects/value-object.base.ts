@@ -29,7 +29,7 @@ export abstract class ValueObjectBase {
 
     protected validarNumber(value : any) : void {
         if(!isNumber(value)) throw new FormatoInvalidoError(this._campo)
-        else if (this._limiteMinimo > 0 && isNumberAbaixoLimite(value, this._limiteMinimo)) throw new ValorLimiteError(this._campo, this._limiteMinimo, 'mínimo')
-        else if (this._limiteMaximo > 0 && isNumberAcimaLimite(value, this._limiteMaximo)) throw new ValorLimiteError(this._campo, this._limiteMaximo, 'máximo')
+        else if (this._limiteMinimo > 0 && isNumberAbaixoLimite(value, this._limiteMinimo)) throw new ValorLimiteError(this._campo, this._limiteMinimo, 'mínimo', true)
+        else if (this._limiteMaximo > 0 && isNumberAcimaLimite(value, this._limiteMaximo)) throw new ValorLimiteError(this._campo, this._limiteMaximo, 'máximo', true)
     }
 }
