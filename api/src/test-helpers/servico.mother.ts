@@ -2,6 +2,7 @@ import { Types } from "mongoose";
 
 import { Servico } from "../domain/entities/servico/servico.entity";
 import { ServicoFactory } from "../domain/factories/servico.factory";
+import { ServicoCadastroDTO } from "../domain/dto/servico/servico-cadastro.dto";
 
 export class ServicoMother {
     public static criarValido(dados?: Partial<{
@@ -22,5 +23,16 @@ export class ServicoMother {
             prazoMedioDias: dados?.prazoMedioDias,
             ativo: dados?.ativo ?? true
         })
+    }
+
+    public static criarDTO(dados?: Partial<ServicoCadastroDTO>): ServicoCadastroDTO {
+        return {
+            idPrestador: dados?.idPrestador ?? new Types.ObjectId().toString(),
+            idCategoria: dados?.idCategoria ?? new Types.ObjectId().toString(),
+            descricao: dados?.descricao ?? 'Instalacao eletrica residencial',
+            precoMin: dados?.precoMin,
+            precoMax: dados?.precoMax,
+            prazoMedioDias: dados?.prazoMedioDias
+        }
     }
 }
