@@ -1,15 +1,15 @@
-import { NomeUsuarioValueObject } from "./nome.vo";
+import { NomeValueObject } from "./nome.vo";
 
 describe('NomeUsuarioValueObject', () => {
 
     it('deve criar nome válido', async () => {
         // Arrange
         const nomeValido : string = "Fulano da Silva"
-        let nomeCriado : NomeUsuarioValueObject
+        let nomeCriado : NomeValueObject
         // Act
-        nomeCriado = new NomeUsuarioValueObject(nomeValido)
+        nomeCriado = new NomeValueObject(nomeValido)
         // Assert
-        expect(nomeCriado).toBeInstanceOf(NomeUsuarioValueObject)
+        expect(nomeCriado).toBeInstanceOf(NomeValueObject)
         expect(nomeCriado.nome).toBe(nomeValido)
     })
 
@@ -18,7 +18,7 @@ describe('NomeUsuarioValueObject', () => {
         ['vazio', ''],
         ['só espaços', '   ']
     ])('deve lançar erro quando nome for %s', (_, nomeInvalido) => {
-        expect(() => new NomeUsuarioValueObject(nomeInvalido))
+        expect(() => new NomeValueObject(nomeInvalido))
             .toThrow(
                 expect.objectContaining({ message: "O campo 'nome' é obrigatório." })
         )
@@ -26,7 +26,7 @@ describe('NomeUsuarioValueObject', () => {
 
     it('deve lançar erro quando nome não for string', () => {
         const nomeInvalido = 34
-        expect(() => new NomeUsuarioValueObject(nomeInvalido))
+        expect(() => new NomeValueObject(nomeInvalido))
             .toThrow(
                 expect.objectContaining({ message: "O 'nome' inserido é inválido. Verifique o formato e tente novamente." })
             )
@@ -36,7 +36,7 @@ describe('NomeUsuarioValueObject', () => {
         // Arrange
         const nomeCurto : string = "AA"
         // Act & Assert
-        expect(() => new NomeUsuarioValueObject(nomeCurto)).toThrow(
+        expect(() => new NomeValueObject(nomeCurto)).toThrow(
             expect.objectContaining({ message: "O campo 'nome' deve conter no mínimo 3 caracteres." })
         )
     })
@@ -45,7 +45,7 @@ describe('NomeUsuarioValueObject', () => {
         // Arrange
         const nomeLongo : string = "A".repeat(151)
         // Act & Assert
-        expect(() => new NomeUsuarioValueObject(nomeLongo)).toThrow(
+        expect(() => new NomeValueObject(nomeLongo)).toThrow(
             expect.objectContaining({ message: "O campo 'nome' deve conter no máximo 150 caracteres." })
         )
     })
