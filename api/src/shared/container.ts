@@ -9,6 +9,9 @@ import {
 import { PrestadorController } from "../http/controllers/prestador/prestador.controller";
 import { LoginUseCase } from "../domain/use-cases/usuario/login/login.use-case";
 import { AuthController } from "../http/controllers/auth/auth.controller";
+import { ServicoMongodbRepositoryImpl } from "../infra/repositories/servico/servico-mongodb.repository.impl";
+import { CadastrarServicoUseCase } from "../domain/use-cases/servico/cadastrar-servico/cadastrar-servico.use-case";
+import { ServicoController } from "../http/controllers/servico/servico.controller";
 
 //#region usuario.routes.ts
 const usuarioRepository = new UsuarioMongodbRepositoryImpl()
@@ -26,4 +29,10 @@ export const authController = new AuthController(loginUseCase)
 const prestadorRepository = new PrestadorMongodbRepositoryImpl()
 const cadastrarPrestadorUseCase = new CadastrarPrestadorUseCase(prestadorRepository)
 export const prestadorController = new PrestadorController(cadastrarPrestadorUseCase)
+//#endregion
+
+//#region servico.routes.ts
+const servicoRepository = new ServicoMongodbRepositoryImpl()
+const cadastrarServicoUseCase = new CadastrarServicoUseCase(servicoRepository)
+export const servicoController = new ServicoController(cadastrarServicoUseCase)
 //#endregion
