@@ -9,6 +9,6 @@ export class ValorLimiteError extends DomainError {
             mensagem + `deve ser no ${tipo} ${limite}.` :
             mensagem + `deve conter no ${tipo} ${limite} caracteres.`
 
-        super('ValorLimiteError', mensagem);
+        super('ValorLimiteError', mensagem)
     }
 }
