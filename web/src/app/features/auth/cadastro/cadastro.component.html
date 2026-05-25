@@ -1,0 +1,282 @@
+<div class="cadastro-page">
+  <div class="cadastro-container">
+
+    <!-- ── Hero card (left panel) ── -->
+    <aside class="hero-card" aria-hidden="true">
+      <div class="hero-card__content">
+
+        <!-- Logo -->
+        <div class="hero-logo">
+          <svg class="hero-logo__icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+               width="32" height="32" fill="#F39320" aria-hidden="true">
+            <path d="M7 2v11h3v9l7-12h-4l4-8z"/>
+          </svg>
+          <span class="hero-logo__text">ContrataAí</span>
+        </div>
+
+        <!-- Eyebrow -->
+        <p class="hero-eyebrow">IMPULSIONE SEU TRABALHO</p>
+
+        <!-- Title -->
+        <h2 class="hero-title">
+          Conectando <span class="hero-title__accent">Talento</span> e Necessidade.
+        </h2>
+
+        <!-- Feature cards -->
+        <div class="feature-cards">
+          <div class="feature-card">
+            <span class="feature-card__icon">🛡️</span>
+            <p class="feature-card__title">Segurança Total</p>
+            <p class="feature-card__desc">
+              Transações protegidas e profissionais verificados pela nossa curadoria.
+            </p>
+          </div>
+          <div class="feature-card">
+            <span class="feature-card__icon">⚡</span>
+            <p class="feature-card__title">Velocidade Pulse</p>
+            <p class="feature-card__desc">
+              Encontre o prestador ideal em minutos através do nosso fluxo inteligente.
+            </p>
+          </div>
+        </div>
+
+        <!-- Corp badge -->
+        <div class="corp-badge">
+          <span class="corp-badge__seal">🏆</span>
+          <span class="corp-badge__text">CORPORATIVO TOP SERTIFLO</span>
+        </div>
+
+      </div>
+    </aside>
+
+    <!-- ── Form panel (right panel) ── -->
+    <main class="form-panel">
+      <div class="form-panel__inner">
+
+        <!-- Logo -->
+        <div class="form-logo">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+               width="24" height="24" fill="#F39320" aria-hidden="true">
+            <path d="M7 2v11h3v9l7-12h-4l4-8z"/>
+          </svg>
+          <span class="form-logo__text">ContrataAí</span>
+        </div>
+
+        <h1 class="form-title">Crie sua conta</h1>
+        <p class="form-subtitle">Junte-se à maior rede de prestadores da região.</p>
+
+        <!-- Perfil toggle -->
+        <div class="perfil-toggle" role="group" aria-label="Tipo de perfil">
+          <button
+            type="button"
+            class="perfil-toggle__btn"
+            [class.active]="perfilSelecionado === 'cliente'"
+            (click)="selecionarPerfil('cliente')">
+            👤 Cliente
+          </button>
+          <button
+            type="button"
+            class="perfil-toggle__btn"
+            [class.active]="perfilSelecionado === 'prestador'"
+            (click)="selecionarPerfil('prestador')">
+            🔧 Prestador
+          </button>
+        </div>
+
+        <form [formGroup]="form" (ngSubmit)="onSubmit()" novalidate>
+
+          <!-- Nome -->
+          <div class="field">
+            <label class="field__label" for="nome">Nome completo</label>
+            <div class="field__wrapper"
+                 [class.field__wrapper--error]="nomeControl.invalid && (nomeControl.dirty || submitted)">
+              <span class="field__icon">👤</span>
+              <input
+                class="field__input"
+                id="nome"
+                type="text"
+                formControlName="nome"
+                placeholder="Como devemos te chamar?"
+                autocomplete="name"
+              />
+            </div>
+            @if (nomeControl.invalid && (nomeControl.dirty || submitted)) {
+              <p class="field__error" role="alert">
+                @if (nomeControl.errors?.['required']) { Nome é obrigatório. }
+                @else if (nomeControl.errors?.['minlength']) { Nome deve ter pelo menos 3 caracteres. }
+              </p>
+            }
+          </div>
+
+          <!-- E-mail -->
+          <div class="field">
+            <label class="field__label" for="email">E-mail corporativo ou pessoal</label>
+            <div class="field__wrapper"
+                 [class.field__wrapper--error]="emailControl.invalid && (emailControl.dirty || submitted)">
+              <span class="field__icon">✉️</span>
+              <input
+                class="field__input"
+                id="email"
+                type="email"
+                formControlName="email"
+                placeholder="exemplo@serviflow.com"
+                autocomplete="email"
+              />
+            </div>
+            @if (emailControl.invalid && (emailControl.dirty || submitted)) {
+              <p class="field__error" role="alert">
+                @if (emailControl.errors?.['required']) { E-mail é obrigatório. }
+                @else if (emailControl.errors?.['email']) { Informe um e-mail válido. }
+              </p>
+            }
+          </div>
+
+          <!-- WhatsApp -->
+          <div class="field">
+            <label class="field__label" for="whatsapp">WhatsApp</label>
+            <div class="field__wrapper"
+                 [class.field__wrapper--error]="whatsappControl.invalid && (whatsappControl.dirty || submitted)">
+              <span class="field__icon">📱</span>
+              <input
+                class="field__input"
+                id="whatsapp"
+                type="tel"
+                formControlName="whatsapp"
+                placeholder="(00) 00000-0000"
+                autocomplete="tel"
+              />
+            </div>
+            @if (whatsappControl.invalid && (whatsappControl.dirty || submitted)) {
+              <p class="field__error" role="alert">WhatsApp é obrigatório.</p>
+            }
+          </div>
+
+          <!-- Senha -->
+          <div class="field">
+            <label class="field__label" for="senha">Senha de acesso</label>
+            <div class="field__wrapper"
+                 [class.field__wrapper--error]="senhaControl.invalid && (senhaControl.dirty || submitted)">
+              <span class="field__icon">🔒</span>
+              <input
+                class="field__input"
+                id="senha"
+                [type]="senhaVisivel ? 'text' : 'password'"
+                formControlName="senha"
+                placeholder="Mínimo 8 caracteres"
+                autocomplete="new-password"
+              />
+              <button
+                type="button"
+                class="field__eye"
+                (click)="toggleSenha()"
+                [attr.aria-label]="senhaVisivel ? 'Ocultar senha' : 'Mostrar senha'">
+                {{ senhaVisivel ? '🙈' : '👁️' }}
+              </button>
+            </div>
+            @if (senhaControl.invalid && (senhaControl.dirty || submitted)) {
+              <p class="field__error" role="alert">
+                @if (senhaControl.errors?.['required']) { Senha é obrigatória. }
+                @else if (senhaControl.errors?.['minlength']) { Senha deve ter pelo menos 8 caracteres. }
+              </p>
+            }
+          </div>
+
+          <!-- Termos -->
+          <div class="terms-row">
+            <input
+              type="checkbox"
+              id="aceiteTermos"
+              class="terms-row__checkbox"
+              formControlName="aceiteTermos"
+            />
+            <label for="aceiteTermos" class="terms-row__text">
+              Ao me cadastrar, eu concordo com os
+              <span class="accent">Termos de Uso</span>
+              e a
+              <span class="accent">Política de Privacidade</span>
+              do ServiFlow.
+            </label>
+          </div>
+
+          <!-- CTA -->
+          <button type="submit" class="btn-primary" [disabled]="form.invalid">
+            Cadastrar agora
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+                 width="18" height="18" fill="currentColor" aria-hidden="true">
+              <path d="M8.59 16.59 13.17 12 8.59 7.41 10 6l6 6-6 6z"/>
+            </svg>
+          </button>
+
+        </form>
+
+        <!-- Divider -->
+        <div class="divider" aria-hidden="true">
+          <span class="divider__line"></span>
+          <span class="divider__text">Ou entre com</span>
+          <span class="divider__line"></span>
+        </div>
+
+        <!-- Social buttons -->
+        <div class="social-buttons">
+          <button type="button" class="btn-social" aria-label="Entrar com Google">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+                 width="18" height="18" aria-hidden="true">
+              <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26
+                1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+              <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23
+                1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+              <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43
+                8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+              <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12
+                1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+            </svg>
+            Google
+          </button>
+
+          <button type="button" class="btn-social" aria-label="Entrar com Apple">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+                 width="18" height="18" fill="currentColor" aria-hidden="true">
+              <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53
+                0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52
+                2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26
+                3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42
+                1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04
+                3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/>
+            </svg>
+            Apple
+          </button>
+
+          <button type="button" class="btn-social" aria-label="Entrar com Microsoft">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+                 width="18" height="18" aria-hidden="true">
+              <path fill="#F25022" d="M1 1h10v10H1z"/>
+              <path fill="#00A4EF" d="M13 1h10v10H13z"/>
+              <path fill="#7FBA00" d="M1 13h10v10H1z"/>
+              <path fill="#FFB900" d="M13 13h10v10H13z"/>
+            </svg>
+            Microsoft
+          </button>
+        </div>
+
+        <!-- Sign-in link -->
+        <p class="signin-link">
+          Já possui uma conta?
+          <a [routerLink]="['/login']" class="signin-link__accent">Faça login</a>
+        </p>
+
+      </div>
+    </main>
+
+  </div>
+
+  <!-- Page footer -->
+  <footer class="page-footer">
+    <nav aria-label="Links legais">
+      <a href="#">Privacidade</a>
+      <span aria-hidden="true">·</span>
+      <a href="#">Termos</a>
+      <span aria-hidden="true">·</span>
+      <a href="#">Suporte</a>
+    </nav>
+  </footer>
+</div>
