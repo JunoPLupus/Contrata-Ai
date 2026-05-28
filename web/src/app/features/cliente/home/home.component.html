@@ -1,0 +1,215 @@
+<div class="home-page">
+
+  <!-- ── COLUNA PRINCIPAL ─────────────────────────────────────────────────── -->
+  <section class="home-main">
+
+    <!-- Cabeçalho da seção -->
+    <div class="page-header">
+      <div class="page-header__text">
+        <span class="page-eyebrow">MINHA CENTRAL</span>
+        <h1 class="page-title">
+          Gerencie seus <span class="title-accent">pedidos</span> e
+          <span class="title-accent">conexões em tempo real</span>.
+        </h1>
+      </div>
+
+      <!-- Toggle Meus Pedidos / Histórico -->
+      <div class="toggle-pill" role="group" aria-label="Visualização">
+        <button
+          class="toggle-pill__btn"
+          [class.toggle-pill__btn--active]="abaTopo === 'meus-pedidos'"
+          (click)="selecionarAbaTopo('meus-pedidos')"
+        >Meus Pedidos</button>
+        <button
+          class="toggle-pill__btn"
+          [class.toggle-pill__btn--active]="abaTopo === 'historico'"
+          (click)="selecionarAbaTopo('historico')"
+        >Histórico</button>
+      </div>
+    </div>
+
+    <!-- Tabs de status com contadores -->
+    <div class="status-tabs" role="tablist" aria-label="Filtrar por status">
+      <button
+        role="tab"
+        class="status-tab"
+        [class.status-tab--active]="abaStatus === 'aberto'"
+        [attr.aria-selected]="abaStatus === 'aberto'"
+        (click)="selecionarAbaStatus('aberto')"
+      >
+        <span class="status-tab__dot status-tab__dot--aberto"></span>
+        Em aberto
+        <span class="status-tab__count">{{ contadores.aberto }}</span>
+      </button>
+
+      <button
+        role="tab"
+        class="status-tab"
+        [class.status-tab--active]="abaStatus === 'andamento'"
+        [attr.aria-selected]="abaStatus === 'andamento'"
+        (click)="selecionarAbaStatus('andamento')"
+      >
+        <span class="status-tab__dot status-tab__dot--andamento"></span>
+        Em andamento
+        <span class="status-tab__count">{{ contadores.andamento }}</span>
+      </button>
+
+      <button
+        role="tab"
+        class="status-tab"
+        [class.status-tab--active]="abaStatus === 'concluido'"
+        [attr.aria-selected]="abaStatus === 'concluido'"
+        (click)="selecionarAbaStatus('concluido')"
+      >
+        <span class="status-tab__dot status-tab__dot--concluido"></span>
+        Concluídos
+        <span class="status-tab__count">{{ contadores.concluido }}</span>
+      </button>
+    </div>
+
+    <!-- Lista de pedidos -->
+    @if (!vazio) {
+      <ul class="pedidos-list" role="list">
+        @for (pedido of pedidosFiltrados; track pedido.id) {
+          <li class="pedido-card">
+
+            <!-- Thumbnail circular -->
+            <div class="card-thumb" [class]="'card-thumb--' + pedido.status" aria-hidden="true">
+              {{ pedido.categoria.charAt(0) }}
+            </div>
+
+            <!-- Conteúdo central -->
+            <div class="card-body">
+              <span class="card-badge">{{ pedido.categoria }} · {{ pedido.codigo }}</span>
+              <h3 class="card-title">{{ pedido.titulo }}</h3>
+
+              <!-- Linha 3: varia por status -->
+              @if (pedido.status === 'aberto') {
+                <div class="card-meta">
+                  @if (pedido.descricao) {
+                    <p class="card-desc">{{ pedido.descricao }}</p>
+                  }
+                  <p class="card-info">
+                    <strong class="card-info__count">{{ pedido.qtdOrcamentos }} Orçamentos</strong>
+                    <span class="card-info__label"> / Aguardando sua escolha</span>
+                  </p>
+                </div>
+              }
+
+              @if (pedido.status === 'andamento') {
+                <div class="card-meta">
+                  <p class="card-info">
+                    <span>Prestador: <strong>{{ pedido.prestador?.nome }}</strong></span>
+                  </p>
+                  <p class="card-info">
+                    <span class="status-inline status-inline--andamento">Em Andamento</span>
+                    <span class="card-info__label"> · Iniciado em {{ pedido.dataInicio | date:'dd/MM/yyyy' }}</span>
+                  </p>
+                </div>
+              }
+
+              @if (pedido.status === 'avaliado' || pedido.status === 'concluido') {
+                <div class="card-meta">
+                  <p class="card-info">
+                    <span>Concluído em {{ pedido.dataConclusao | date:'dd/MM/yyyy' }}</span>
+                  </p>
+                  @if (pedido.nota) {
+                    <div class="star-rating">
+                      @for (star of getStars(pedido.nota); track star) {
+                        <span class="star" [class.star--filled]="star <= pedido.nota!">★</span>
+                      }
+                      <span class="star-value">{{ pedido.nota }}</span>
+                      <span class="badge-avaliado">AVALIADO</span>
+                    </div>
+                  }
+                </div>
+              }
+            </div>
+
+            <!-- Ações: variam por status -->
+            <div class="card-actions">
+              @if (pedido.status === 'aberto') {
+                <button class="btn-outline-accent">👁 Ver Orçamentos</button>
+                <button class="btn-ghost">📝 Editar Detalhes</button>
+                <button class="btn-icon-delete" aria-label="Excluir pedido">🗑️</button>
+              }
+
+              @if (pedido.status === 'andamento') {
+                <button class="btn-green">💬 Ver WhatsApp</button>
+                <button class="btn-outline">📄 Ver Contrato</button>
+                <button class="btn-ghost">Suporte</button>
+              }
+
+              @if (pedido.status === 'avaliado' || pedido.status === 'concluido') {
+                <button class="btn-primary-action">⭐ Avaliar Novamente</button>
+                <button class="btn-ghost">Repetir Pedido</button>
+              }
+            </div>
+
+          </li>
+        }
+      </ul>
+    }
+
+    <!-- Estado vazio -->
+    @if (vazio) {
+      <div class="empty-state">
+        <span class="empty-state__icon" aria-hidden="true">📋</span>
+        <h3 class="empty-state__title">Nenhum pedido por aqui ainda</h3>
+        <p class="empty-state__subtitle">Que tal solicitar seu primeiro orçamento?</p>
+        <button class="btn-solicitar" (click)="novoOrcamento()">
+          ➕ Solicitar novo orçamento
+        </button>
+      </div>
+    }
+
+  </section>
+
+  <!-- ── SIDEBAR ──────────────────────────────────────────────────────────── -->
+  <aside class="home-sidebar">
+
+    <!-- Card Dica ServiFlow -->
+    <div class="sidebar-card sidebar-card--dica">
+      <h3 class="sidebar-card__title">Dica ServiFlow</h3>
+      <p class="sidebar-card__text">
+        Pedidos com fotos detalhadas recebem orçamentos 40% mais rápidos.
+        Adicione fotos aos seus pedidos em aberto.
+      </p>
+      <button class="btn-primary-action sidebar-card__btn">Otimizar Pedidos</button>
+    </div>
+
+    <!-- Card Conversas Recentes -->
+    <div class="sidebar-card">
+      <h3 class="sidebar-card__title">Conversas Recentes</h3>
+
+      <ul class="chat-list" role="list">
+        <li class="chat-item">
+          <div class="chat-item__avatar" aria-hidden="true">R</div>
+          <div class="chat-item__body">
+            <span class="chat-item__name">Ricardo Volt</span>
+            <span class="chat-item__msg">Chego em 15 min!</span>
+          </div>
+          <span class="chat-item__online" aria-label="Online" title="Online"></span>
+        </li>
+
+        <li class="chat-item">
+          <div class="chat-item__avatar" aria-hidden="true">M</div>
+          <div class="chat-item__body">
+            <span class="chat-item__name">Maria Silva Pinturas</span>
+            <span class="chat-item__msg">Obrigada pela avaliação</span>
+          </div>
+          <span class="chat-item__online" aria-label="Online" title="Online"></span>
+        </li>
+      </ul>
+
+      <a href="#" class="sidebar-card__link">Ver todas as mensagens</a>
+    </div>
+
+  </aside>
+
+</div>
+
+<!-- Botão Flutuante -->
+<button class="fab" (click)="novoOrcamento()" aria-label="Solicitar novo orçamento">
+  <span aria-hidden="true">+</span>
+</button>

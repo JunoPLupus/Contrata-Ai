@@ -1,0 +1,40 @@
+<header class="app-header">
+
+  <!-- Logo -->
+  <a class="header-logo" [routerLink]="['/cliente/home']" aria-label="ContrataAí - Início">
+    <span class="header-logo__icon" aria-hidden="true">⚡</span>
+    <span class="header-logo__text">ContrataAí</span>
+  </a>
+
+  <!-- Navigation tabs -->
+  <nav class="header-nav" aria-label="Navegação principal">
+    <a
+      class="header-nav__tab"
+      [routerLink]="['/cliente/home']"
+      routerLinkActive="active"
+      [routerLinkActiveOptions]="{ exact: false }"
+    >Explorar</a>
+    <a
+      class="header-nav__tab"
+      [routerLink]="['/cliente/favoritos']"
+      routerLinkActive="active"
+    >Favoritos</a>
+  </nav>
+
+  <!-- Right actions -->
+  <div class="header-actions">
+    <button class="header-actions__icon-btn" aria-label="Notificações">
+      <span aria-hidden="true">🔔</span>
+    </button>
+    <button class="header-actions__icon-btn" aria-label="Mensagens">
+      <span aria-hidden="true">💬</span>
+    </button>
+    <div class="header-actions__user">
+      <button class="header-actions__avatar-btn" aria-label="Perfil do usuário">
+        <span aria-hidden="true">👤</span>
+      </button>
+      <span class="header-actions__name">{{ nomeUsuario }}</span>
+    </div>
+  </div>
+
+</header>
