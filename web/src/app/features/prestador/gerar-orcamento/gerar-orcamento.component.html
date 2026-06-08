@@ -1,0 +1,231 @@
+<div class="orcamento-page">
+
+  <!-- ── Cabeçalho da página ── -->
+  <header class="page-header">
+    <div class="page-header__breadcrumb">
+      <span class="page-header__crumb">Pedidos</span>
+      <span class="page-header__sep" aria-hidden="true">/</span>
+      <span class="page-header__crumb page-header__crumb--active">Gerar Orçamento</span>
+    </div>
+    <h1 class="page-header__title">Gerar Orçamento</h1>
+    <p class="page-header__subtitle">Responda à solicitação do cliente com uma proposta detalhada.</p>
+  </header>
+
+  <!-- ── Layout 2 colunas ── -->
+  <div class="orcamento-grid">
+
+    <!-- ═══════════════════════════════════════════════════════════════
+         COLUNA ESQUERDA — Solicitação do Cliente (somente leitura)
+    ════════════════════════════════════════════════════════════════ -->
+    <section class="card solicitacao-card" aria-label="Solicitação do cliente">
+
+      <div class="card__header">
+        <span class="card__tag card__tag--info">Solicitação #001</span>
+        <h2 class="card__title">Solicitação do Cliente</h2>
+      </div>
+
+      <!-- Título do serviço -->
+      <p class="solicitacao__titulo">{{ solicitacaoMock.titulo }}</p>
+
+      <!-- Tags -->
+      <div class="solicitacao__tags" aria-label="Características">
+        @for (tag of solicitacaoMock.tags; track tag) {
+          <span class="tag">{{ tag }}</span>
+        }
+      </div>
+
+      <!-- Separador -->
+      <hr class="divider" />
+
+      <!-- Descrição -->
+      <div class="solicitacao__section">
+        <p class="solicitacao__section-label">
+          <span aria-hidden="true">📄</span> Descrição
+        </p>
+        <p class="solicitacao__section-value solicitacao__section-value--desc">
+          {{ solicitacaoMock.descricao }}
+        </p>
+      </div>
+
+      <!-- Localização -->
+      <div class="solicitacao__section">
+        <p class="solicitacao__section-label">
+          <span aria-hidden="true">📍</span> Localização
+        </p>
+        <p class="solicitacao__section-value">{{ solicitacaoMock.localizacao }}</p>
+      </div>
+
+      <!-- Período -->
+      <div class="solicitacao__section">
+        <p class="solicitacao__section-label">
+          <span aria-hidden="true">🕐</span> Preferência de período
+        </p>
+        <p class="solicitacao__section-value">{{ solicitacaoMock.periodo }}</p>
+      </div>
+
+      <hr class="divider" />
+
+      <!-- Fotos -->
+      <div class="solicitacao__section">
+        <p class="solicitacao__section-label">
+          <span aria-hidden="true">📷</span> Fotos do local
+        </p>
+        <div class="fotos-grid" aria-label="Miniaturas de fotos">
+          @for (foto of solicitacaoMock.fotos; track foto) {
+            <div class="foto-thumb" aria-label="Foto do local">
+              <span aria-hidden="true">🖼️</span>
+            </div>
+          }
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════════════
+         COLUNA DIREITA — Formulário de Orçamento
+    ════════════════════════════════════════════════════════════════ -->
+    <section class="card form-card" aria-label="Formulário de orçamento">
+
+      <div class="card__header">
+        <h2 class="card__title">Gerar Orçamento</h2>
+        <p class="card__subtitle">Configure os detalhes financeiros e técnicos para o cliente</p>
+      </div>
+
+      <form [formGroup]="form" (ngSubmit)="onEnviar()" novalidate>
+
+        <!-- VALOR TOTAL ESTIMADO -->
+        <div class="field">
+          <label class="field__label" for="valor">
+            Valor Total Estimado
+            <span class="field__required" aria-hidden="true">*</span>
+          </label>
+          <div class="field__wrapper"
+               [class.field__wrapper--error]="valorControl.invalid && (valorControl.dirty || submitted)">
+            <span class="field__prefix">R$</span>
+            <input
+              class="field__input"
+              id="valor"
+              type="number"
+              min="0.01"
+              step="0.01"
+              formControlName="valor"
+              placeholder="0,00"
+              aria-describedby="valor-error"
+            />
+          </div>
+          @if (valorControl.invalid && (valorControl.dirty || submitted)) {
+            <p class="field__error" id="valor-error" role="alert">
+              @if (valorControl.errors?.['required']) { Valor é obrigatório. }
+              @else if (valorControl.errors?.['min']) { O valor deve ser maior que zero. }
+            </p>
+          }
+        </div>
+
+        <!-- PRAZO DE EXECUÇÃO -->
+        <div class="field">
+          <label class="field__label" for="prazo_dias">
+            Prazo de Execução
+            <span class="field__hint">(deixe em branco para usar 15 dias)</span>
+          </label>
+          <div class="field__wrapper"
+               [class.field__wrapper--error]="prazoDiasControl.invalid && (prazoDiasControl.dirty || submitted)">
+            <span class="field__icon" aria-hidden="true">🗓️</span>
+            <input
+              class="field__input"
+              id="prazo_dias"
+              type="number"
+              min="1"
+              step="1"
+              formControlName="prazo_dias"
+              placeholder="Ex.: 2"
+              aria-describedby="prazo-error"
+            />
+            <span class="field__suffix">dias úteis</span>
+          </div>
+          @if (prazoDiasControl.invalid && (prazoDiasControl.dirty || submitted)) {
+            <p class="field__error" id="prazo-error" role="alert">
+              Informe um prazo válido.
+            </p>
+          }
+        </div>
+
+        <!-- DATA PREVISTA PARA INÍCIO — UI apenas -->
+        <div class="field">
+          <p class="field__label" id="inicio-label">
+            Data Prevista para Início
+          </p>
+          <div class="chips-row" role="group" aria-labelledby="inicio-label">
+            <button
+              type="button"
+              class="chip"
+              [class.chip--active]="chipSelecionado === 'amanha'"
+              (click)="selecionarChip('amanha')"
+              aria-pressed="{{ chipSelecionado === 'amanha' }}"
+            >
+              <span aria-hidden="true">📅</span> Amanhã
+            </button>
+            <button
+              type="button"
+              class="chip"
+              [class.chip--active]="chipSelecionado === 'dois-dias'"
+              (click)="selecionarChip('dois-dias')"
+              aria-pressed="{{ chipSelecionado === 'dois-dias' }}"
+            >
+              <span aria-hidden="true">📅</span> Próximos 2 dias
+            </button>
+          </div>
+          <p class="field__hint-text">
+            A data de início faz parte do contrato e será definida após aceite do cliente.
+          </p>
+        </div>
+
+        <!-- OBSERVAÇÕES — UI apenas -->
+        <div class="field">
+          <label class="field__label" for="observacoes">
+            Observações e Detalhes
+            <span class="field__hint">(opcional)</span>
+          </label>
+          <div class="field__wrapper field__wrapper--textarea">
+            <textarea
+              class="field__input field__textarea"
+              id="observacoes"
+              rows="4"
+              placeholder="Descreva condições, materiais incluídos, garantia, etc."
+            ></textarea>
+          </div>
+          <p class="field__hint-text">
+            Este campo não é salvo no orçamento e serve apenas como rascunho de comunicação.
+          </p>
+        </div>
+
+        <!-- Selo de segurança -->
+        <div class="security-seal" aria-label="Pagamento seguro">
+          <span class="security-seal__icon" aria-hidden="true">🔒</span>
+          <p class="security-seal__text">
+            Seu pagamento será processado de forma segura pelo <strong>ServiFlow</strong>
+          </p>
+        </div>
+
+        <!-- Botões -->
+        <div class="form-actions">
+          <button type="button" class="btn-secondary" aria-label="Salvar rascunho (em breve)">
+            Salvar Rascunho
+          </button>
+          <button
+            type="submit"
+            class="btn-primary"
+            [disabled]="form.invalid"
+            aria-disabled="{{ form.invalid }}"
+          >
+            <span aria-hidden="true">✔️</span>
+            Enviar Orçamento
+          </button>
+        </div>
+
+      </form>
+
+    </section>
+
+  </div>
+
+</div>

@@ -1,0 +1,55 @@
+<div class="prestador-shell">
+
+  <!-- ── Sidebar ── -->
+  <aside class="sidebar" aria-label="Navegação do prestador">
+
+    <!-- Logo -->
+    <div class="sidebar__logo">
+      <svg class="sidebar__logo-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+           width="28" height="28" fill="#f39320" aria-hidden="true">
+        <path d="M7 2v11h3v9l7-12h-4l4-8z"/>
+      </svg>
+      <span class="sidebar__logo-text">ContrataAí</span>
+    </div>
+
+    <!-- Perfil -->
+    <div class="sidebar__profile">
+      <div class="sidebar__avatar" aria-hidden="true">👤</div>
+      <div class="sidebar__profile-info">
+        <span class="sidebar__profile-name">{{ nomePrestador }}</span>
+        <span class="sidebar__profile-role">Modo Prestador</span>
+      </div>
+      <span class="sidebar__badge-disponivel" aria-label="Status: Disponível agora">Disponível agora</span>
+    </div>
+
+    <!-- Menu -->
+    <nav class="sidebar__nav" aria-label="Menu principal">
+      @for (item of menuItems; track item.rota) {
+        <a
+          class="sidebar__nav-item"
+          [routerLink]="item.rota"
+          routerLinkActive="sidebar__nav-item--active"
+          [routerLinkActiveOptions]="{ exact: false }"
+        >
+          <span class="sidebar__nav-icon" aria-hidden="true">{{ item.icon }}</span>
+          <span class="sidebar__nav-label">{{ item.label }}</span>
+        </a>
+      }
+    </nav>
+
+    <!-- Rodapé sidebar -->
+    <div class="sidebar__footer">
+      <a class="sidebar__switch-btn" [routerLink]="['/cliente/home']">
+        <span aria-hidden="true">🔄</span>
+        Mudar para Cliente
+      </a>
+    </div>
+
+  </aside>
+
+  <!-- ── Conteúdo principal ── -->
+  <main class="prestador-content">
+    <router-outlet />
+  </main>
+
+</div>

@@ -22,4 +22,17 @@ export const routes: Routes = [
       },
     ],
   },
+  {
+    path: 'prestador',
+    loadComponent: () =>
+      import('./shared/layouts/prestador/prestador-layout.component').then(m => m.PrestadorLayoutComponent),
+    children: [
+      { path: '', redirectTo: 'gerar-orcamento', pathMatch: 'full' },
+      {
+        path: 'gerar-orcamento',
+        loadComponent: () =>
+          import('./features/prestador/gerar-orcamento/gerar-orcamento.component').then(m => m.GerarOrcamentoComponent),
+      },
+    ],
+  },
 ];
