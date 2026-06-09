@@ -24,10 +24,7 @@ describe('Login UseCase', () => {
 
     beforeEach(()=>{
         jest.clearAllMocks()
-        usuarioRepositoryMock = {
-            buscarPorEmail : jest.fn(),
-            inserir: jest.fn()
-        }
+        usuarioRepositoryMock = UsuarioMother.criarRepositoryMock()
         loginUseCase = new LoginUseCase(usuarioRepositoryMock)
         usuarioMock = UsuarioMother.criarUsuarioValido()
         usuarioDTOMock = { email: usuarioMock.email, senha: usuarioMock.senha }
@@ -73,5 +70,21 @@ describe('Login UseCase', () => {
             )
         expect(bcrypt.compare).toHaveBeenCalledWith(usuarioDTOMock.senha, usuarioMock.senha)
         expect(jwt.sign).not.toHaveBeenCalled()
+    })
+
+    it('deve incluir idPrestador no payload quando o usuario for prestador', async () => {
+        // Arrange
+        const idPrestadorMock = 'id-prestador-mock'
+        const usuarioPrestadorMock = UsuarioMother.criarUsuarioValido({ idPrestador: idPrestadorMock })
+        usuarioRepositoryMock.buscarPorEmail.mockResolvedValue(usuarioPrestadorMock)
+        jest.spyOn(bcrypt, 'compare').mockResolvedValue(true as never)
+        // Act
+        await loginUseCase.execute(usuarioDTOMock)
+        // Assert
+        expect(jwt.sign).toHaveBeenCalledWith(
+            expect.objectContaining({ idPrestador: idPrestadorMock }),
+            expect.anything(),
+            expect.anything()
+        )
     })
 })

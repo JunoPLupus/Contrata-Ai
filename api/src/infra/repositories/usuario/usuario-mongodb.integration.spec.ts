@@ -63,4 +63,15 @@ describe('Usuario Mongodb Repository', () => {
         expect(usuarioInserido.id).not.toBeNull()
         expect(usuarioInserido.id).toBeDefined()
     })
+
+    it('deve vincular um prestador ao usuario', async () => {
+        // Arrange
+        const usuarioInserido = await repository.inserir(UsuarioMother.criarUsuarioValido())
+        const idPrestadorMock = new mongoose.Types.ObjectId().toString()
+        // Act
+        await repository.vincularPrestador(usuarioInserido.id!, idPrestadorMock)
+        // Assert
+        const usuarioAtualizado = await repository.buscarPorEmail(usuarioInserido.email)
+        expect(usuarioAtualizado?.idPrestador).toBe(idPrestadorMock)
+    })
 })

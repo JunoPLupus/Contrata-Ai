@@ -27,7 +27,7 @@ export const authController = new AuthController(loginUseCase)
 
 //#region prestador.routes.ts
 const prestadorRepository = new PrestadorMongodbRepositoryImpl()
-const cadastrarPrestadorUseCase = new CadastrarPrestadorUseCase(prestadorRepository)
+const cadastrarPrestadorUseCase = new CadastrarPrestadorUseCase(prestadorRepository, usuarioRepository)
 export const prestadorController = new PrestadorController(cadastrarPrestadorUseCase)
 //#endregion
 

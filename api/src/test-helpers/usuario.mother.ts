@@ -1,14 +1,15 @@
 import { Usuario } from "../domain/entities/usuario/usuario.entity";
 import { UsuarioCadastroDTO } from "../domain/dto/usuario/usuario-cadastro.dto";
 import { UsuarioFactory } from "../domain/factories/usuario.factory";
+import { IUsuarioRepository } from "../domain/repositories/usuario.repository";
 
 export class UsuarioMother {
-    public static criarUsuarioValido(dto ?: Partial<UsuarioCadastroDTO>) : Usuario {
+    public static criarUsuarioValido(dto ?: Partial<UsuarioCadastroDTO & { idPrestador: string }>) : Usuario {
         return UsuarioFactory.criar({
+            idPrestador : dto?.idPrestador,
             nome : dto?.nome ?? 'Fulano',
             email : dto?.email ?? 'fulano@gmail.com',
             senha : dto?.senha ?? '123456',
-            perfis : dto?.perfis ?? ['cliente', 'prestador'],
             data_cadastro : new Date(),
             ativo : true,
             reputacao_flag_cancelamento: 0
@@ -19,7 +20,13 @@ export class UsuarioMother {
             nome: dto?.nome ?? 'Fulano',
             email: dto?.email ?? 'fulano@gmail.com',
             senha: dto?.senha ?? '123456',
-            perfis: dto?.perfis ?? ['cliente', 'prestador']
+        }
+    }
+    public static criarRepositoryMock(): jest.Mocked<IUsuarioRepository> {
+        return {
+            buscarPorEmail: jest.fn(),
+            inserir: jest.fn(),
+            vincularPrestador: jest.fn()
         }
     }
 }

@@ -21,7 +21,10 @@ export class LoginUseCase {
         if (usuarioEncontrado == null) throw new CredenciaisInvalidasError()
         if (!await bcrypt.compare(usuarioDTO.senha, usuarioEncontrado.senha)) throw new CredenciaisInvalidasError()
 
-        const payload = { idCliente : usuarioEncontrado.id }
+        const payload = {
+            idCliente: usuarioEncontrado.id,
+            ...(usuarioEncontrado.idPrestador && { idPrestador: usuarioEncontrado.idPrestador })
+        }
 
         return jwt.sign(payload, config.jwtSecret, { expiresIn: '2h' })
     }

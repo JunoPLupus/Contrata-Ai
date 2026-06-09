@@ -1,4 +1,4 @@
-import { Schema, model } from 'mongoose';
+import { Schema, model, Types } from 'mongoose';
 
 export interface IUsuarioDocument {
     nome: string
@@ -6,7 +6,7 @@ export interface IUsuarioDocument {
     senha: string
     telefone?: string
     whatsapp?: string
-    perfis: Array<'cliente' | 'prestador'>
+    id_prestador?: Types.ObjectId
     localizacao_cidade?: string
     localizacao_cep?: string
     reputacao_flag_cancelamento: number
@@ -20,7 +20,7 @@ const usuarioSchema = new Schema<IUsuarioDocument>({
     senha: { type: String, required: true },
     telefone: String,
     whatsapp: String,
-    perfis: [{ type: String, enum: ['cliente', 'prestador'] }],
+    id_prestador: { type: Types.ObjectId, ref: 'Prestador' },
     localizacao_cidade: String,
     localizacao_cep: String,
     reputacao_flag_cancelamento: { type: Number, default: 0 },
