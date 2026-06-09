@@ -13,4 +13,12 @@ export abstract class IUsuarioRepository {
      * @returns O usuário inserido com o `id` preenchido pelo banco.
      */
     abstract inserir(usuario : Usuario) : Promise< Usuario >;
+
+    /**
+     * Vincula um prestador ao usuário, persistindo o `idPrestador` no documento do usuário.
+     * Deve ser chamado após o cadastro do prestador.
+     * @param idCliente - `id` do usuário a ser atualizado.
+     * @param idPrestador - `id` do prestador a ser vinculado.
+     */
+    abstract vincularPrestador(idCliente : string, idPrestador : string) : Promise<void>;
 }

@@ -1,28 +1,37 @@
 import { CadastrarPrestadorUseCase } from "./cadastrar-prestador.use-case";
 import { IPrestadorRepository } from "../../../repositories/prestador.repository";
+import { IUsuarioRepository } from "../../../repositories/usuario.repository";
 import { Prestador } from "../../../entities/prestador/prestador.entity";
 import { PrestadorMother } from "../../../../test-helpers/prestador.mother";
 
 describe('CadastrarPrestadorUseCase', () => {
     let cadastrarPrestadorUseCase : CadastrarPrestadorUseCase
     let prestadorRepositoryMock: jest.Mocked<IPrestadorRepository>
+    let usuarioRepositoryMock: jest.Mocked<IUsuarioRepository>
 
     beforeEach(() => {
         prestadorRepositoryMock = {
             inserir : jest.fn()
         }
-        cadastrarPrestadorUseCase = new CadastrarPrestadorUseCase(prestadorRepositoryMock)
+        usuarioRepositoryMock = {
+            buscarPorEmail: jest.fn(),
+            inserir: jest.fn(),
+            vincularPrestador: jest.fn()
+        }
+        cadastrarPrestadorUseCase = new CadastrarPrestadorUseCase(prestadorRepositoryMock, usuarioRepositoryMock)
     })
 
-    it('deve criar um prestador com dados válidos', async () => {
+    it('deve criar um prestador com dados válidos e vincular ao usuário', async () => {
         // Arrange
         const dtoMock = PrestadorMother.criarDTO()
         const prestadorMock : Prestador = PrestadorMother.criarValido(dtoMock)
         prestadorRepositoryMock.inserir.mockResolvedValue(prestadorMock)
+        usuarioRepositoryMock.vincularPrestador.mockResolvedValue()
         // Act
         const prestadorCriado = await cadastrarPrestadorUseCase.execute(dtoMock)
         // Assert
         expect(prestadorRepositoryMock.inserir).toHaveBeenCalled()
+        expect(usuarioRepositoryMock.vincularPrestador).toHaveBeenCalledWith(dtoMock.idCliente, prestadorMock.id)
         expect(prestadorCriado).not.toBeNull()
         expect(prestadorCriado).toBeInstanceOf(Prestador)
         expect(prestadorCriado.idCliente).toEqual(dtoMock.idCliente)

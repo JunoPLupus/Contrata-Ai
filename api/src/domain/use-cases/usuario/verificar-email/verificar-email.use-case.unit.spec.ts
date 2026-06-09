@@ -13,7 +13,8 @@ describe('VerificarEmailUseCase', () => {
     beforeEach(() => {
         usuarioRepositoryMock = {
             buscarPorEmail : jest.fn(),
-            inserir: jest.fn()
+            inserir : jest.fn(),
+            vincularPrestador : jest.fn()
         }
         dtoValidoMock = UsuarioMother.criarDTOValido()
         verificarEmailUseCase = new VerificarEmailUseCase(usuarioRepositoryMock)

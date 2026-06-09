@@ -1,3 +1,5 @@
+import { Types } from "mongoose";
+
 import { IUsuarioRepository } from "../../../domain/repositories/usuario.repository";
 import { Usuario } from "../../../domain/entities/usuario/usuario.entity";
 import { IUsuarioDocument, UsuarioModel } from "../../models/usuario/usuario.model";
@@ -15,5 +17,12 @@ export class UsuarioMongodbRepositoryImpl implements IUsuarioRepository {
         const documentoInserido = await UsuarioModel.create(usuarioDocumento)
 
         return UsuarioMapper.paraEntidade(documentoInserido)
+    }
+
+    public async vincularPrestador(idCliente : string, idPrestador : string) : Promise<void> {
+        await UsuarioModel.updateOne(
+            { _id: idCliente },
+            { $set: { id_prestador: new Types.ObjectId(idPrestador) } }
+        )
     }
 }

@@ -17,7 +17,8 @@ describe('CadastrarUsuarioUseCase', () => {
     beforeEach(() => {
         usuarioRepositoryMock = {
             buscarPorEmail : jest.fn(),
-            inserir: jest.fn()
+            inserir : jest.fn(),
+            vincularPrestador : jest.fn()
         }
         cadastrarUsuarioUseCase = new CadastrarUsuarioUseCase(usuarioRepositoryMock)
     })
