@@ -15,11 +15,7 @@ describe('CadastrarUsuarioUseCase', () => {
     let usuarioRepositoryMock : jest.Mocked<IUsuarioRepository>
 
     beforeEach(() => {
-        usuarioRepositoryMock = {
-            buscarPorEmail : jest.fn(),
-            inserir : jest.fn(),
-            vincularPrestador : jest.fn()
-        }
+        usuarioRepositoryMock = UsuarioMother.criarRepositoryMock()
         cadastrarUsuarioUseCase = new CadastrarUsuarioUseCase(usuarioRepositoryMock)
     })
 

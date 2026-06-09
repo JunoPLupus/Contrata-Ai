@@ -3,6 +3,7 @@ import { IPrestadorRepository } from "../../../repositories/prestador.repository
 import { IUsuarioRepository } from "../../../repositories/usuario.repository";
 import { Prestador } from "../../../entities/prestador/prestador.entity";
 import { PrestadorMother } from "../../../../test-helpers/prestador.mother";
+import {UsuarioMother} from "../../../../test-helpers/usuario.mother";
 
 describe('CadastrarPrestadorUseCase', () => {
     let cadastrarPrestadorUseCase : CadastrarPrestadorUseCase
@@ -13,11 +14,7 @@ describe('CadastrarPrestadorUseCase', () => {
         prestadorRepositoryMock = {
             inserir : jest.fn()
         }
-        usuarioRepositoryMock = {
-            buscarPorEmail: jest.fn(),
-            inserir: jest.fn(),
-            vincularPrestador: jest.fn()
-        }
+        usuarioRepositoryMock = UsuarioMother.criarRepositoryMock()
         cadastrarPrestadorUseCase = new CadastrarPrestadorUseCase(prestadorRepositoryMock, usuarioRepositoryMock)
     })
 

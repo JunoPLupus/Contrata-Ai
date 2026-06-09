@@ -11,11 +11,7 @@ describe('VerificarEmailUseCase', () => {
     let dtoValidoMock : UsuarioCadastroDTO
 
     beforeEach(() => {
-        usuarioRepositoryMock = {
-            buscarPorEmail : jest.fn(),
-            inserir : jest.fn(),
-            vincularPrestador : jest.fn()
-        }
+        usuarioRepositoryMock = UsuarioMother.criarRepositoryMock()
         dtoValidoMock = UsuarioMother.criarDTOValido()
         verificarEmailUseCase = new VerificarEmailUseCase(usuarioRepositoryMock)
     })

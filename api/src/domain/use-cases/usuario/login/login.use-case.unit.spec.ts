@@ -24,11 +24,7 @@ describe('Login UseCase', () => {
 
     beforeEach(()=>{
         jest.clearAllMocks()
-        usuarioRepositoryMock = {
-            buscarPorEmail : jest.fn(),
-            inserir: jest.fn(),
-            vincularPrestador: jest.fn()
-        }
+        usuarioRepositoryMock = UsuarioMother.criarRepositoryMock()
         loginUseCase = new LoginUseCase(usuarioRepositoryMock)
         usuarioMock = UsuarioMother.criarUsuarioValido()
         usuarioDTOMock = { email: usuarioMock.email, senha: usuarioMock.senha }
