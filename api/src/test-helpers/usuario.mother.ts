@@ -10,7 +10,6 @@ export class UsuarioMother {
             nome : dto?.nome ?? 'Fulano',
             email : dto?.email ?? 'fulano@gmail.com',
             senha : dto?.senha ?? '123456',
-            perfis : dto?.perfis ?? ['cliente', 'prestador'],
             data_cadastro : new Date(),
             ativo : true,
             reputacao_flag_cancelamento: 0
@@ -21,7 +20,6 @@ export class UsuarioMother {
             nome: dto?.nome ?? 'Fulano',
             email: dto?.email ?? 'fulano@gmail.com',
             senha: dto?.senha ?? '123456',
-            perfis: dto?.perfis ?? ['cliente', 'prestador']
         }
     }
     public static criarRepositoryMock(): jest.Mocked<IUsuarioRepository> {

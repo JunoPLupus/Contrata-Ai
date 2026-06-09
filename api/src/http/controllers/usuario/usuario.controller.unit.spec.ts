@@ -37,8 +37,7 @@ describe('UsuarioController', () => {
         expect(res.json).toHaveBeenCalledWith({
             id: usuarioMock.id,
             nome: usuarioMock.nome,
-            email: usuarioMock.email,
-            perfis: usuarioMock.perfis
+            email: usuarioMock.email
         })
     })
 
@@ -52,8 +51,7 @@ describe('UsuarioController', () => {
         expect(res.json).toHaveBeenCalledWith({
             id: usuarioMock.id,
             nome: usuarioMock.nome,
-            email: usuarioMock.email,
-            perfis: usuarioMock.perfis
+            email: usuarioMock.email
         })
     })
 

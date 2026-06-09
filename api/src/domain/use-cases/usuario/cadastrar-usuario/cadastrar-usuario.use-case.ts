@@ -17,7 +17,6 @@ export class CadastrarUsuarioUseCase {
             nome: usuarioDTO.nome,
             senha: usuarioDTO.senha,
             email: usuarioDTO.email,
-            perfis: usuarioDTO.perfis,
             data_cadastro: new Date(),
             ativo: true,
             reputacao_flag_cancelamento: 0

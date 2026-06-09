@@ -26,8 +26,7 @@ export class UsuarioController {
         const resposta: UsuarioRespostaCadastroDto = {
             id: usuarioEncontrado.id,
             nome: usuarioEncontrado.nome,
-            email: usuarioEncontrado.email,
-            perfis: usuarioEncontrado.perfis
+            email: usuarioEncontrado.email
         }
         response.status(200).json(resposta)
     }
@@ -44,8 +43,7 @@ export class UsuarioController {
         const usuarioRespostaCadastroDTO : UsuarioRespostaCadastroDto = {
             id: usuarioCadastrado.id,
             nome: usuarioCadastrado.nome,
-            email: usuarioCadastrado.email,
-            perfis: usuarioCadastrado.perfis
+            email: usuarioCadastrado.email
         }
         response.status(201).json(usuarioRespostaCadastroDTO)
     }

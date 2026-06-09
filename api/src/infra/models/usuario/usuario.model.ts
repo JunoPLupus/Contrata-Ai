@@ -6,7 +6,6 @@ export interface IUsuarioDocument {
     senha: string
     telefone?: string
     whatsapp?: string
-    perfis: Array<'cliente' | 'prestador'>
     id_prestador?: Types.ObjectId
     localizacao_cidade?: string
     localizacao_cep?: string
@@ -21,7 +20,6 @@ const usuarioSchema = new Schema<IUsuarioDocument>({
     senha: { type: String, required: true },
     telefone: String,
     whatsapp: String,
-    perfis: [{ type: String, enum: ['cliente', 'prestador'] }],
     id_prestador: { type: Types.ObjectId, ref: 'Prestador' },
     localizacao_cidade: String,
     localizacao_cep: String,

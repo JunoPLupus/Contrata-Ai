@@ -2,7 +2,6 @@ import { UsuarioProps } from "./usuario.props";
 import { NomeValueObject } from "../../value-objects/shared/nome/nome.vo";
 import { SenhaUsuarioValueObject } from "../../value-objects/usuario/senha/senha.vo";
 import { EmailUsuarioValueObject } from "../../value-objects/usuario/email/email.vo";
-import { PerfisUsuarioValueObject } from "../../value-objects/usuario/perfis/perfis.vo";
 import { IdPrestadorValueObject } from "../../value-objects/prestador/idPrestador/id-prestador.vo";
 
 export class Usuario {
@@ -44,13 +43,6 @@ export class Usuario {
     }
     set email(email : string) {
         this.props.email = new EmailUsuarioValueObject(email)
-    }
-
-    get perfis() : string[] {
-        return this.props.perfis.perfis
-    }
-    set perfis(perfis: string[]) {
-        this.props.perfis = new PerfisUsuarioValueObject(perfis)
     }
 
     get data_cadastro() : Date {
