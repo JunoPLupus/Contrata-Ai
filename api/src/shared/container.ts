@@ -1,6 +1,8 @@
 import { UsuarioController } from "../http/controllers/usuario/usuario.controller";
+import { UsuarioPrestadorController } from "../http/controllers/usuario/usuario-prestador.controller";
 import { VerificarEmailUseCase } from "../domain/use-cases/usuario/verificar-email/verificar-email.use-case";
 import { CadastrarUsuarioUseCase } from "../domain/use-cases/usuario/cadastrar-usuario/cadastrar-usuario.use-case";
+import { CadastrarClientePrestadorUseCase } from "../domain/use-cases/usuario/cadastrar-cliente-prestador/cadastrar-cliente-prestador.use-case";
 import { UsuarioMongodbRepositoryImpl } from "../infra/repositories/usuario/usuario-mongodb.repository.impl";
 import { PrestadorMongodbRepositoryImpl } from "../infra/repositories/prestador/prestador-mongodb.repository.impl";
 import {
@@ -29,6 +31,11 @@ export const authController = new AuthController(loginUseCase)
 const prestadorRepository = new PrestadorMongodbRepositoryImpl()
 const cadastrarPrestadorUseCase = new CadastrarPrestadorUseCase(prestadorRepository, usuarioRepository)
 export const prestadorController = new PrestadorController(cadastrarPrestadorUseCase)
+//#endregion
+
+//#region usuario-prestador.routes.ts
+const criarClientePrestadorUseCase = new CadastrarClientePrestadorUseCase(cadastrarUsuarioUseCase, cadastrarPrestadorUseCase)
+export const usuarioPrestadorController = new UsuarioPrestadorController(criarClientePrestadorUseCase)
 //#endregion
 
 //#region servico.routes.ts
