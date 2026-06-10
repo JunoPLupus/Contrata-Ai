@@ -3,7 +3,7 @@ import { Request, Response } from 'express';
 import { CadastrarClientePrestadorUseCase } from "../../../../domain/use-cases/usuario/shared/cadastrar-cliente-prestador/cadastrar-cliente-prestador.use-case";
 import { UsuarioCadastroDTO } from "../../../../domain/dto/usuario/usuario-cadastro.dto";
 import { Usuario } from "../../../../domain/entities/usuario/usuario.entity";
-import { UsuarioPrestadorRespostaCadastroDTO } from "../../../dto/usuario/usuario-prestador-resposta-cadastro.dto";
+import { ClientePrestadorRespostaCadastroDTO } from "../../../dto/usuario/cliente-prestador-resposta-cadastro-d-t.o";
 
 export class ClientePrestadorController {
     constructor(private readonly criarClientePrestadorUseCase: CadastrarClientePrestadorUseCase) {}
@@ -16,7 +16,7 @@ export class ClientePrestadorController {
     public async cadastrar(request: Request, response: Response): Promise<void> {
         const dto: UsuarioCadastroDTO = request.body as unknown as UsuarioCadastroDTO
         const usuario: Usuario = await this.criarClientePrestadorUseCase.execute(dto)
-        const resposta: UsuarioPrestadorRespostaCadastroDTO = {
+        const resposta: ClientePrestadorRespostaCadastroDTO = {
             id: usuario.id,
             idPrestador: usuario.idPrestador,
             nome: usuario.nome,
