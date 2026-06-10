@@ -1,11 +1,11 @@
 import { Request, Response } from 'express';
 
-import { CadastrarClientePrestadorUseCase } from "../../../domain/use-cases/usuario/shared/cadastrar-cliente-prestador/cadastrar-cliente-prestador.use-case";
-import { UsuarioCadastroDTO } from "../../../domain/dto/usuario/usuario-cadastro.dto";
-import { Usuario } from "../../../domain/entities/usuario/usuario.entity";
-import { UsuarioPrestadorRespostaCadastroDTO } from "../../dto/usuario/usuario-prestador-resposta-cadastro.dto";
+import { CadastrarClientePrestadorUseCase } from "../../../../domain/use-cases/usuario/shared/cadastrar-cliente-prestador/cadastrar-cliente-prestador.use-case";
+import { UsuarioCadastroDTO } from "../../../../domain/dto/usuario/usuario-cadastro.dto";
+import { Usuario } from "../../../../domain/entities/usuario/usuario.entity";
+import { UsuarioPrestadorRespostaCadastroDTO } from "../../../dto/usuario/usuario-prestador-resposta-cadastro.dto";
 
-export class UsuarioPrestadorController {
+export class ClientePrestadorController {
     constructor(private readonly criarClientePrestadorUseCase: CadastrarClientePrestadorUseCase) {}
 
     /**

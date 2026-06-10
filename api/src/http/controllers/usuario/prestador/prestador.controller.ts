@@ -1,6 +1,6 @@
-import { CadastrarPrestadorUseCase } from "../../../domain/use-cases/usuario/prestador/cadastrar-prestador/cadastrar-prestador.use-case";
-import { PrestadorRespostaCadastroDTO } from "../../dto/prestador/prestador-resposta-cadastro.dto";
-import { Prestador } from "../../../domain/entities/prestador/prestador.entity";
+import { CadastrarPrestadorUseCase } from "../../../../domain/use-cases/usuario/prestador/cadastrar-prestador/cadastrar-prestador.use-case";
+import { PrestadorRespostaCadastroDTO } from "../../../dto/usuario/prestador/prestador-resposta-cadastro.dto";
+import { Prestador } from "../../../../domain/entities/prestador/prestador.entity";
 
 import { Request, Response } from 'express';
 

@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 
-import { LoginUseCase } from "../../../domain/use-cases/usuario/shared/login/login.use-case";
-import { UsuarioLoginDTO } from "../../../domain/dto/usuario/usuario-login.dto";
+import { LoginUseCase } from "../../../../../domain/use-cases/usuario/shared/login/login.use-case";
+import { UsuarioLoginDTO } from "../../../../../domain/dto/usuario/usuario-login.dto";
 
 export class AuthController {
     constructor(private readonly loginUseCase : LoginUseCase) {}

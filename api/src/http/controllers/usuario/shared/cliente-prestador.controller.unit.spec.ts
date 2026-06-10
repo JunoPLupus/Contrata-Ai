@@ -1,12 +1,12 @@
 import { Request, Response } from 'express'
 
-import { UsuarioPrestadorController } from "./usuario-prestador.controller";
-import { CadastrarClientePrestadorUseCase } from "../../../domain/use-cases/usuario/shared/cadastrar-cliente-prestador/cadastrar-cliente-prestador.use-case";
-import { Usuario } from "../../../domain/entities/usuario/usuario.entity";
-import { UsuarioMother } from "../../../test-helpers/usuario.mother";
+import { ClientePrestadorController } from "./cliente-prestador.controller";
+import { CadastrarClientePrestadorUseCase } from "../../../../domain/use-cases/usuario/shared/cadastrar-cliente-prestador/cadastrar-cliente-prestador.use-case";
+import { Usuario } from "../../../../domain/entities/usuario/usuario.entity";
+import { UsuarioMother } from "../../../../test-helpers/usuario.mother";
 
-describe('UsuarioPrestador Controller', () => {
-    let controller: UsuarioPrestadorController
+describe('ClientePrestador Controller', () => {
+    let controller: ClientePrestadorController
     let cadastrarClientePrestadorUseCaseMock: jest.Mocked<CadastrarClientePrestadorUseCase>
     let req: Partial<Request>
     let res: Partial<Response>
@@ -14,7 +14,7 @@ describe('UsuarioPrestador Controller', () => {
 
     beforeEach(async () => {
         cadastrarClientePrestadorUseCaseMock = { execute: jest.fn() } as any
-        controller = new UsuarioPrestadorController(cadastrarClientePrestadorUseCaseMock)
+        controller = new ClientePrestadorController(cadastrarClientePrestadorUseCaseMock)
 
         req = { body: UsuarioMother.criarDTOValido() }
         res = {
