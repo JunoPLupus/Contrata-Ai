@@ -1,23 +1,25 @@
 import { UsuarioController } from "../http/controllers/usuario/usuario.controller";
-import { VerificarEmailUseCase } from "../domain/use-cases/usuario/verificar-email/verificar-email.use-case";
-import { CadastrarUsuarioUseCase } from "../domain/use-cases/usuario/cadastrar-usuario/cadastrar-usuario.use-case";
+import { ClientePrestadorController } from "../http/controllers/usuario/shared/cliente-prestador.controller";
+import { VerificarEmailUseCase } from "../domain/use-cases/usuario/shared/verificar-email/verificar-email.use-case";
+import { CadastrarClienteUseCase } from "../domain/use-cases/usuario/cliente/cadastrar-cliente/cadastrar-cliente.use-case";
+import { CadastrarClientePrestadorUseCase } from "../domain/use-cases/usuario/shared/cadastrar-cliente-prestador/cadastrar-cliente-prestador.use-case";
 import { UsuarioMongodbRepositoryImpl } from "../infra/repositories/usuario/usuario-mongodb.repository.impl";
 import { PrestadorMongodbRepositoryImpl } from "../infra/repositories/prestador/prestador-mongodb.repository.impl";
-import {
-    CadastrarPrestadorUseCase
-} from "../domain/use-cases/prestador/cadastrar-prestador/cadastrar-prestador.use-case";
-import { PrestadorController } from "../http/controllers/prestador/prestador.controller";
-import { LoginUseCase } from "../domain/use-cases/usuario/login/login.use-case";
-import { AuthController } from "../http/controllers/auth/auth.controller";
+import { CadastrarPrestadorUseCase } from "../domain/use-cases/usuario/prestador/cadastrar-prestador/cadastrar-prestador.use-case";
+import { PrestadorController } from "../http/controllers/usuario/prestador/prestador.controller";
+import { LoginUseCase } from "../domain/use-cases/usuario/shared/login/login.use-case";
+import { AuthController } from "../http/controllers/usuario/shared/auth/auth.controller";
 import { ServicoMongodbRepositoryImpl } from "../infra/repositories/servico/servico-mongodb.repository.impl";
 import { CadastrarServicoUseCase } from "../domain/use-cases/servico/cadastrar-servico/cadastrar-servico.use-case";
 import { ServicoController } from "../http/controllers/servico/servico.controller";
+import { ClienteController } from "../http/controllers/usuario/cliente/cliente.controller";
 
 //#region usuario.routes.ts
 const usuarioRepository = new UsuarioMongodbRepositoryImpl()
-const cadastrarUsuarioUseCase = new CadastrarUsuarioUseCase(usuarioRepository)
+const cadastrarClienteUseCase = new CadastrarClienteUseCase(usuarioRepository)
 const verificarEmailUseCase = new VerificarEmailUseCase(usuarioRepository)
-export const usuarioController = new UsuarioController(cadastrarUsuarioUseCase, verificarEmailUseCase)
+export const usuarioController = new UsuarioController(verificarEmailUseCase)
+export const clienteController = new ClienteController(cadastrarClienteUseCase)
 //#endregion
 
 //#region auth.routes.ts
@@ -29,6 +31,11 @@ export const authController = new AuthController(loginUseCase)
 const prestadorRepository = new PrestadorMongodbRepositoryImpl()
 const cadastrarPrestadorUseCase = new CadastrarPrestadorUseCase(prestadorRepository, usuarioRepository)
 export const prestadorController = new PrestadorController(cadastrarPrestadorUseCase)
+//#endregion
+
+//#region usuario-prestador.routes.ts
+const cadastrarClientePrestadorUseCase = new CadastrarClientePrestadorUseCase(cadastrarClienteUseCase, cadastrarPrestadorUseCase)
+export const clientePrestadorController = new ClientePrestadorController(cadastrarClientePrestadorUseCase)
 //#endregion
 
 //#region servico.routes.ts
