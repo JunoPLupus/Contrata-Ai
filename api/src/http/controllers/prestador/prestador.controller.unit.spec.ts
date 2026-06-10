@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 
 import { PrestadorController } from "./prestador.controller";
-import { CadastrarPrestadorUseCase } from "../../../domain/use-cases/prestador/cadastrar-prestador/cadastrar-prestador.use-case";
+import { CadastrarPrestadorUseCase } from "../../../domain/use-cases/usuario/prestador/cadastrar-prestador/cadastrar-prestador.use-case";
 import { PrestadorMother } from "../../../test-helpers/prestador.mother";
 
 describe('Prestador Controller', () => {

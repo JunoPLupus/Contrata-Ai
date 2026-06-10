@@ -1,10 +1,10 @@
 import bcrypt from "bcrypt";
 import jwt from 'jsonwebtoken';
 
-import { config } from "../../../../shared/config"
-import { IUsuarioRepository } from "../../../repositories/usuario.repository";
-import { UsuarioLoginDTO } from "../../../dto/usuario/usuario-login.dto";
-import { CredenciaisInvalidasError } from "../../../errors/credenciais-invalidas.error";
+import { config } from "../../../../../shared/config"
+import { IUsuarioRepository } from "../../../../repositories/usuario.repository";
+import { UsuarioLoginDTO } from "../../../../dto/usuario/usuario-login.dto";
+import { CredenciaisInvalidasError } from "../../../../errors/credenciais-invalidas.error";
 
 export class LoginUseCase {
     constructor(private readonly usuarioRepository : IUsuarioRepository) {}

@@ -1,17 +1,17 @@
 import { CadastrarClientePrestadorUseCase } from "./cadastrar-cliente-prestador.use-case";
-import { CadastrarUsuarioUseCase } from "../cadastrar-usuario/cadastrar-usuario.use-case";
+import { CadastrarClienteUseCase } from "../../cliente/cadastrar-cliente/cadastrar-cliente.use-case";
 import { CadastrarPrestadorUseCase } from "../../prestador/cadastrar-prestador/cadastrar-prestador.use-case";
-import { Usuario } from "../../../entities/usuario/usuario.entity";
-import { UsuarioMother } from "../../../../test-helpers/usuario.mother";
-import { PrestadorMother } from "../../../../test-helpers/prestador.mother";
+import { Usuario } from "../../../../entities/usuario/usuario.entity";
+import { UsuarioMother } from "../../../../../test-helpers/usuario.mother";
+import { PrestadorMother } from "../../../../../test-helpers/prestador.mother";
 
 describe('CadastrarClientePrestadorUseCase', () => {
     let criarClientePrestadorUseCase: CadastrarClientePrestadorUseCase
-    let cadastrarUsuarioUseCaseMock: jest.Mocked<CadastrarUsuarioUseCase>
+    let cadastrarUsuarioUseCaseMock: jest.Mocked<CadastrarClienteUseCase>
     let cadastrarPrestadorUseCaseMock: jest.Mocked<CadastrarPrestadorUseCase>
 
     beforeEach(() => {
-        cadastrarUsuarioUseCaseMock = { execute: jest.fn() } as unknown as jest.Mocked<CadastrarUsuarioUseCase>
+        cadastrarUsuarioUseCaseMock = { execute: jest.fn() } as unknown as jest.Mocked<CadastrarClienteUseCase>
         cadastrarPrestadorUseCaseMock = { execute: jest.fn() } as unknown as jest.Mocked<CadastrarPrestadorUseCase>
         criarClientePrestadorUseCase = new CadastrarClientePrestadorUseCase(
             cadastrarUsuarioUseCaseMock,

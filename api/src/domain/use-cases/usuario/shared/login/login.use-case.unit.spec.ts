@@ -2,10 +2,10 @@ import bcrypt from "bcrypt";
 import jwt from 'jsonwebtoken';
 
 import { LoginUseCase } from "./login.use-case";
-import { IUsuarioRepository } from "../../../repositories/usuario.repository";
-import { UsuarioMother } from "../../../../test-helpers/usuario.mother";
-import { Usuario } from "../../../entities/usuario/usuario.entity";
-import { UsuarioLoginDTO } from "../../../dto/usuario/usuario-login.dto";
+import { IUsuarioRepository } from "../../../../repositories/usuario.repository";
+import { UsuarioMother } from "../../../../../test-helpers/usuario.mother";
+import { Usuario } from "../../../../entities/usuario/usuario.entity";
+import { UsuarioLoginDTO } from "../../../../dto/usuario/usuario-login.dto";
 
 jest.mock('bcrypt', () => ({
     hash: jest.fn().mockResolvedValue('senha_hash_mockada'),

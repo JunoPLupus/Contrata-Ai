@@ -1,5 +1,5 @@
-import { IUsuarioRepository } from "../../../repositories/usuario.repository";
-import { Usuario } from "../../../entities/usuario/usuario.entity";
+import { IUsuarioRepository } from "../../../../repositories/usuario.repository";
+import { Usuario } from "../../../../entities/usuario/usuario.entity";
 
 export class VerificarEmailUseCase {
     constructor(private readonly usuarioRepository: IUsuarioRepository) {

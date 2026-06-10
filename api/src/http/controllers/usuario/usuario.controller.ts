@@ -1,5 +1,5 @@
-import { CadastrarUsuarioUseCase } from "../../../domain/use-cases/usuario/cadastrar-usuario/cadastrar-usuario.use-case";
-import { VerificarEmailUseCase } from "../../../domain/use-cases/usuario/verificar-email/verificar-email.use-case";
+import { CadastrarClienteUseCase } from "../../../domain/use-cases/usuario/cliente/cadastrar-cliente/cadastrar-cliente.use-case";
+import { VerificarEmailUseCase } from "../../../domain/use-cases/usuario/shared/verificar-email/verificar-email.use-case";
 import { UsuarioCadastroDTO } from "../../../domain/dto/usuario/usuario-cadastro.dto";
 import { Usuario } from "../../../domain/entities/usuario/usuario.entity";
 import { UsuarioRespostaCadastroDto } from "../../dto/usuario/usuario-resposta-cadastro.dto";
@@ -7,7 +7,7 @@ import { UsuarioRespostaCadastroDto } from "../../dto/usuario/usuario-resposta-c
 import { Request, Response } from 'express';
 
 export class UsuarioController {
-    constructor(private readonly cadastrarUsuarioUseCase: CadastrarUsuarioUseCase,
+    constructor(private readonly cadastrarUsuarioUseCase: CadastrarClienteUseCase,
                 private readonly verificarEmailUseCase: VerificarEmailUseCase) {}
 
     /**

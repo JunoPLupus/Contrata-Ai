@@ -1,7 +1,7 @@
 import { Request, Response } from 'express'
 
 import { UsuarioPrestadorController } from "./usuario-prestador.controller";
-import { CadastrarClientePrestadorUseCase } from "../../../domain/use-cases/usuario/cadastrar-cliente-prestador/cadastrar-cliente-prestador.use-case";
+import { CadastrarClientePrestadorUseCase } from "../../../domain/use-cases/usuario/shared/cadastrar-cliente-prestador/cadastrar-cliente-prestador.use-case";
 import { Usuario } from "../../../domain/entities/usuario/usuario.entity";
 import { UsuarioMother } from "../../../test-helpers/usuario.mother";
 

@@ -1,11 +1,11 @@
-import { CadastrarUsuarioUseCase } from "../cadastrar-usuario/cadastrar-usuario.use-case";
+import { CadastrarClienteUseCase } from "../../cliente/cadastrar-cliente/cadastrar-cliente.use-case";
 import { CadastrarPrestadorUseCase } from "../../prestador/cadastrar-prestador/cadastrar-prestador.use-case";
-import { UsuarioCadastroDTO } from "../../../dto/usuario/usuario-cadastro.dto";
-import { Usuario } from "../../../entities/usuario/usuario.entity";
+import { UsuarioCadastroDTO } from "../../../../dto/usuario/usuario-cadastro.dto";
+import { Usuario } from "../../../../entities/usuario/usuario.entity";
 
 export class CadastrarClientePrestadorUseCase {
     constructor(
-        private readonly cadastrarUsuarioUseCase: CadastrarUsuarioUseCase,
+        private readonly cadastrarUsuarioUseCase: CadastrarClienteUseCase,
         private readonly cadastrarPrestadorUseCase: CadastrarPrestadorUseCase
     ) {}
 

@@ -1,9 +1,9 @@
 import { CadastrarPrestadorUseCase } from "./cadastrar-prestador.use-case";
-import { IPrestadorRepository } from "../../../repositories/prestador.repository";
-import { IUsuarioRepository } from "../../../repositories/usuario.repository";
-import { Prestador } from "../../../entities/prestador/prestador.entity";
-import { PrestadorMother } from "../../../../test-helpers/prestador.mother";
-import {UsuarioMother} from "../../../../test-helpers/usuario.mother";
+import { IPrestadorRepository } from "../../../../repositories/prestador.repository";
+import { IUsuarioRepository } from "../../../../repositories/usuario.repository";
+import { Prestador } from "../../../../entities/prestador/prestador.entity";
+import { PrestadorMother } from "../../../../../test-helpers/prestador.mother";
+import {UsuarioMother} from "../../../../../test-helpers/usuario.mother";
 
 describe('CadastrarPrestadorUseCase', () => {
     let cadastrarPrestadorUseCase : CadastrarPrestadorUseCase

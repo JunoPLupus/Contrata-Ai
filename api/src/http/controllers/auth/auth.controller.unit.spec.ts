@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 
 import { AuthController } from "./auth.controller";
-import { LoginUseCase } from "../../../domain/use-cases/usuario/login/login.use-case";
+import { LoginUseCase } from "../../../domain/use-cases/usuario/shared/login/login.use-case";
 import { UsuarioMother } from "../../../test-helpers/usuario.mother";
 import { UsuarioLoginDTO } from "../../../domain/dto/usuario/usuario-login.dto";
 

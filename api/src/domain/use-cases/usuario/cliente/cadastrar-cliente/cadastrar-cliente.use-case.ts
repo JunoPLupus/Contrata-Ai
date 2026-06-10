@@ -1,12 +1,12 @@
 import bcrypt from 'bcrypt';
 
-import { config } from "../../../../shared/config"
-import { IUsuarioRepository } from "../../../repositories/usuario.repository";
-import { UsuarioCadastroDTO } from "../../../dto/usuario/usuario-cadastro.dto";
-import { Usuario } from "../../../entities/usuario/usuario.entity";
-import { UsuarioFactory } from "../../../factories/usuario.factory";
+import { config } from "../../../../../shared/config"
+import { IUsuarioRepository } from "../../../../repositories/usuario.repository";
+import { UsuarioCadastroDTO } from "../../../../dto/usuario/usuario-cadastro.dto";
+import { Usuario } from "../../../../entities/usuario/usuario.entity";
+import { UsuarioFactory } from "../../../../factories/usuario.factory";
 
-export class CadastrarUsuarioUseCase {
+export class CadastrarClienteUseCase {
 
     constructor(private readonly usuarioRepository: IUsuarioRepository) {
 

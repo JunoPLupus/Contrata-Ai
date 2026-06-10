@@ -1,14 +1,14 @@
 import { Request, Response } from 'express'
 
 import { UsuarioController } from "./usuario.controller";
-import { CadastrarUsuarioUseCase } from "../../../domain/use-cases/usuario/cadastrar-usuario/cadastrar-usuario.use-case";
-import { VerificarEmailUseCase } from "../../../domain/use-cases/usuario/verificar-email/verificar-email.use-case";
+import { CadastrarClienteUseCase } from "../../../domain/use-cases/usuario/cliente/cadastrar-cliente/cadastrar-cliente.use-case";
+import { VerificarEmailUseCase } from "../../../domain/use-cases/usuario/shared/verificar-email/verificar-email.use-case";
 import { Usuario } from "../../../domain/entities/usuario/usuario.entity";
 import { UsuarioMother } from "../../../test-helpers/usuario.mother";
 
 describe('UsuarioController', () => {
     let controller: UsuarioController
-    let cadastrarUsuarioUseCaseMock: jest.Mocked<CadastrarUsuarioUseCase>
+    let cadastrarUsuarioUseCaseMock: jest.Mocked<CadastrarClienteUseCase>
     let verificarEmailUseCaseMock: jest.Mocked<VerificarEmailUseCase>
     let req: Partial<Request>
     let res: Partial<Response>

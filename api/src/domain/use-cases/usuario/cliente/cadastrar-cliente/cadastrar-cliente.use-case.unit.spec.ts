@@ -1,22 +1,22 @@
 import bcrypt from "bcrypt";
 
-import { CadastrarUsuarioUseCase } from "./cadastrar-usuario.use-case";
-import { IUsuarioRepository } from "../../../repositories/usuario.repository";
-import { Usuario } from "../../../entities/usuario/usuario.entity";
-import { UsuarioMother } from "../../../../test-helpers/usuario.mother";
+import { CadastrarClienteUseCase } from "./cadastrar-cliente.use-case";
+import { IUsuarioRepository } from "../../../../repositories/usuario.repository";
+import { Usuario } from "../../../../entities/usuario/usuario.entity";
+import { UsuarioMother } from "../../../../../test-helpers/usuario.mother";
 
 jest.mock('bcrypt', () => ({
     hash: jest.fn().mockResolvedValue('senha_hash_mockada'),
     compare: jest.fn()
 }))
 
-describe('CadastrarUsuarioUseCase', () => {
-    let cadastrarUsuarioUseCase: CadastrarUsuarioUseCase
+describe('CadastrarClienteUseCase', () => {
+    let cadastrarUsuarioUseCase: CadastrarClienteUseCase
     let usuarioRepositoryMock : jest.Mocked<IUsuarioRepository>
 
     beforeEach(() => {
         usuarioRepositoryMock = UsuarioMother.criarRepositoryMock()
-        cadastrarUsuarioUseCase = new CadastrarUsuarioUseCase(usuarioRepositoryMock)
+        cadastrarUsuarioUseCase = new CadastrarClienteUseCase(usuarioRepositoryMock)
     })
 
     it('deve criar usuário com dados válidos', async () => {

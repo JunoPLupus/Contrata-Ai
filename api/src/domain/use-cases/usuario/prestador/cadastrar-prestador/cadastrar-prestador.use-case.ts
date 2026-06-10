@@ -1,8 +1,8 @@
-import { Prestador } from "../../../entities/prestador/prestador.entity";
-import { IPrestadorRepository } from "../../../repositories/prestador.repository";
-import { IUsuarioRepository } from "../../../repositories/usuario.repository";
-import { PrestadorFactory } from "../../../factories/prestador.factory";
-import { PrestadorCadastroDTO } from "../../../dto/prestador/prestador-cadastro.dto";
+import { Prestador } from "../../../../entities/prestador/prestador.entity";
+import { IPrestadorRepository } from "../../../../repositories/prestador.repository";
+import { IUsuarioRepository } from "../../../../repositories/usuario.repository";
+import { PrestadorFactory } from "../../../../factories/prestador.factory";
+import { PrestadorCadastroDTO } from "../../../../dto/prestador/prestador-cadastro.dto";
 
 export class CadastrarPrestadorUseCase {
     constructor(

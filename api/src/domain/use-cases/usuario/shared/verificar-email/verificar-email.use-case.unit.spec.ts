@@ -1,8 +1,8 @@
-import { IUsuarioRepository } from "../../../repositories/usuario.repository";
+import { IUsuarioRepository } from "../../../../repositories/usuario.repository";
 import { VerificarEmailUseCase } from "./verificar-email.use-case";
-import { UsuarioCadastroDTO } from "../../../dto/usuario/usuario-cadastro.dto";
-import { Usuario } from "../../../entities/usuario/usuario.entity";
-import { UsuarioMother } from "../../../../test-helpers/usuario.mother";
+import { UsuarioCadastroDTO } from "../../../../dto/usuario/usuario-cadastro.dto";
+import { Usuario } from "../../../../entities/usuario/usuario.entity";
+import { UsuarioMother } from "../../../../../test-helpers/usuario.mother";
 
 describe('VerificarEmailUseCase', () => {
 
