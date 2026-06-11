@@ -1,5 +1,5 @@
 import { Categoria } from "../entities/categoria/categoria.entity";
-import { NomeValueObject } from "../value-objects/shared/nome/nome.vo";
+import { StringValueObject } from "../value-objects/shared/string/string.vo";
 
 export class CategoriaFactory {
     public static criar(dados : {
@@ -11,7 +11,7 @@ export class CategoriaFactory {
         return Categoria.criarCategoria({
             id : dados.id,
             categoriaPaiId : dados.categoriaPaiId,
-            nome : new NomeValueObject(dados.nome),
+            nome : new StringValueObject('nome', dados.nome, 3, 150),
             descricao : dados.descricao
         });
     }

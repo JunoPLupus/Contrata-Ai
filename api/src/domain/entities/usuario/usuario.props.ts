@@ -1,13 +1,11 @@
-import { NomeValueObject } from "../../value-objects/shared/nome/nome.vo";
-import { SenhaUsuarioValueObject } from "../../value-objects/usuario/senha/senha.vo";
+import { StringValueObject } from "../../value-objects/shared/string/string.vo";
 import { EmailUsuarioValueObject } from "../../value-objects/usuario/email/email.vo";
-import { IdPrestadorValueObject } from "../../value-objects/prestador/idPrestador/id-prestador.vo";
 
 export type UsuarioProps = {
     id ?: string,
-    idPrestador ?: IdPrestadorValueObject,
-    nome : NomeValueObject,
-    senha : SenhaUsuarioValueObject,
+    idPrestador ?: StringValueObject,
+    nome : StringValueObject,
+    senha : StringValueObject,
     email : EmailUsuarioValueObject,
     data_cadastro : Date,
     ativo : boolean,
