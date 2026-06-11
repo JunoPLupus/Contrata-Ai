@@ -1,0 +1,171 @@
+= ADR-011: Padronização de rotas HTTP da API
+:date: 2026-06-11
+:status: Accepted
+
+== Contexto
+
+As rotas da API foram definidas de forma orgânica, sem um critério único para
+decidir quando usar path params, query params, body ou dados do JWT. Isso
+gerava inconsistências como:
+
+* Busca de um recurso único via query string (ex: `GET /clientes?id={id}`,
+  `GET /prestadores?id={id}`) em vez de path param.
+* Ids do usuário autenticado (cliente/prestador) passados via query/body em
+  rotas que deveriam sempre operar sobre o "próprio" usuário, abrindo espaço
+  para uso indevido (IDOR) caso o backend viesse a confiar nesses valores em
+  vez de usar o JWT.
+* Uso de `DELETE` para operações que na verdade são mudanças de status
+  (inativação de usuário/prestador, cancelamento de solicitação/contrato),
+  misturando essa semântica com a de exclusões reais e permanentes.
+* Mistura de `camelCase` e `snake_case` em path e query params.
+* Falta de critério para escolher entre prefixo singular e plural em rotas
+  que retornam um único recurso.
+* Rotas de sub-recursos (serviços, orçamentos, avaliações) penduradas sob
+  `/prestadores`/`/solicitacoes` sem critério claro de quando aninhar e quando
+  tratar como recurso de primeira classe.
+
+== Decisão
+
+=== 1. Path param x query param x body x JWT
+
+* *Path param* (`/recurso/{id}`) é usado quando o id identifica univocamente o
+  recurso que a rota manipula ou retorna — inclui tanto ids de recursos
+  próprios (id_solicitacao, id_servico, id_contrato, id_orcamento,
+  id_avaliacao) quanto ids de outras entidades acessadas por terceiros
+  (id_prestador, id_cliente, id_categoria).
+* *Query param* é usado apenas para filtros, busca e parâmetros de uma
+  coleção (ex: `?idCategoria=`, `?nomePrestador=`). Um query param pode ser
+  obrigatório na prática — validado no handler, retornando `400` se ausente —
+  isso não é critério para escolher entre path e query. O critério é: o
+  parâmetro identifica diretamente *qual recurso* a URL aponta (path) ou é um
+  critério de busca/filtro (query)?
+* *Body* carrega os dados de criação/atualização. Nunca contém o `_id`/
+  ObjectId do documento, nem o id do usuário autenticado.
+* *JWT* é a única fonte para `id_cliente`/`id_prestador` do usuário
+  autenticado em operações sobre os "próprios dados". Esses ids nunca são
+  aceitos via query/body nesses casos.
+
+=== 2. Coleções sempre no plural
+
+Prefixos de rota permanecem sempre no plural (`/clientes`, `/prestadores`,
+`/avaliacoes`, etc.), tanto para coleções (`/recurso`) quanto para itens
+individuais (`/recurso/{id}`) — a presença ou ausência de `{id}` já diferencia
+os dois casos. Não são usados prefixos no singular.
+
+=== 3. PATCH para mudanças de status
+
+`DELETE` fica reservado para exclusão real e permanente (ex: avaliações,
+serviços). Operações que alteram apenas o status de um recurso — inativar
+usuário/prestador, cancelar solicitação/contrato — usam `PATCH`, por se
+tratarem de atualizações parciais (somente o campo de status muda).
+
+=== 4. "Meus dados" sem id x dados de terceiros com id
+
+Para recursos onde o usuário autenticado tem no máximo um registro próprio
+(perfil de cliente, perfil de prestador, meus serviços, minhas solicitações,
+meus orçamentos, meus contratos, minhas avaliações), a ausência de `{id}`
+significa "os meus", resolvido via JWT — sem necessidade de um segmento `me`
+explícito.
+
+Quando existe necessidade de consultar dados de terceiros e isso não conflita
+com uma busca pública de coleção (ex: perfil de cliente), a mesma rota com
+`{id}` cobre os dois casos: retorna um corpo mais completo quando `{id}`
+corresponde ao usuário do JWT, e um subconjunto público de campos caso
+contrário.
+
+Quando existe conflito com uma busca pública de coleção (ex: `/prestadores`,
+que também é endpoint de busca por categoria/nome), o "próprio perfil" é
+acessado via `/prestadores/{id}` usando o id do próprio usuário — disponível
+no front a partir do JWT/retorno do login — sem rota especial de "self".
+
+=== 5. camelCase no contrato da API
+
+Identificadores em path, query e body usam `camelCase` (ex: `idCategoria`,
+`idPrestador`, `nomePrestador`). `snake_case` fica restrito ao schema do banco
+(`infra/models`), seguindo o que já era praticado nas entidades existentes.
+
+=== 6. Ordem de registro de rotas
+
+Rotas literais que coexistem com rotas parametrizadas no mesmo nível (ex:
+`/solicitacoes/disponiveis` e `/solicitacoes/{id}`) devem ser registradas
+*antes* das rotas com parâmetro, para evitar que o parâmetro capture o
+segmento literal (ex: `id = "disponiveis"`).
+
+=== Tabela de rotas resultante
+
+[source]
+----
+Usuários
+  GET    /usuarios?email={email}        # retorna um usuário pelo email
+  POST   /clientes-prestadores           # cadastra um cliente e prestador simultaneamente
+  PATCH  /usuarios                       # torna o perfil de usuário (cliente/prestador) inativo permanentemente
+
+Clientes
+  GET    /clientes                       # retorna o cliente logado (dados completos)
+  GET    /clientes/{id}                  # retorna um cliente (dados parciais/públicos)
+  POST   /clientes                       # cadastra um cliente
+  PUT    /clientes                       # atualiza dados do cliente logado
+
+Prestadores
+  GET    /prestadores/{id}               # retorna um prestador: dados completos se {id} for o próprio usuário logado, dados parciais/públicos caso contrário
+  GET    /prestadores?idCategoria=&nomePrestador=  # busca prestadores por categoria e/ou nome
+  GET    /prestadores/{idPrestador}/servicos       # serviços de um prestador (visão pública/cliente)
+  GET    /prestadores/{idPrestador}/avaliacoes     # avaliações feitas a contratos de um prestador
+  POST   /prestadores                    # cadastra um prestador a partir do usuário logado
+  PUT    /prestadores                    # atualiza dados do prestador logado
+  PATCH  /prestadores                    # torna o perfil de prestador inativo indefinidamente
+
+Categorias
+  GET    /categorias                     # retorna todas as categorias
+  GET    /categorias/{id}                # retorna uma categoria
+
+Serviços
+  GET    /servicos                       # retorna todos os serviços do prestador logado
+  POST   /servicos                       # cadastra um serviço do prestador logado
+  PUT    /servicos/{id}                  # atualiza os dados de um serviço
+  DELETE /servicos/{id}                  # deleta permanentemente um serviço
+
+Solicitações
+  GET    /solicitacoes                              # retorna todas as solicitações do cliente logado
+  GET    /solicitacoes/disponiveis?idCategoria={id} # retorna todas as solicitações ativas de uma categoria
+  GET    /solicitacoes/{idSolicitacao}/orcamentos   # orçamentos feitos para uma solicitação
+  GET    /solicitacoes/{id}                         # retorna uma solicitação
+  POST   /solicitacoes                              # cadastra uma solicitação
+  PUT    /solicitacoes/{id}                         # atualiza os dados de uma solicitação
+  PATCH  /solicitacoes/{id}                         # altera o status de uma solicitação para 'cancelada'
+
+Orçamentos
+  GET    /orcamentos                     # retorna todos os orçamentos do prestador logado
+  GET    /orcamentos/{id}                # retorna um orçamento
+  POST   /orcamentos                     # cadastra um orçamento
+  PUT    /orcamentos/{id}                # atualiza os dados de um orçamento
+
+Contratos
+  GET    /contratos                      # retorna todos os contratos vinculados ao cliente/prestador logado
+  GET    /contratos/{id}                 # retorna um contrato
+  GET    /contratos/{idContrato}/avaliacao  # retorna a avaliação de um contrato
+  POST   /contratos                      # cadastra um contrato
+  PUT    /contratos/{id}                 # atualiza um contrato
+  PATCH  /contratos/{id}                 # altera o status de um contrato para 'cancelado'
+
+Avaliações
+  GET    /avaliacoes                     # retorna todas as avaliações feitas pelo cliente logado
+  GET    /avaliacoes/{id}                # retorna uma avaliação
+  POST   /avaliacoes                     # cadastra uma avaliação de um contrato realizado
+  PUT    /avaliacoes/{id}                # atualiza os dados de uma avaliação
+  DELETE /avaliacoes/{id}                # deleta permanentemente uma avaliação (apenas o autor pode fazer isso)
+----
+
+== Consequências
+
+* As rotas existentes que ainda seguem o padrão antigo (`GET /clientes?id=`,
+  `GET /prestadores?id=`, `GET /prestadores?nome=`,
+  `GET /prestadores/servicos`, `DELETE /usuarios`, `DELETE /prestadores`, etc.)
+  precisam ser refatoradas para o padrão acima conforme forem implementadas.
+* Controllers que retornam "perfil" (clientes, prestadores) passam a ter
+  lógica condicional de shape de resposta com base em `{id}` vs id do JWT
+  (dados completos para o próprio dono, subconjunto público para terceiros).
+* Novos endpoints devem seguir as 6 regras acima; desvios devem ser
+  justificados em uma nova ADR.
+* A tabela de rotas acima passa a ser a referência de contrato HTTP da API até
+  que seja alterada por uma nova ADR.
