@@ -13,6 +13,6 @@ export class Prestador {
     }
 
     get idCliente() : string {
-        return this.props.idCliente.idCliente
+        return this.props.idCliente.valor
     }
 }

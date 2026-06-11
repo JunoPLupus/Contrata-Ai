@@ -17,7 +17,7 @@ export class Categoria {
     }
 
     get nome() : string {
-        return this.props.nome.nome;
+        return this.props.nome.valor;
     }
 
     get descricao() : string | undefined {

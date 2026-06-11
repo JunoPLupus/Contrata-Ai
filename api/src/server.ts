@@ -1,9 +1,12 @@
 import 'dotenv/config'
+import dns from 'node:dns'
 import mongoose from 'mongoose'
 import app from './app'
 
 const port : string = process.env.PORT || '3000'
 const dbUri : string = process.env.MONGODB_URI || 'mongodb://localhost:27017'
+
+if (process.env.DNS_SERVERS !== undefined) dns.setServers(process.env.DNS_SERVERS.split(','))
 
 mongoose.connect(dbUri)
     .then(() => {

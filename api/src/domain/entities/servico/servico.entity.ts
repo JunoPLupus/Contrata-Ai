@@ -1,10 +1,6 @@
 import { ServicoProps } from "./servico.props";
-import { IdPrestadorValueObject } from "../../value-objects/prestador/idPrestador/id-prestador.vo";
-import { IdCategoriaValueObject } from "../../value-objects/categoria/idCategoria/id-categoria.vo";
-import { DescricaoValueObject } from "../../value-objects/servico/descricao/descricao.vo";
-import { PrecoMinValueObject } from "../../value-objects/servico/precoMin/preco-min.vo";
-import { PrecoMaxValueObject } from "../../value-objects/servico/precoMax/preco-max.vo";
-import { PrazoMedioValueObject } from "../../value-objects/servico/prazoMedio/prazo-medio.vo";
+import { StringValueObject } from "../../value-objects/shared/string/string.vo";
+import { NumberValueObject } from "../../value-objects/shared/number/number.vo";
 
 export class Servico {
     private constructor(private readonly props: ServicoProps) {}
@@ -18,45 +14,45 @@ export class Servico {
     }
 
     get idPrestador(): string {
-        return this.props.idPrestador.idPrestador;
+        return this.props.idPrestador.valor;
     }
     set idPrestador(idPrestador: string) {
-        this.props.idPrestador = new IdPrestadorValueObject(idPrestador);
+        this.props.idPrestador = new StringValueObject('idPrestador', idPrestador);
     }
 
     get idCategoria(): string {
-        return this.props.idCategoria.idCategoria;
+        return this.props.idCategoria.valor;
     }
     set idCategoria(idCategoria: string) {
-        this.props.idCategoria = new IdCategoriaValueObject(idCategoria);
+        this.props.idCategoria = new StringValueObject('idCategoria', idCategoria);
     }
 
     get descricao(): string {
-        return this.props.descricao.descricao;
+        return this.props.descricao.valor;
     }
     set descricao(descricao: string) {
-        this.props.descricao = new DescricaoValueObject(descricao);
+        this.props.descricao = new StringValueObject('descricao', descricao, 5, 500);
     }
 
     get precoMin(): number | undefined {
-        return this.props.precoMin?.precoMin;
+        return this.props.precoMin?.valor;
     }
     set precoMin(precoMin: number) {
-        this.props.precoMin = new PrecoMinValueObject(precoMin);
+        this.props.precoMin = new NumberValueObject('precoMin', precoMin, 1);
     }
 
     get precoMax(): number | undefined {
-        return this.props.precoMax?.precoMax;
+        return this.props.precoMax?.valor;
     }
     set precoMax(precoMax: number) {
-        this.props.precoMax = new PrecoMaxValueObject(precoMax);
+        this.props.precoMax = new NumberValueObject('precoMax', precoMax, 1);
     }
 
     get prazoMedioDias(): number | undefined {
-        return this.props.prazoMedioDias?.prazoMedio;
+        return this.props.prazoMedioDias?.valor;
     }
     set prazoMedioDias(prazoMedioDias: number) {
-        this.props.prazoMedioDias = new PrazoMedioValueObject(prazoMedioDias);
+        this.props.prazoMedioDias = new NumberValueObject('prazoMedio', prazoMedioDias, 1);
     }
 
     get ativo(): boolean {

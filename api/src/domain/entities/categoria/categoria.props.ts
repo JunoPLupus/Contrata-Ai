@@ -1,8 +1,8 @@
-import { NomeValueObject } from "../../value-objects/shared/nome/nome.vo";
+import { StringValueObject } from "../../value-objects/shared/string/string.vo";
 
 export type CategoriaProps = {
     id ?: string,
     categoriaPaiId ?: string,
-    nome : NomeValueObject,
+    nome : StringValueObject,
     descricao ?: string
 }

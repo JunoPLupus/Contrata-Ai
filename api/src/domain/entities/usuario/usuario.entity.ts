@@ -1,8 +1,6 @@
 import { UsuarioProps } from "./usuario.props";
-import { NomeValueObject } from "../../value-objects/shared/nome/nome.vo";
-import { SenhaUsuarioValueObject } from "../../value-objects/usuario/senha/senha.vo";
+import { StringValueObject } from "../../value-objects/shared/string/string.vo";
 import { EmailUsuarioValueObject } from "../../value-objects/usuario/email/email.vo";
-import { IdPrestadorValueObject } from "../../value-objects/prestador/idPrestador/id-prestador.vo";
 
 export class Usuario {
 
@@ -17,25 +15,25 @@ export class Usuario {
     }
 
     get idPrestador(): string | undefined {
-        return this.props.idPrestador?.idPrestador
+        return this.props.idPrestador?.valor
     }
 
     set idPrestador(idPrestador: string) {
-        this.props.idPrestador = new IdPrestadorValueObject(idPrestador)
+        this.props.idPrestador = new StringValueObject('idPrestador', idPrestador)
     }
 
     get nome() : string {
-        return this.props.nome.nome
+        return this.props.nome.valor
     }
     set nome(nome : string) {
-        this.props.nome = new NomeValueObject(nome)
+        this.props.nome = new StringValueObject('nome', nome, 3, 150)
     }
 
     get senha() : string {
-        return this.props.senha.senha
+        return this.props.senha.valor
     }
     set senha(senha : string) {
-        this.props.senha = new SenhaUsuarioValueObject(senha)
+        this.props.senha = new StringValueObject('senha', senha, 6, 64)
     }
 
     get email() : string {

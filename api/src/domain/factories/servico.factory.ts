@@ -1,10 +1,6 @@
 import { Servico } from "../entities/servico/servico.entity";
-import { IdPrestadorValueObject } from "../value-objects/prestador/idPrestador/id-prestador.vo";
-import { IdCategoriaValueObject } from "../value-objects/categoria/idCategoria/id-categoria.vo";
-import { DescricaoValueObject } from "../value-objects/servico/descricao/descricao.vo";
-import { PrecoMinValueObject } from "../value-objects/servico/precoMin/preco-min.vo";
-import { PrecoMaxValueObject } from "../value-objects/servico/precoMax/preco-max.vo";
-import { PrazoMedioValueObject } from "../value-objects/servico/prazoMedio/prazo-medio.vo";
+import { StringValueObject } from "../value-objects/shared/string/string.vo";
+import { NumberValueObject } from "../value-objects/shared/number/number.vo";
 
 export class ServicoFactory {
     public static criar(dados: {
@@ -19,12 +15,12 @@ export class ServicoFactory {
     }): Servico {
         return Servico.criarServico({
             id: dados.id,
-            idPrestador: new IdPrestadorValueObject(dados.idPrestador),
-            idCategoria: new IdCategoriaValueObject(dados.idCategoria),
-            descricao: new DescricaoValueObject(dados.descricao),
-            precoMin: dados.precoMin !== undefined ? new PrecoMinValueObject(dados.precoMin) : undefined,
-            precoMax: dados.precoMax !== undefined ? new PrecoMaxValueObject(dados.precoMax) : undefined,
-            prazoMedioDias: dados.prazoMedioDias !== undefined ? new PrazoMedioValueObject(dados.prazoMedioDias) : undefined,
+            idPrestador: new StringValueObject('idPrestador', dados.idPrestador),
+            idCategoria: new StringValueObject('idCategoria', dados.idCategoria),
+            descricao: new StringValueObject('descricao', dados.descricao, 5, 500),
+            precoMin: dados.precoMin !== undefined ? new NumberValueObject('precoMin', dados.precoMin, 1) : undefined,
+            precoMax: dados.precoMax !== undefined ? new NumberValueObject('precoMax', dados.precoMax, 1) : undefined,
+            prazoMedioDias: dados.prazoMedioDias !== undefined ? new NumberValueObject('prazoMedio', dados.prazoMedioDias, 1) : undefined,
             ativo: dados.ativo
         });
     }
