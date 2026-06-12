@@ -9,6 +9,10 @@ import { CadastrarClientePrestadorUseCase } from "../domain/use-cases/usuario/sh
 import { UsuarioMongodbRepositoryImpl } from "../infra/repositories/usuario/usuario-mongodb.repository.impl";
 import { PrestadorMongodbRepositoryImpl } from "../infra/repositories/prestador/prestador-mongodb.repository.impl";
 import { CadastrarPrestadorUseCase } from "../domain/use-cases/usuario/prestador/cadastrar-prestador/cadastrar-prestador.use-case";
+import { BuscarPrestadorPorIdUseCase } from "../domain/use-cases/usuario/prestador/buscar-prestador-por-id/buscar-prestador-por-id.use-case";
+import { AtualizarPrestadorUseCase } from "../domain/use-cases/usuario/prestador/atualizar-prestador/atualizar-prestador.use-case";
+import { InativarPrestadorUseCase } from "../domain/use-cases/usuario/prestador/inativar-prestador/inativar-prestador.use-case";
+import { AtivarPrestadorUseCase } from "../domain/use-cases/usuario/prestador/ativar-prestador/ativar-prestador.use-case";
 import { PrestadorController } from "../http/controllers/usuario/prestador/prestador.controller";
 import { LoginUseCase } from "../domain/use-cases/usuario/shared/login/login.use-case";
 import { AuthController } from "../http/controllers/usuario/shared/auth/auth.controller";
@@ -36,7 +40,17 @@ export const authController = new AuthController(loginUseCase)
 //#region prestador.routes.ts
 const prestadorRepository = new PrestadorMongodbRepositoryImpl()
 const cadastrarPrestadorUseCase = new CadastrarPrestadorUseCase(prestadorRepository, usuarioRepository)
-export const prestadorController = new PrestadorController(cadastrarPrestadorUseCase)
+const buscarPrestadorPorIdUseCase = new BuscarPrestadorPorIdUseCase(prestadorRepository)
+const atualizarPrestadorUseCase = new AtualizarPrestadorUseCase(prestadorRepository)
+const inativarPrestadorUseCase = new InativarPrestadorUseCase(prestadorRepository)
+const ativarPrestadorUseCase = new AtivarPrestadorUseCase(prestadorRepository)
+export const prestadorController = new PrestadorController(
+    cadastrarPrestadorUseCase,
+    buscarPrestadorPorIdUseCase,
+    atualizarPrestadorUseCase,
+    inativarPrestadorUseCase,
+    ativarPrestadorUseCase
+)
 //#endregion
 
 //#region usuario-prestador.routes.ts
