@@ -55,7 +55,7 @@ describe('ClienteController', () => {
         expect(res.json).toHaveBeenCalledWith(ClienteMapper.paraPerfilDto(usuarioMock))
     })
 
-    it('deve retornar resposta com sucesso 200 e o perfil completo ao buscar o próprio id', async () => {
+    it('deve retornar resposta com sucesso 200 e o perfil público ao buscar o próprio id', async () => {
         // Arrange
         req.params = { id: req.user!.idCliente as string }
         buscarClientePorIdUseCaseMock.execute.mockResolvedValue(usuarioMock)
@@ -64,7 +64,7 @@ describe('ClienteController', () => {
         // Assert
         expect(buscarClientePorIdUseCaseMock.execute).toHaveBeenCalledWith(req.params.id)
         expect(res.status).toHaveBeenCalledWith(200)
-        expect(res.json).toHaveBeenCalledWith(ClienteMapper.paraPerfilDto(usuarioMock))
+        expect(res.json).toHaveBeenCalledWith(ClienteMapper.paraPerfilPublicoDto(usuarioMock))
     })
 
     it('deve retornar resposta com sucesso 200 e o perfil público ao buscar o id de outro cliente', async () => {

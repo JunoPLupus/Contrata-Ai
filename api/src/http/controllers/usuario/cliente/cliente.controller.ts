@@ -45,19 +45,14 @@ export class ClienteController {
     }
 
     /**
-     * Retorna os dados de um cliente pelo `id`.
-     * @param request - Path param `id`. `idCliente` do JWT usado para definir o formato da resposta.
-     * @param response - 200 com o perfil completo (se `id` for o do próprio usuário logado) ou um subconjunto público.
+     * Retorna os dados públicos de um cliente pelo `id`.
+     * @param request - Path param `id`.
+     * @param response - 200 com o perfil público do cliente.
      */
     public async buscarPorId(request: Request, response: Response): Promise<void> {
         const id = request.params.id as string
 
         const cliente = await this.buscarClientePorIdUseCase.execute(id)
-
-        if (id === request.user!.idCliente) {
-            response.status(200).json(ClienteMapper.paraPerfilDto(cliente))
-            return
-        }
 
         response.status(200).json(ClienteMapper.paraPerfilPublicoDto(cliente))
     }
