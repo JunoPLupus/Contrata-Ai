@@ -1,7 +1,10 @@
 import { UsuarioController } from "../http/controllers/usuario/usuario.controller";
 import { ClientePrestadorController } from "../http/controllers/usuario/shared/cliente-prestador.controller";
 import { VerificarEmailUseCase } from "../domain/use-cases/usuario/shared/verificar-email/verificar-email.use-case";
+import { InativarUsuarioUseCase } from "../domain/use-cases/usuario/shared/inativar-usuario/inativar-usuario.use-case";
 import { CadastrarClienteUseCase } from "../domain/use-cases/usuario/cliente/cadastrar-cliente/cadastrar-cliente.use-case";
+import { BuscarClientePorIdUseCase } from "../domain/use-cases/usuario/cliente/buscar-cliente-por-id/buscar-cliente-por-id.use-case";
+import { AtualizarClienteUseCase } from "../domain/use-cases/usuario/cliente/atualizar-cliente/atualizar-cliente.use-case";
 import { CadastrarClientePrestadorUseCase } from "../domain/use-cases/usuario/shared/cadastrar-cliente-prestador/cadastrar-cliente-prestador.use-case";
 import { UsuarioMongodbRepositoryImpl } from "../infra/repositories/usuario/usuario-mongodb.repository.impl";
 import { PrestadorMongodbRepositoryImpl } from "../infra/repositories/prestador/prestador-mongodb.repository.impl";
@@ -18,8 +21,11 @@ import { ClienteController } from "../http/controllers/usuario/cliente/cliente.c
 const usuarioRepository = new UsuarioMongodbRepositoryImpl()
 const cadastrarClienteUseCase = new CadastrarClienteUseCase(usuarioRepository)
 const verificarEmailUseCase = new VerificarEmailUseCase(usuarioRepository)
-export const usuarioController = new UsuarioController(verificarEmailUseCase)
-export const clienteController = new ClienteController(cadastrarClienteUseCase)
+const inativarUsuarioUseCase = new InativarUsuarioUseCase(usuarioRepository)
+const buscarClientePorIdUseCase = new BuscarClientePorIdUseCase(usuarioRepository)
+const atualizarClienteUseCase = new AtualizarClienteUseCase(usuarioRepository)
+export const usuarioController = new UsuarioController(verificarEmailUseCase, inativarUsuarioUseCase)
+export const clienteController = new ClienteController(cadastrarClienteUseCase, buscarClientePorIdUseCase, atualizarClienteUseCase)
 //#endregion
 
 //#region auth.routes.ts
