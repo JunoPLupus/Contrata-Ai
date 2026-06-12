@@ -74,4 +74,33 @@ describe('Usuario Mongodb Repository', () => {
         const usuarioAtualizado = await repository.buscarPorEmail(usuarioInserido.email)
         expect(usuarioAtualizado?.idPrestador).toBe(idPrestadorMock)
     })
+
+    it('deve buscar usuário por id e retornar usuário', async () => {
+        // Arrange
+        const usuarioInserido = await repository.inserir(UsuarioMother.criarUsuarioValido())
+        // Act
+        const usuario = await repository.buscarPorId(usuarioInserido.id!)
+        // Assert
+        expect(usuario).not.toBeNull()
+        expect(usuario).toBeInstanceOf(Usuario)
+        expect(usuario?.id).toBe(usuarioInserido.id)
+    })
+
+    it('deve retornar null quando id não for encontrado', async () => {
+        // Arrange
+        const idInexistente = new mongoose.Types.ObjectId().toString()
+        // Act
+        const usuario = await repository.buscarPorId(idInexistente)
+        // Assert
+        expect(usuario).toBeNull()
+    })
+
+    it('deve retornar null quando id tiver formato inválido', async () => {
+        // Arrange
+        const idInvalido = "id-invalido"
+        // Act
+        const usuario = await repository.buscarPorId(idInvalido)
+        // Assert
+        expect(usuario).toBeNull()
+    })
 })
