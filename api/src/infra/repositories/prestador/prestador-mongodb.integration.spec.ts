@@ -39,4 +39,60 @@ describe('Prestador MongoDB Repository', () => {
         expect(prestadorInserido.id).not.toBeNull()
         expect(prestadorInserido.id).toBeDefined()
     })
+
+    it('deve buscar um prestador pelo id', async () => {
+        // Arrange
+        const prestadorMock = PrestadorMother.criarValido({ telefone: '11999999999', descricao: 'Descrição válida do prestador' })
+        const prestadorInserido = await repository.inserir(prestadorMock)
+        // Act
+        const prestadorEncontrado = await repository.buscarPorId(prestadorInserido.id!)
+        // Assert
+        expect(prestadorEncontrado).not.toBeNull()
+        expect(prestadorEncontrado!.id).toBe(prestadorInserido.id)
+        expect(prestadorEncontrado!.telefone).toBe('11999999999')
+        expect(prestadorEncontrado!.descricao).toBe('Descrição válida do prestador')
+        expect(prestadorEncontrado!.ativo).toBe(true)
+    })
+
+    it('deve retornar null ao buscar um id inexistente', async () => {
+        // Act
+        const prestadorEncontrado = await repository.buscarPorId('507f1f77bcf86cd799439011')
+        // Assert
+        expect(prestadorEncontrado).toBeNull()
+    })
+
+    it('deve atualizar os dados de um prestador existente', async () => {
+        // Arrange
+        const prestadorMock = PrestadorMother.criarValido()
+        const prestadorInserido = await repository.inserir(prestadorMock)
+        prestadorInserido.telefone = '11999999999'
+        prestadorInserido.descricao = 'Nova descrição do prestador'
+        // Act
+        const prestadorAtualizado = await repository.atualizar(prestadorInserido)
+        // Assert
+        expect(prestadorAtualizado.telefone).toBe('11999999999')
+        expect(prestadorAtualizado.descricao).toBe('Nova descrição do prestador')
+    })
+
+    it('deve inativar um prestador existente', async () => {
+        // Arrange
+        const prestadorMock = PrestadorMother.criarValido()
+        const prestadorInserido = await repository.inserir(prestadorMock)
+        // Act
+        await repository.inativar(prestadorInserido.id!)
+        // Assert
+        const prestadorEncontrado = await repository.buscarPorId(prestadorInserido.id!)
+        expect(prestadorEncontrado!.ativo).toBe(false)
+    })
+
+    it('deve ativar um prestador existente', async () => {
+        // Arrange
+        const prestadorMock = PrestadorMother.criarValido({ ativo: false })
+        const prestadorInserido = await repository.inserir(prestadorMock)
+        // Act
+        await repository.ativar(prestadorInserido.id!)
+        // Assert
+        const prestadorEncontrado = await repository.buscarPorId(prestadorInserido.id!)
+        expect(prestadorEncontrado!.ativo).toBe(true)
+    })
 })
