@@ -1,6 +1,9 @@
 import { UsuarioProps } from "./usuario.props";
 import { StringValueObject } from "../../value-objects/shared/string/string.vo";
 import { EmailUsuarioValueObject } from "../../value-objects/usuario/email/email.vo";
+import { TelefoneUsuarioValueObject } from "../../value-objects/usuario/telefone/telefone.vo";
+import { CepValueObject } from "../../value-objects/usuario/cep/cep.vo";
+import { isStringVazia } from "../../utils/value-objects.utils";
 
 export class Usuario {
 
@@ -41,6 +44,34 @@ export class Usuario {
     }
     set email(email : string) {
         this.props.email = new EmailUsuarioValueObject(email)
+    }
+
+    get telefone() : string | undefined {
+        return this.props.telefone?.valor
+    }
+    set telefone(telefone : string | undefined) {
+        this.props.telefone = !isStringVazia(telefone) ? new TelefoneUsuarioValueObject('telefone', telefone) : undefined
+    }
+
+    get whatsapp() : string | undefined {
+        return this.props.whatsapp?.valor
+    }
+    set whatsapp(whatsapp : string | undefined) {
+        this.props.whatsapp = !isStringVazia(whatsapp) ? new TelefoneUsuarioValueObject('whatsapp', whatsapp) : undefined
+    }
+
+    get localizacaoCidade() : string | undefined {
+        return this.props.localizacaoCidade?.valor
+    }
+    set localizacaoCidade(localizacaoCidade : string | undefined) {
+        this.props.localizacaoCidade = !isStringVazia(localizacaoCidade) ? new StringValueObject('localizacaoCidade', localizacaoCidade, 3, 32) : undefined
+    }
+
+    get localizacaoCep() : string | undefined {
+        return this.props.localizacaoCep?.valor
+    }
+    set localizacaoCep(localizacaoCep : string | undefined) {
+        this.props.localizacaoCep = !isStringVazia(localizacaoCep) ? new CepValueObject(localizacaoCep) : undefined
     }
 
     get data_cadastro() : Date {
