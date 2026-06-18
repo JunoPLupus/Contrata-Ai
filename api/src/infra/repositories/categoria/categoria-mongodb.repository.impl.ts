@@ -4,17 +4,22 @@ import { CategoriaModel } from "../../models/categoria/categoria.model";
 import { CategoriaMapper } from "./categoria.mapper";
 
 export class CategoriaMongodbRepositoryImpl implements ICategoriaRepository {
-    public async buscarPorId(id: string): Promise<Categoria | null> {
-        const documento = await CategoriaModel.findById(id);
-        if (!documento) return null;
+    public async buscarTodas(): Promise<Categoria[]> {
+        const documentos = await CategoriaModel.find()
 
-        return CategoriaMapper.paraEntidade(documento);
+        return documentos.map(doc => CategoriaMapper.paraEntidade(doc))
     }
 
-    public async buscarPorNome(nome: string): Promise<Categoria | null> {
-        const documento = await CategoriaModel.findOne({ nome: nome });
-        if (!documento) return null;
+    public async buscarPorId(id: string): Promise<Categoria | null> {
+        const documento = await CategoriaModel.findById(id)
+        if (!documento) return null
 
-        return CategoriaMapper.paraEntidade(documento);
+        return CategoriaMapper.paraEntidade(documento)
+    }
+
+    public async buscarPorCategoriaPaiId(categoriaPaiId: string): Promise<Categoria[] > {
+        const documentos = await CategoriaModel.find({ categoria_pai_id : categoriaPaiId })
+
+        return documentos.map(doc => CategoriaMapper.paraEntidade(doc))
     }
 }
