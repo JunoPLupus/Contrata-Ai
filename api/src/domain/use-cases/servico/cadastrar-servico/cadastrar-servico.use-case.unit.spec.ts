@@ -3,16 +3,12 @@ import { IServicoRepository } from "../../../repositories/servico.repository";
 import { Servico } from "../../../entities/servico/servico.entity";
 import { ServicoMother } from "../../../../test-helpers/servico.mother";
 
-describe('CadastrarServicoUseCase', () => {
+describe('Testes unitários do Use-Case: Cadastrar Serviço', () => {
     let cadastrarServicoUseCase: CadastrarServicoUseCase
     let servicoRepositoryMock: jest.Mocked<IServicoRepository>
 
     beforeEach(() => {
-        servicoRepositoryMock = {
-            buscarPorId: jest.fn(),
-            buscarPorIdPrestador: jest.fn(),
-            inserir: jest.fn()
-        }
+        servicoRepositoryMock = ServicoMother.criarRepositoryMock()
         cadastrarServicoUseCase = new CadastrarServicoUseCase(servicoRepositoryMock)
     })
 
