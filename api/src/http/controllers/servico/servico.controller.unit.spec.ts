@@ -46,8 +46,7 @@ describe('ServicoController', () => {
             descricao: servicoMock.descricao,
             precoMin: servicoMock.precoMin,
             precoMax: servicoMock.precoMax,
-            prazoMedioDias: servicoMock.prazoMedioDias,
-            ativo: servicoMock.ativo
+            prazoMedioDias: servicoMock.prazoMedioDias
         })
     })
 })

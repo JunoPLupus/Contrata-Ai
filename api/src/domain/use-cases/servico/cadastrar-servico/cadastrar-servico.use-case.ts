@@ -21,8 +21,7 @@ export class CadastrarServicoUseCase {
             descricao: servicoDTO.descricao,
             precoMin: servicoDTO.precoMin,
             precoMax: servicoDTO.precoMax,
-            prazoMedioDias: servicoDTO.prazoMedioDias,
-            ativo: true
+            prazoMedioDias: servicoDTO.prazoMedioDias
         })
         return this.servicoRepository.inserir(servico)
     }

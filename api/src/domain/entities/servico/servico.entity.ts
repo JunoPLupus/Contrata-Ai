@@ -54,11 +54,4 @@ export class Servico {
     set prazoMedioDias(prazoMedioDias: number) {
         this.props.prazoMedioDias = new NumberValueObject('prazoMedio', prazoMedioDias, 1);
     }
-
-    get ativo(): boolean {
-        return this.props.ativo;
-    }
-    set ativo(ativo: boolean) {
-        this.props.ativo = ativo;
-    }
 }

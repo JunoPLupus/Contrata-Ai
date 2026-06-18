@@ -31,8 +31,7 @@ export class ServicoController {
             descricao: servicoCadastrado.descricao,
             precoMin: servicoCadastrado.precoMin,
             precoMax: servicoCadastrado.precoMax,
-            prazoMedioDias: servicoCadastrado.prazoMedioDias,
-            ativo: servicoCadastrado.ativo
+            prazoMedioDias: servicoCadastrado.prazoMedioDias
         }
 
         response.status(201).json(servicoRespostaCadastroDTO)
