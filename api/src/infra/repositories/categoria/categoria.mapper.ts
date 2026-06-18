@@ -16,9 +16,9 @@ export class CategoriaMapper {
 
     public static paraDocumento(categoria: Categoria): ICategoriaDocument {
         return {
-            categoria_pai_id: categoria.categoriaPaiId !== undefined
-                ? new Types.ObjectId(categoria.categoriaPaiId)
-                : undefined,
+            categoria_pai_id: categoria.categoriaPaiId == undefined
+                ? undefined
+                : new Types.ObjectId(categoria.categoriaPaiId),
             nome: categoria.nome,
             descricao: categoria.descricao
         }
