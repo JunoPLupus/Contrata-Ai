@@ -2,8 +2,7 @@ import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
-import { CadastroPayload } from '../../../core/models/cadastro.model';
-import { Perfil } from '../../../core/models/usuario.model';
+import { CadastroPayload, PerfilCadastro } from '../../../core/models/cadastro.model';
 
 @Component({
   selector: 'app-cadastro',
@@ -15,7 +14,7 @@ import { Perfil } from '../../../core/models/usuario.model';
 export class CadastroComponent {
   private readonly fb = inject(FormBuilder);
 
-  perfilSelecionado: Perfil = 'cliente';
+  perfilSelecionado: PerfilCadastro = 'cliente';
   senhaVisivel = false;
   protected submitted = false;
 
@@ -33,7 +32,7 @@ export class CadastroComponent {
   protected get senhaControl() { return this.form.controls.senha; }
   protected get aceiteTermosControl() { return this.form.controls.aceiteTermos; }
 
-  selecionarPerfil(perfil: Perfil): void {
+  selecionarPerfil(perfil: PerfilCadastro): void {
     this.perfilSelecionado = perfil;
   }
 
@@ -50,7 +49,8 @@ export class CadastroComponent {
       email: v.email!,
       whatsapp: v.whatsapp!,
       senha: v.senha!,
-      perfis: this.perfilSelecionado === 'prestador' ? ['cliente', 'prestador'] : ['cliente'],
+      perfilEscolhido: this.perfilSelecionado,
+      // TODO: chamar rota de cadastro conforme perfilSelecionado (cliente vs cliente+prestador). Endpoints a confirmar com a Juno.
       aceiteTermos: v.aceiteTermos!,
     };
     console.log(payload);
