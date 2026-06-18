@@ -21,6 +21,6 @@ export class Categoria {
     }
 
     get descricao() : string | undefined {
-        return this.props.descricao;
+        return this.props.descricao?.valor;
     }
 }

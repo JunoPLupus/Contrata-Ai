@@ -4,5 +4,5 @@ export type CategoriaProps = {
     id ?: string,
     categoriaPaiId ?: string,
     nome : StringValueObject,
-    descricao ?: string
+    descricao ?: StringValueObject
 }

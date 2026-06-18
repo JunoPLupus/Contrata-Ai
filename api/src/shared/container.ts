@@ -20,6 +20,11 @@ import { ServicoMongodbRepositoryImpl } from "../infra/repositories/servico/serv
 import { CadastrarServicoUseCase } from "../domain/use-cases/servico/cadastrar-servico/cadastrar-servico.use-case";
 import { ServicoController } from "../http/controllers/servico/servico.controller";
 import { ClienteController } from "../http/controllers/usuario/cliente/cliente.controller";
+import { CategoriaMongodbRepositoryImpl } from "../infra/repositories/categoria/categoria-mongodb.repository.impl";
+import { BuscarTodasCategoriasUseCase } from "../domain/use-cases/categoria/buscar-todas-categorias/buscar-todas-categorias.use-case";
+import { BuscarCategoriaPorIdUseCase } from "../domain/use-cases/categoria/buscar-categoria-por-id/buscar-categoria-por-id.use-case";
+import { BuscarCategoriasPorCategoriaPaiIdUseCase } from "../domain/use-cases/categoria/buscar-categorias-por-categoria-pai-id/buscar-categorias-por-categoria-pai-id.use-case";
+import { CategoriaController } from "../http/controllers/categoria/categoria.controller";
 
 //#region usuario.routes.ts
 const usuarioRepository = new UsuarioMongodbRepositoryImpl()
@@ -62,4 +67,12 @@ export const clientePrestadorController = new ClientePrestadorController(cadastr
 const servicoRepository = new ServicoMongodbRepositoryImpl()
 const cadastrarServicoUseCase = new CadastrarServicoUseCase(servicoRepository)
 export const servicoController = new ServicoController(cadastrarServicoUseCase)
+//#endregion
+
+//#region categoria.routes.ts
+const categoriaRepository = new CategoriaMongodbRepositoryImpl()
+const buscarTodasCategoriasUseCase = new BuscarTodasCategoriasUseCase(categoriaRepository)
+const buscarCategoriaPorIdUseCase = new BuscarCategoriaPorIdUseCase(categoriaRepository)
+const buscarCategoriasPorCategoriaPaiIdUseCase = new BuscarCategoriasPorCategoriaPaiIdUseCase(categoriaRepository)
+export const categoriaController = new CategoriaController(buscarTodasCategoriasUseCase, buscarCategoriaPorIdUseCase, buscarCategoriasPorCategoriaPaiIdUseCase)
 //#endregion
