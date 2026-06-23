@@ -21,4 +21,17 @@ export abstract class IServicoRepository {
      * @returns O servico inserido com o `id` preenchido pelo banco.
      */
     abstract inserir(servico: Servico): Promise<Servico>
+
+    /**
+     * Atualiza os dados de um servico existente.
+     * @param servico - Entidade com os dados atualizados (deve conter `id` valido).
+     * @returns O servico atualizado.
+     */
+    abstract atualizar(servico: Servico): Promise<Servico>
+
+    /**
+     * Remove um servico pelo identificador unico.
+     * @param id - ID do servico a ser deletado.
+     */
+    abstract deletar(id: string): Promise<void>
 }

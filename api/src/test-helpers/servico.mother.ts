@@ -39,7 +39,9 @@ export class ServicoMother {
         return {
             buscarPorId: jest.fn(),
             buscarPorIdPrestador: jest.fn(),
-            inserir: jest.fn()
+            inserir: jest.fn(),
+            atualizar: jest.fn(),
+            deletar: jest.fn()
         }
     }
 }

@@ -4,13 +4,14 @@ import { MongoMemoryServer } from "mongodb-memory-server";
 import { Servico } from "../../../domain/entities/servico/servico.entity";
 import { ServicoModel } from "../../models/servico/servico.model";
 import { ServicoMongodbRepositoryImpl } from "./servico-mongodb.repository.impl";
-import { ServicoMother } from "../../../test-helpers/servico.mother";
 import { ServicoMapper } from "./servico.mapper";
+import { ServicoMother } from "../../../test-helpers/servico.mother";
 
-describe('Servico MongoDB Repository', () => {
+describe('Testes de Integração do Repository: Serviço MongoDB', () => {
 
-    let repository: ServicoMongodbRepositoryImpl
-    let mongod: MongoMemoryServer
+    let repository : ServicoMongodbRepositoryImpl
+    let mongod : MongoMemoryServer
+    let servicoMock : Servico
 
     beforeAll(async () => {
         mongod = await MongoMemoryServer.create()
@@ -22,6 +23,8 @@ describe('Servico MongoDB Repository', () => {
     })
     beforeEach(async () => {
         repository = new ServicoMongodbRepositoryImpl()
+
+        servicoMock = ServicoMother.criarValido()
     })
     afterEach(async () => {
         const collections = mongoose.connection.collections
@@ -32,7 +35,6 @@ describe('Servico MongoDB Repository', () => {
 
     it('deve buscar servico por ID e retornar servico', async () => {
         // Arrange
-        const servicoMock = ServicoMother.criarValido()
         const documentoInserido = await ServicoModel.create(ServicoMapper.paraDocumento(servicoMock))
         // Act
         const servico = await repository.buscarPorId(documentoInserido.id.toString())
@@ -76,14 +78,40 @@ describe('Servico MongoDB Repository', () => {
     })
 
     it('deve inserir um servico e retorna-lo com id', async () => {
-        // Arrange
-        const servicoMock = ServicoMother.criarValido()
-        // Act
+        // Arrange & Act
         const servicoInserido = await repository.inserir(servicoMock)
         // Assert
         expect(servicoInserido).not.toBeNull()
         expect(servicoInserido).toBeInstanceOf(Servico)
         expect(servicoInserido.id).not.toBeNull()
         expect(servicoInserido.id).toBeDefined()
+    })
+
+    describe('atualizar', () => {
+        it('deve atualizar um servico existente e retorna-lo atualizado', async () => {
+            // Arrange
+            const documentoInserido = await ServicoModel.create(ServicoMapper.paraDocumento(servicoMock))
+            const servicoInserido = ServicoMapper.paraEntidade(documentoInserido)
+            servicoInserido.descricao = 'Descricao atualizada para o teste'
+            // Act
+            const servicoAtualizado = await repository.atualizar(servicoInserido)
+            // Assert
+            expect(servicoAtualizado).toBeInstanceOf(Servico)
+            expect(servicoAtualizado.descricao).toBe('Descricao atualizada para o teste')
+            expect(servicoAtualizado.id).toBe(servicoInserido.id)
+        })
+    })
+
+    describe('deletar', () => {
+        it('deve deletar um servico existente e nao encontra-lo depois', async () => {
+            // Arrange
+            const documentoInserido = await ServicoModel.create(ServicoMapper.paraDocumento(servicoMock))
+            const id = documentoInserido.id.toString()
+            // Act
+            await repository.deletar(id)
+            // Assert
+            const servicoAposDelecao = await repository.buscarPorId(id)
+            expect(servicoAposDelecao).toBeNull()
+        })
     })
 })
