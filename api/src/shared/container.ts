@@ -18,6 +18,10 @@ import { LoginUseCase } from "../domain/use-cases/usuario/shared/login/login.use
 import { AuthController } from "../http/controllers/usuario/shared/auth/auth.controller";
 import { ServicoMongodbRepositoryImpl } from "../infra/repositories/servico/servico-mongodb.repository.impl";
 import { CadastrarServicoUseCase } from "../domain/use-cases/servico/cadastrar-servico/cadastrar-servico.use-case";
+import { BuscarServicosPrestadorLogadoUseCase } from "../domain/use-cases/servico/buscar-servicos-prestador-logado/buscar-servicos-prestador-logado.use-case";
+import { BuscarServicoPorIdUseCase } from "../domain/use-cases/servico/buscar-servico-por-id/buscar-servico-por-id.use-case";
+import { AtualizarServicoUseCase } from "../domain/use-cases/servico/atualizar-servico/atualizar-servico.use-case";
+import { DeletarServicoUseCase } from "../domain/use-cases/servico/deletar-servico/deletar-servico.use-case";
 import { ServicoController } from "../http/controllers/servico/servico.controller";
 import { ClienteController } from "../http/controllers/usuario/cliente/cliente.controller";
 import { CategoriaMongodbRepositoryImpl } from "../infra/repositories/categoria/categoria-mongodb.repository.impl";
@@ -66,7 +70,17 @@ export const clientePrestadorController = new ClientePrestadorController(cadastr
 //#region servico.routes.ts
 const servicoRepository = new ServicoMongodbRepositoryImpl()
 const cadastrarServicoUseCase = new CadastrarServicoUseCase(servicoRepository)
-export const servicoController = new ServicoController(cadastrarServicoUseCase)
+const buscarServicosPrestadorLogadoUseCase = new BuscarServicosPrestadorLogadoUseCase(servicoRepository)
+const buscarServicoPorIdUseCase = new BuscarServicoPorIdUseCase(servicoRepository)
+const atualizarServicoUseCase = new AtualizarServicoUseCase(servicoRepository)
+const deletarServicoUseCase = new DeletarServicoUseCase(servicoRepository)
+export const servicoController = new ServicoController(
+    cadastrarServicoUseCase,
+    buscarServicosPrestadorLogadoUseCase,
+    buscarServicoPorIdUseCase,
+    atualizarServicoUseCase,
+    deletarServicoUseCase
+)
 //#endregion
 
 //#region categoria.routes.ts
