@@ -36,7 +36,7 @@ export class AtualizarSolicitacaoUseCase {
         if (dados.descricao !== undefined) {
             if (solicitacao.status !== StatusSolicitacao.ABERTA) {
                 throw new OperacaoNaoPermitidaError(
-                    'A descrição só pode ser alterada enquanto a solicitação estiver com status "aberta".'
+                    "A descrição só pode ser alterada enquanto a solicitação estiver com status 'aberta'."
                 )
             }
             solicitacao.descricao = dados.descricao
@@ -46,7 +46,7 @@ export class AtualizarSolicitacaoUseCase {
             const transicoesValidas = transicoesPermitidas[solicitacao.status] ?? []
             if (!transicoesValidas.includes(dados.status)) {
                 throw new OperacaoNaoPermitidaError(
-                    `Transição de status inválida: "${solicitacao.status}" → "${dados.status}".`
+                    `Transição de status inválida: '${solicitacao.status}' → '${dados.status}'.`
                 )
             }
             solicitacao.status = dados.status
