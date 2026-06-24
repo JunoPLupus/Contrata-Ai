@@ -29,6 +29,13 @@ import { BuscarTodasCategoriasUseCase } from "../domain/use-cases/categoria/busc
 import { BuscarCategoriaPorIdUseCase } from "../domain/use-cases/categoria/buscar-categoria-por-id/buscar-categoria-por-id.use-case";
 import { BuscarCategoriasPorCategoriaPaiIdUseCase } from "../domain/use-cases/categoria/buscar-categorias-por-categoria-pai-id/buscar-categorias-por-categoria-pai-id.use-case";
 import { CategoriaController } from "../http/controllers/categoria/categoria.controller";
+import { SolicitacaoMongodbRepositoryImpl } from "../infra/repositories/solicitacao/solicitacao-mongodb.repository.impl";
+import { CadastrarSolicitacaoUseCase } from "../domain/use-cases/solicitacao/cadastrar-solicitacao/cadastrar-solicitacao.use-case";
+import { BuscarSolicitacoesClienteLogadoUseCase } from "../domain/use-cases/solicitacao/buscar-solicitacoes-cliente-logado/buscar-solicitacoes-cliente-logado.use-case";
+import { BuscarSolicitacoesDisponiveisPrestadorUseCase } from "../domain/use-cases/solicitacao/buscar-solicitacoes-disponiveis-prestador/buscar-solicitacoes-disponiveis-prestador.use-case";
+import { BuscarSolicitacaoPorIdUseCase } from "../domain/use-cases/solicitacao/buscar-solicitacao-por-id/buscar-solicitacao-por-id.use-case";
+import { AtualizarSolicitacaoUseCase } from "../domain/use-cases/solicitacao/atualizar-solicitacao/atualizar-solicitacao.use-case";
+import { SolicitacaoController } from "../http/controllers/solicitacao/solicitacao.controller";
 
 //#region usuario.routes.ts
 const usuarioRepository = new UsuarioMongodbRepositoryImpl()
@@ -88,5 +95,21 @@ export const servicoController = new ServicoController(
     buscarServicoPorIdUseCase,
     atualizarServicoUseCase,
     deletarServicoUseCase
+)
+//#endregion
+
+//#region solicitacao.routes.ts
+const solicitacaoRepository = new SolicitacaoMongodbRepositoryImpl()
+const cadastrarSolicitacaoUseCase = new CadastrarSolicitacaoUseCase(solicitacaoRepository, categoriaRepository, prestadorRepository)
+const buscarSolicitacoesClienteLogadoUseCase = new BuscarSolicitacoesClienteLogadoUseCase(solicitacaoRepository)
+const buscarSolicitacoesDisponiveisPrestadorUseCase = new BuscarSolicitacoesDisponiveisPrestadorUseCase(solicitacaoRepository, servicoRepository)
+const buscarSolicitacaoPorIdUseCase = new BuscarSolicitacaoPorIdUseCase(solicitacaoRepository, servicoRepository)
+const atualizarSolicitacaoUseCase = new AtualizarSolicitacaoUseCase(solicitacaoRepository)
+export const solicitacaoController = new SolicitacaoController(
+    cadastrarSolicitacaoUseCase,
+    buscarSolicitacoesClienteLogadoUseCase,
+    buscarSolicitacoesDisponiveisPrestadorUseCase,
+    buscarSolicitacaoPorIdUseCase,
+    atualizarSolicitacaoUseCase
 )
 //#endregion

@@ -1,0 +1,78 @@
+= ADR-012: PATCH unificado para Solicitação e regra de edição condicional de descrição
+:date: 2026-06-24
+:status: Accepted
+
+== Contexto
+
+O ADR-011 padroniza as operações de atualização de recursos em dois endpoints distintos:
+
+* `PUT /{recurso}/{id}` — atualiza dados descritivos do recurso.
+* `PATCH /{recurso}/{id}` — atualiza exclusivamente o campo `status`.
+
+Ao modelar as rotas do agregado **Solicitação**, identificou-se que os únicos campos
+atualizáveis são `descricao` e `status`. Criar dois endpoints separados (`PUT` para
+`descricao` e `PATCH` para `status`) produziria uma API mais verbosa sem ganho de
+clareza, dado o escopo reduzido de atualizações deste recurso.
+
+Adicionalmente, existe uma regra de negócio que vincula a edição da `descricao` ao
+`status` corrente da solicitação: a descrição só pode ser alterada enquanto a
+solicitação estiver com status `'aberta'`. Essa regra reforça a coesão entre os dois
+campos numa única operação parcial.
+
+== Decisão
+
+=== 1. PATCH unificado
+
+Adotar um único `PATCH /solicitacoes/{id}` que aceita, opcionalmente, `descricao`
+e/ou `status` no body. Ambos os campos são opcionais; ao menos um deve estar presente
+para que a operação faça sentido (validação recomendada no controller em versões futuras).
+
+Esse padrão é uma **simplificação consciente** que diverge do ADR-011 §"Atualização".
+O time decidiu que o custo de manter a separação `PUT`/`PATCH` não se justifica para
+este recurso. Caso o conjunto de campos atualizáveis cresça no futuro, o `PUT` pode
+ser introduzido sem quebra do contrato atual.
+
+=== 2. Regra de edição condicional de descrição
+
+A `descricao` só pode ser alterada quando o status atual da solicitação for `'aberta'`.
+Tentativas de editar a descrição com status `'cancelada'` ou `'encerrada'` resultam em
+`OperacaoNaoPermitidaError` (statusCode `422`).
+
+Essa regra é verificada no use case `AtualizarSolicitacaoUseCase`, mantendo a lógica
+de negócio na camada de domínio (ADR-002, ADR-005).
+
+=== 3. Transições de status via API (cliente)
+
+A única transição de status que o cliente pode disparar via `PATCH` nesta branch é:
+
+* `aberta → cancelada` (RF16 — cancelamento pelo dono antes do aceite de orçamento)
+
+A transição `aberta → encerrada` é **permitida no domínio** (necessária para o fluxo
+de aceite de orçamento — RF12), mas **não é exposta pelo PATCH desta branch**. Quem
+a dispara é o agregado Orçamento (fora do escopo desta branch). Transições a partir
+de `cancelada` ou `encerrada` são bloqueadas.
+
+=== 4. Novo erro de domínio: `OperacaoNaoPermitidaError`
+
+Criado para cobrir dois casos distintos:
+
+* Tentativa de editar `descricao` com status ≠ `'aberta'`.
+* Transição de status inválida (ex: `cancelada → aberta`).
+
+O `statusCode` `422 Unprocessable Entity` foi escolhido por se tratar de uma operação
+semanticamente inválida dado o estado atual do recurso — o input é sintaticamente
+correto, mas viola uma regra de negócio do domínio (consistente com os demais erros
+`422` do projeto definidos no ADR-005).
+
+== Consequências
+
+* A API de Solicitação expõe um contrato mais simples (um único endpoint de atualização).
+* O `AtualizarSolicitacaoUseCase` concentra toda a lógica de validação de atualização,
+  seguindo SRP.
+* A divergência com o ADR-011 está documentada e localizada; outros recursos não são
+  afetados.
+* Se o padrão `PATCH` unificado se mostrar vantajoso para outros recursos, o ADR-011
+  pode ser revisado para incorporá-lo como variante permitida.
+* A transição `aberta → encerrada` deve ser implementada pelo agregado Orçamento ao
+  ser adicionado ao projeto, reutilizando diretamente o `AtualizarSolicitacaoUseCase`
+  ou criando um use case de domínio dedicado ao aceite de orçamento.
