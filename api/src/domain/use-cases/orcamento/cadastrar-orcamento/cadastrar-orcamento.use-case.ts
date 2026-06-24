@@ -26,6 +26,13 @@ export class CadastrarOrcamentoUseCase {
      * @throws {AcessoProibidoError} Se o prestador não tiver visibilidade sobre a solicitação.
      */
     async execute(dto: OrcamentoCadastroDTO): Promise<Orcamento> {
+        const orcamento = OrcamentoFactory.criar({
+            idSolicitacao: dto.idSolicitacao,
+            idPrestador: dto.idPrestador,
+            valor: dto.valor,
+            prazoDias: dto.prazoDias
+        })
+
         const solicitacao = await this.solicitacaoRepository.buscarPorId(dto.idSolicitacao)
         if (!solicitacao) throw new RecursoNaoEncontradoError('Solicitação')
 
@@ -46,13 +53,6 @@ export class CadastrarOrcamentoUseCase {
                 throw new AcessoProibidoError()
             }
         }
-
-        const orcamento = OrcamentoFactory.criar({
-            idSolicitacao: dto.idSolicitacao,
-            idPrestador: dto.idPrestador,
-            valor: dto.valor,
-            prazoDias: dto.prazoDias
-        })
 
         return this.orcamentoRepository.inserir(orcamento)
     }

@@ -16,7 +16,7 @@ export class OrcamentoFactory {
     }): Orcamento {
         return Orcamento.criarOrcamento({
             id: dados.id,
-            idSolicitacao: new StringValueObject('idSolicitacao', dados.idSolicitacao),
+            idSolicitacao: new StringValueObject('idSolicitação', dados.idSolicitacao),
             idPrestador: new StringValueObject('idPrestador', dados.idPrestador),
             valor: new NumberValueObject('valor', dados.valor, 1),
             prazoDias: new NumberValueObject('prazoDias', dados.prazoDias ?? 15, 1),

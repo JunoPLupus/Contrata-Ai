@@ -6,6 +6,7 @@ import { ServicoMother } from "../../../../test-helpers/servico.mother";
 import { RecursoNaoEncontradoError } from "../../../errors/recurso-nao-encontrado.error";
 import { AcessoProibidoError } from "../../../errors/acesso-proibido.error";
 import { OperacaoNaoPermitidaError } from "../../../errors/operacao-nao-permitida.error";
+import { CampoObrigatorioVazioError } from "../../../errors/campo-obrigatorio-vazio.error";
 import { StatusSolicitacao } from "../../../value-objects/solicitacao/status/status.vo";
 
 describe('CadastrarOrcamentoUseCase', () => {
@@ -56,6 +57,14 @@ describe('CadastrarOrcamentoUseCase', () => {
         // Assert
         expect(resultado).toBe(orcamentoSalvo)
         expect(servicoRepoMock.buscarPorIdPrestador).not.toHaveBeenCalled()
+    })
+
+    it('deve lançar CampoObrigatorioVazioError se idSolicitacao não for informado', async () => {
+        // Arrange — spread após criarDTO para sobrescrever o idSolicitacao já gerado pelo ??
+        const dto = { ...OrcamentoMother.criarDTO(), idSolicitacao: undefined as any }
+        // Act & Assert
+        await expect(useCase.execute(dto)).rejects.toThrow(CampoObrigatorioVazioError)
+        expect(solicitacaoRepoMock.buscarPorId).not.toHaveBeenCalled()
     })
 
     it('deve lançar RecursoNaoEncontradoError se solicitação não existir', async () => {
