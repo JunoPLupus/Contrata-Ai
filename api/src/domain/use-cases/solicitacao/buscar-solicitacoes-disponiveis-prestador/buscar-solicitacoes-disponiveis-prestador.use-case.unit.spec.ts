@@ -72,7 +72,7 @@ describe('Testes unitários do Use-Case: Buscar Solicitações Disponíveis para
         solicitacaoRepositoryMock.buscarDisponiveisParaPrestador.mockResolvedValue([])
         // Act
         await useCase.execute(idPrestador, idCliente)
-        // Assert — categoria duplicada deve aparecer apenas uma vez
+        // Assert
         expect(solicitacaoRepositoryMock.buscarDisponiveisParaPrestador).toHaveBeenCalledWith(
             idPrestador,
             [idCategoria],
@@ -92,12 +92,12 @@ describe('Testes unitários do Use-Case: Buscar Solicitações Disponíveis para
     })
 
     it('não deve repassar solicitações do próprio cliente logado ao repositório', async () => {
-        // Arrange — idCliente é passado ao repo para exclusão; cabe ao repo filtrar no BD
+        // Arrange
         servicoRepositoryMock.buscarPorIdPrestador.mockResolvedValue([servico])
         solicitacaoRepositoryMock.buscarDisponiveisParaPrestador.mockResolvedValue([])
         // Act
         await useCase.execute(idPrestador, idCliente)
-        // Assert — idCliente deve ser propagado ao repositório como terceiro argumento
+        // Assert
         const chamada = solicitacaoRepositoryMock.buscarDisponiveisParaPrestador.mock.calls[0]
         expect(chamada[2]).toBe(idCliente)
     })

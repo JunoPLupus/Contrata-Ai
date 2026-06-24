@@ -7,6 +7,7 @@ import servicoRouter from "./http/routes/servico/servico.routes";
 import clienteRouter from "./http/routes/usuario/cliente/cliente.routes";
 import categoriaRouter from "./http/routes/categoria/categoria.routes";
 import solicitacaoRouter from "./http/routes/solicitacao/solicitacao.routes";
+import orcamentoRouter from "./http/routes/orcamento/orcamento.routes";
 import { errorHandler } from "./http/middlewares/error-handler/error-handler.middleware";
 
 const rotaRaiz = '/contrataai-api'
@@ -20,6 +21,7 @@ app.use(rotaRaiz, authRouter)
 app.use(rotaRaiz, servicoRouter)
 app.use(rotaRaiz, categoriaRouter)
 app.use(rotaRaiz, solicitacaoRouter)
+app.use(rotaRaiz, orcamentoRouter)
 
 app.use(errorHandler)
 

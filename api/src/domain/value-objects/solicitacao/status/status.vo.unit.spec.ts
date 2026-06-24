@@ -8,14 +8,14 @@ describe('StatusSolicitacaoValueObject', () => {
             expect(vo.valor).toBe('aberta')
         })
 
-        it('deve aceitar "encerrada"', () => {
-            const vo = new StatusSolicitacaoValueObject(StatusSolicitacao.ENCERRADA)
-            expect(vo.valor).toBe('encerrada')
-        })
-
         it('deve aceitar "cancelada"', () => {
             const vo = new StatusSolicitacaoValueObject(StatusSolicitacao.CANCELADA)
             expect(vo.valor).toBe('cancelada')
+        })
+
+        it('deve aceitar "encerrada"', () => {
+            const vo = new StatusSolicitacaoValueObject(StatusSolicitacao.ENCERRADA)
+            expect(vo.valor).toBe('encerrada')
         })
     })
 

@@ -36,6 +36,14 @@ import { BuscarSolicitacoesDisponiveisPrestadorUseCase } from "../domain/use-cas
 import { BuscarSolicitacaoPorIdUseCase } from "../domain/use-cases/solicitacao/buscar-solicitacao-por-id/buscar-solicitacao-por-id.use-case";
 import { AtualizarSolicitacaoUseCase } from "../domain/use-cases/solicitacao/atualizar-solicitacao/atualizar-solicitacao.use-case";
 import { SolicitacaoController } from "../http/controllers/solicitacao/solicitacao.controller";
+import { OrcamentoMongodbRepositoryImpl } from "../infra/repositories/orcamento/orcamento-mongodb.repository.impl";
+import { CadastrarOrcamentoUseCase } from "../domain/use-cases/orcamento/cadastrar-orcamento/cadastrar-orcamento.use-case";
+import { BuscarOrcamentosPrestadorLogadoUseCase } from "../domain/use-cases/orcamento/buscar-orcamentos-prestador-logado/buscar-orcamentos-prestador-logado.use-case";
+import { BuscarOrcamentoPorIdUseCase } from "../domain/use-cases/orcamento/buscar-orcamento-por-id/buscar-orcamento-por-id.use-case";
+import { AtualizarOrcamentoUseCase } from "../domain/use-cases/orcamento/atualizar-orcamento/atualizar-orcamento.use-case";
+import { AceitarOrcamentoUseCase } from "../domain/use-cases/orcamento/aceitar-orcamento/aceitar-orcamento.use-case";
+import { BuscarOrcamentosDaSolicitacaoUseCase } from "../domain/use-cases/orcamento/buscar-orcamentos-da-solicitacao/buscar-orcamentos-da-solicitacao.use-case";
+import { OrcamentoController } from "../http/controllers/orcamento/orcamento.controller";
 
 //#region usuario.routes.ts
 const usuarioRepository = new UsuarioMongodbRepositoryImpl()
@@ -111,5 +119,23 @@ export const solicitacaoController = new SolicitacaoController(
     buscarSolicitacoesDisponiveisPrestadorUseCase,
     buscarSolicitacaoPorIdUseCase,
     atualizarSolicitacaoUseCase
+)
+//#endregion
+
+//#region orcamento.routes.ts
+const orcamentoRepository = new OrcamentoMongodbRepositoryImpl()
+const cadastrarOrcamentoUseCase = new CadastrarOrcamentoUseCase(orcamentoRepository, solicitacaoRepository, servicoRepository)
+const buscarOrcamentosPrestadorLogadoUseCase = new BuscarOrcamentosPrestadorLogadoUseCase(orcamentoRepository)
+const buscarOrcamentoPorIdUseCase = new BuscarOrcamentoPorIdUseCase(orcamentoRepository, solicitacaoRepository)
+const atualizarOrcamentoUseCase = new AtualizarOrcamentoUseCase(orcamentoRepository)
+const aceitarOrcamentoUseCase = new AceitarOrcamentoUseCase(orcamentoRepository, solicitacaoRepository, atualizarSolicitacaoUseCase)
+const buscarOrcamentosDaSolicitacaoUseCase = new BuscarOrcamentosDaSolicitacaoUseCase(orcamentoRepository, solicitacaoRepository)
+export const orcamentoController = new OrcamentoController(
+    cadastrarOrcamentoUseCase,
+    buscarOrcamentosPrestadorLogadoUseCase,
+    buscarOrcamentoPorIdUseCase,
+    atualizarOrcamentoUseCase,
+    aceitarOrcamentoUseCase,
+    buscarOrcamentosDaSolicitacaoUseCase
 )
 //#endregion

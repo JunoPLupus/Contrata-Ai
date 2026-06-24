@@ -14,9 +14,9 @@ export class CadastrarSolicitacaoUseCase {
     ) {}
 
     /**
-     * Cadastra uma nova solicitacao a partir dos dados recebidos no DTO.
+     * Cadastra uma nova solicitação a partir dos dados recebidos no DTO.
      * O status e sempre 'aberta' e a dataSolicitacao e gerada automaticamente.
-     * @param dto - Dados necessarios para o cadastro da solicitacao.
+     * @param dto - Dados necessários para o cadastro da solicitação.
      * @returns A solicitacao persistida com o `id` preenchido pelo banco.
      * @throws {RecursoNaoEncontradoError} Se a categoria nao for encontrada.
      * @throws {RecursoNaoEncontradoError} Se o prestador direto nao for encontrado (quando informado).

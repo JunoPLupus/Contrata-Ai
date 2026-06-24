@@ -170,12 +170,12 @@ describe('Testes de Integração do Repository: Solicitação MongoDB', () => {
         })
 
         it('não deve retornar solicitações criadas pelo próprio cliente logado', async () => {
-            // Arrange — solicitacao do próprio cliente + outra de cliente diferente
+            // Arrange
             const solicitacaoPropria = SolicitacaoMother.criarValido({ idCategoria, idCliente })
             const solicitacaoOutro = SolicitacaoMother.criarValido({ idCategoria })
             await SolicitacaoModel.create(SolicitacaoMapper.paraDocumento(solicitacaoPropria))
             await SolicitacaoModel.create(SolicitacaoMapper.paraDocumento(solicitacaoOutro))
-            // Act — exclui solicitações do idCliente logado
+            // Act
             const resultado = await repository.buscarDisponiveisParaPrestador(idPrestador, [idCategoria], idCliente)
             // Assert
             expect(resultado).toHaveLength(1)

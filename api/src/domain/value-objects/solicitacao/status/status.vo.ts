@@ -3,8 +3,8 @@ import { FormatoInvalidoError } from "../../../errors/formato-invalido.error";
 
 export const StatusSolicitacao = {
     ABERTA: 'aberta',
-    ENCERRADA: 'encerrada',
     CANCELADA: 'cancelada',
+    ENCERRADA: 'encerrada',
 } as const
 
 export type StatusSolicitacaoTipo = typeof StatusSolicitacao[keyof typeof StatusSolicitacao]
@@ -14,7 +14,7 @@ const valoresValidos = Object.values(StatusSolicitacao)
 /**
  * Value Object dedicado para o campo `status` da entidade Solicitacao.
  * Garante que apenas os valores do conjunto fechado sejam aceitos:
- * `'aberta'`, `'encerrada'` e `'cancelada'`.
+ * `'aberta'`, `'cancelada'` e `'encerrada'`.
  *
  * @throws {FormatoInvalidoError} Se o valor não pertencer ao conjunto permitido.
  */

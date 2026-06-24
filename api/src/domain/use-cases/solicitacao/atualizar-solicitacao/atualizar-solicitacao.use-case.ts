@@ -25,7 +25,7 @@ export class AtualizarSolicitacaoUseCase {
      * @returns A solicitação atualizada.
      * @throws {RecursoNaoEncontradoError} Se a solicitação não existir.
      * @throws {AcessoProibidoError} Se a solicitação pertencer a outro cliente.
-     * @throws {OperacaoNaoPermitidaError} Se a descrição for editada com status ≠ 'aberta'.
+     * @throws {OperacaoNaoPermitidaError} Se a descrição for editada com status diferente de 'aberta'.
      * @throws {OperacaoNaoPermitidaError} Se a transição de status for inválida.
      */
     async execute(id: string, idCliente: string, dados: SolicitacaoAtualizacaoDTO): Promise<Solicitacao> {
