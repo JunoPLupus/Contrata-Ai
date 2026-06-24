@@ -7,6 +7,7 @@ import { BuscarOrcamentosPrestadorLogadoUseCase } from "../../../domain/use-case
 import { BuscarOrcamentoPorIdUseCase } from "../../../domain/use-cases/orcamento/buscar-orcamento-por-id/buscar-orcamento-por-id.use-case";
 import { AtualizarOrcamentoUseCase } from "../../../domain/use-cases/orcamento/atualizar-orcamento/atualizar-orcamento.use-case";
 import { AceitarOrcamentoUseCase } from "../../../domain/use-cases/orcamento/aceitar-orcamento/aceitar-orcamento.use-case";
+import { BuscarOrcamentosDaSolicitacaoUseCase } from "../../../domain/use-cases/orcamento/buscar-orcamentos-da-solicitacao/buscar-orcamentos-da-solicitacao.use-case";
 import { OrcamentoMother } from "../../../test-helpers/orcamento.mother";
 import { OrcamentoMapper } from "../../mappers/orcamento/orcamento.mapper";
 import { StatusOrcamento } from "../../../domain/value-objects/orcamento/status/status.vo";
@@ -18,6 +19,7 @@ describe('OrcamentoController', () => {
     let buscarPorIdUseCaseMock: jest.Mocked<BuscarOrcamentoPorIdUseCase>
     let atualizarUseCaseMock: jest.Mocked<AtualizarOrcamentoUseCase>
     let aceitarUseCaseMock: jest.Mocked<AceitarOrcamentoUseCase>
+    let buscarDaSolicitacaoUseCaseMock: jest.Mocked<BuscarOrcamentosDaSolicitacaoUseCase>
     let req: Partial<Request>
     let res: Partial<Response>
 
@@ -30,13 +32,15 @@ describe('OrcamentoController', () => {
         buscarPorIdUseCaseMock = { execute: jest.fn() } as any
         atualizarUseCaseMock = { execute: jest.fn() } as any
         aceitarUseCaseMock = { execute: jest.fn() } as any
+        buscarDaSolicitacaoUseCaseMock = { execute: jest.fn() } as any
 
         controller = new OrcamentoController(
             cadastrarUseCaseMock,
             buscarPrestadorLogadoUseCaseMock,
             buscarPorIdUseCaseMock,
             atualizarUseCaseMock,
-            aceitarUseCaseMock
+            aceitarUseCaseMock,
+            buscarDaSolicitacaoUseCaseMock
         )
 
         res = {
@@ -121,6 +125,25 @@ describe('OrcamentoController', () => {
             )
             expect(res.status).toHaveBeenCalledWith(200)
             expect(res.json).toHaveBeenCalledWith(OrcamentoMapper.paraRespostaDTO(orcamentoAtualizado))
+        })
+    })
+
+    describe('buscarDaSolicitacao', () => {
+        it('deve retornar 200 com lista de OrcamentoRespostaDTO dos orçamentos pendentes', async () => {
+            // Arrange
+            const idSolicitacao = new Types.ObjectId().toString()
+            const orcamentos = [OrcamentoMother.criarValido(), OrcamentoMother.criarValido()]
+            req = {
+                user: { idCliente },
+                params: { id: idSolicitacao }
+            }
+            buscarDaSolicitacaoUseCaseMock.execute.mockResolvedValue(orcamentos)
+            // Act
+            await controller.buscarDaSolicitacao(req as any, res as any)
+            // Assert
+            expect(buscarDaSolicitacaoUseCaseMock.execute).toHaveBeenCalledWith(idSolicitacao, idCliente)
+            expect(res.status).toHaveBeenCalledWith(200)
+            expect(res.json).toHaveBeenCalledWith(OrcamentoMapper.paraListaRespostaDTO(orcamentos))
         })
     })
 

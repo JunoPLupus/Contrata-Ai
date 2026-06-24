@@ -5,6 +5,7 @@ import { BuscarOrcamentosPrestadorLogadoUseCase } from "../../../domain/use-case
 import { BuscarOrcamentoPorIdUseCase } from "../../../domain/use-cases/orcamento/buscar-orcamento-por-id/buscar-orcamento-por-id.use-case";
 import { AtualizarOrcamentoUseCase } from "../../../domain/use-cases/orcamento/atualizar-orcamento/atualizar-orcamento.use-case";
 import { AceitarOrcamentoUseCase } from "../../../domain/use-cases/orcamento/aceitar-orcamento/aceitar-orcamento.use-case";
+import { BuscarOrcamentosDaSolicitacaoUseCase } from "../../../domain/use-cases/orcamento/buscar-orcamentos-da-solicitacao/buscar-orcamentos-da-solicitacao.use-case";
 import { OrcamentoCadastroDTO } from "../../../domain/dto/orcamento/orcamento-cadastro.dto";
 import { OrcamentoAtualizacaoDTO } from "../../../domain/dto/orcamento/orcamento-atualizacao.dto";
 import { OrcamentoMapper } from "../../mappers/orcamento/orcamento.mapper";
@@ -15,7 +16,8 @@ export class OrcamentoController {
         private readonly buscarOrcamentosPrestadorLogadoUseCase: BuscarOrcamentosPrestadorLogadoUseCase,
         private readonly buscarOrcamentoPorIdUseCase: BuscarOrcamentoPorIdUseCase,
         private readonly atualizarOrcamentoUseCase: AtualizarOrcamentoUseCase,
-        private readonly aceitarOrcamentoUseCase: AceitarOrcamentoUseCase
+        private readonly aceitarOrcamentoUseCase: AceitarOrcamentoUseCase,
+        private readonly buscarOrcamentosDaSolicitacaoUseCase: BuscarOrcamentosDaSolicitacaoUseCase
     ) {}
 
     public async cadastrar(request: Request, response: Response): Promise<void> {
@@ -64,5 +66,13 @@ export class OrcamentoController {
             request.user!.idCliente
         )
         response.status(200).json(OrcamentoMapper.paraRespostaDTO(orcamento))
+    }
+
+    public async buscarDaSolicitacao(request: Request, response: Response): Promise<void> {
+        const orcamentos = await this.buscarOrcamentosDaSolicitacaoUseCase.execute(
+            request.params.id as string,
+            request.user!.idCliente
+        )
+        response.status(200).json(OrcamentoMapper.paraListaRespostaDTO(orcamentos))
     }
 }

@@ -42,6 +42,7 @@ import { BuscarOrcamentosPrestadorLogadoUseCase } from "../domain/use-cases/orca
 import { BuscarOrcamentoPorIdUseCase } from "../domain/use-cases/orcamento/buscar-orcamento-por-id/buscar-orcamento-por-id.use-case";
 import { AtualizarOrcamentoUseCase } from "../domain/use-cases/orcamento/atualizar-orcamento/atualizar-orcamento.use-case";
 import { AceitarOrcamentoUseCase } from "../domain/use-cases/orcamento/aceitar-orcamento/aceitar-orcamento.use-case";
+import { BuscarOrcamentosDaSolicitacaoUseCase } from "../domain/use-cases/orcamento/buscar-orcamentos-da-solicitacao/buscar-orcamentos-da-solicitacao.use-case";
 import { OrcamentoController } from "../http/controllers/orcamento/orcamento.controller";
 
 //#region usuario.routes.ts
@@ -128,11 +129,13 @@ const buscarOrcamentosPrestadorLogadoUseCase = new BuscarOrcamentosPrestadorLoga
 const buscarOrcamentoPorIdUseCase = new BuscarOrcamentoPorIdUseCase(orcamentoRepository, solicitacaoRepository)
 const atualizarOrcamentoUseCase = new AtualizarOrcamentoUseCase(orcamentoRepository)
 const aceitarOrcamentoUseCase = new AceitarOrcamentoUseCase(orcamentoRepository, solicitacaoRepository, atualizarSolicitacaoUseCase)
+const buscarOrcamentosDaSolicitacaoUseCase = new BuscarOrcamentosDaSolicitacaoUseCase(orcamentoRepository, solicitacaoRepository)
 export const orcamentoController = new OrcamentoController(
     cadastrarOrcamentoUseCase,
     buscarOrcamentosPrestadorLogadoUseCase,
     buscarOrcamentoPorIdUseCase,
     atualizarOrcamentoUseCase,
-    aceitarOrcamentoUseCase
+    aceitarOrcamentoUseCase,
+    buscarOrcamentosDaSolicitacaoUseCase
 )
 //#endregion
