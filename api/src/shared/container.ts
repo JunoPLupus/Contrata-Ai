@@ -67,12 +67,20 @@ const cadastrarClientePrestadorUseCase = new CadastrarClientePrestadorUseCase(ca
 export const clientePrestadorController = new ClientePrestadorController(cadastrarClientePrestadorUseCase)
 //#endregion
 
+//#region categoria.routes.ts
+const categoriaRepository = new CategoriaMongodbRepositoryImpl()
+const buscarTodasCategoriasUseCase = new BuscarTodasCategoriasUseCase(categoriaRepository)
+const buscarCategoriaPorIdUseCase = new BuscarCategoriaPorIdUseCase(categoriaRepository)
+const buscarCategoriasPorCategoriaPaiIdUseCase = new BuscarCategoriasPorCategoriaPaiIdUseCase(categoriaRepository)
+export const categoriaController = new CategoriaController(buscarTodasCategoriasUseCase, buscarCategoriaPorIdUseCase, buscarCategoriasPorCategoriaPaiIdUseCase)
+//#endregion
+
 //#region servico.routes.ts
 const servicoRepository = new ServicoMongodbRepositoryImpl()
-const cadastrarServicoUseCase = new CadastrarServicoUseCase(servicoRepository)
+const cadastrarServicoUseCase = new CadastrarServicoUseCase(servicoRepository, categoriaRepository)
 const buscarServicosPrestadorLogadoUseCase = new BuscarServicosPrestadorLogadoUseCase(servicoRepository)
 const buscarServicoPorIdUseCase = new BuscarServicoPorIdUseCase(servicoRepository)
-const atualizarServicoUseCase = new AtualizarServicoUseCase(servicoRepository)
+const atualizarServicoUseCase = new AtualizarServicoUseCase(servicoRepository, categoriaRepository)
 const deletarServicoUseCase = new DeletarServicoUseCase(servicoRepository)
 export const servicoController = new ServicoController(
     cadastrarServicoUseCase,
@@ -81,12 +89,4 @@ export const servicoController = new ServicoController(
     atualizarServicoUseCase,
     deletarServicoUseCase
 )
-//#endregion
-
-//#region categoria.routes.ts
-const categoriaRepository = new CategoriaMongodbRepositoryImpl()
-const buscarTodasCategoriasUseCase = new BuscarTodasCategoriasUseCase(categoriaRepository)
-const buscarCategoriaPorIdUseCase = new BuscarCategoriaPorIdUseCase(categoriaRepository)
-const buscarCategoriasPorCategoriaPaiIdUseCase = new BuscarCategoriasPorCategoriaPaiIdUseCase(categoriaRepository)
-export const categoriaController = new CategoriaController(buscarTodasCategoriasUseCase, buscarCategoriaPorIdUseCase, buscarCategoriasPorCategoriaPaiIdUseCase)
 //#endregion
