@@ -10,8 +10,7 @@ export class ServicoFactory {
         descricao: string,
         precoMin?: number,
         precoMax?: number,
-        prazoMedioDias?: number,
-        ativo: boolean
+        prazoMedioDias?: number
     }): Servico {
         return Servico.criarServico({
             id: dados.id,
@@ -21,7 +20,6 @@ export class ServicoFactory {
             precoMin: dados.precoMin !== undefined ? new NumberValueObject('precoMin', dados.precoMin, 1) : undefined,
             precoMax: dados.precoMax !== undefined ? new NumberValueObject('precoMax', dados.precoMax, 1) : undefined,
             prazoMedioDias: dados.prazoMedioDias !== undefined ? new NumberValueObject('prazoMedio', dados.prazoMedioDias, 1) : undefined,
-            ativo: dados.ativo
-        });
+       })
     }
 }

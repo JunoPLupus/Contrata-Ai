@@ -23,4 +23,18 @@ export class ServicoMongodbRepositoryImpl implements IServicoRepository {
 
         return ServicoMapper.paraEntidade(documentoInserido)
     }
+
+    public async atualizar(servico: Servico): Promise<Servico> {
+        const documento = await ServicoModel.findByIdAndUpdate(
+            servico.id,
+            ServicoMapper.paraDocumento(servico),
+            { new: true }
+        )
+
+        return ServicoMapper.paraEntidade(documento!)
+    }
+
+    public async deletar(id: string): Promise<void> {
+        await ServicoModel.findByIdAndDelete(id)
+    }
 }
