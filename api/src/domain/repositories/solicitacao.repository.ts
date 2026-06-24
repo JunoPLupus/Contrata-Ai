@@ -10,7 +10,7 @@ export abstract class ISolicitacaoRepository {
 
     /**
      * Busca todas as solicitações de um cliente.
-     * @param idCliente - ID do cliente cujas solicitações serão listadas.
+     * @param idCliente - ID do cliente cujas solicitações serao listadas.
      * @returns Lista de solicitações do cliente. Retorna array vazio se nenhuma for encontrada.
      */
     abstract buscarPorIdCliente(idCliente: string): Promise<Solicitacao[]>
@@ -18,14 +18,17 @@ export abstract class ISolicitacaoRepository {
     /**
      * Busca solicitações abertas visíveis ao prestador, filtradas por categorias.
      * Retorna solicitações gerais (id_prestador_direto = null) e diretas endereçadas ao prestador.
+     * Exclui solicitações criadas pelo próprio usuário logado para evitar auto-orçamento.
      * @param idPrestador - ID do prestador autenticado.
      * @param idsCategorias - Categorias dos serviços do prestador (usado como filtro).
+     * @param idClienteExcluido - ID do cliente logado; suas solicitações não aparecem na listagem.
      * @param idCategoria - Categoria específica para filtrar (opcional).
      * @returns Lista de solicitações disponíveis. Retorna array vazio se nenhuma for encontrada.
      */
     abstract buscarDisponiveisParaPrestador(
         idPrestador: string,
         idsCategorias: string[],
+        idClienteExcluido: string,
         idCategoria?: string
     ): Promise<Solicitacao[]>
 

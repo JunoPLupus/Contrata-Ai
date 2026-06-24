@@ -21,6 +21,7 @@ export class SolicitacaoMongodbRepositoryImpl implements ISolicitacaoRepository 
     public async buscarDisponiveisParaPrestador(
         idPrestador: string,
         idsCategorias: string[],
+        idClienteExcluido: string,
         idCategoria?: string
     ): Promise<Solicitacao[]> {
         const categoriasParaFiltro = idCategoria !== undefined ? [idCategoria] : idsCategorias
@@ -28,6 +29,7 @@ export class SolicitacaoMongodbRepositoryImpl implements ISolicitacaoRepository 
         const documentos = await SolicitacaoModel.find({
             status: StatusSolicitacao.ABERTA,
             id_categoria: { $in: categoriasParaFiltro },
+            id_cliente: { $ne: idClienteExcluido },
             $or: [
                 { id_prestador_direto: null },
                 { id_prestador_direto: { $exists: false } },

@@ -15,6 +15,7 @@ describe('Testes unitários do Use-Case: Buscar Solicitações Disponíveis para
     let servico : Servico
 
     const idPrestador = new Types.ObjectId().toString()
+    const idCliente = new Types.ObjectId().toString()
     const idCategoria = new Types.ObjectId().toString()
 
     beforeEach(() => {
@@ -34,12 +35,13 @@ describe('Testes unitários do Use-Case: Buscar Solicitações Disponíveis para
         servicoRepositoryMock.buscarPorIdPrestador.mockResolvedValue([servico])
         solicitacaoRepositoryMock.buscarDisponiveisParaPrestador.mockResolvedValue(solicitacoesMock)
         // Act
-        const resultado = await useCase.execute(idPrestador)
+        const resultado = await useCase.execute(idPrestador, idCliente)
         // Assert
         expect(servicoRepositoryMock.buscarPorIdPrestador).toHaveBeenCalledWith(idPrestador)
         expect(solicitacaoRepositoryMock.buscarDisponiveisParaPrestador).toHaveBeenCalledWith(
             idPrestador,
             [idCategoria],
+            idCliente,
             undefined
         )
         expect(resultado).toHaveLength(1)
@@ -51,11 +53,12 @@ describe('Testes unitários do Use-Case: Buscar Solicitações Disponíveis para
         servicoRepositoryMock.buscarPorIdPrestador.mockResolvedValue([servico])
         solicitacaoRepositoryMock.buscarDisponiveisParaPrestador.mockResolvedValue([])
         // Act
-        const resultado = await useCase.execute(idPrestador, idCategoria)
+        const resultado = await useCase.execute(idPrestador, idCliente, idCategoria)
         // Assert
         expect(solicitacaoRepositoryMock.buscarDisponiveisParaPrestador).toHaveBeenCalledWith(
             idPrestador,
             [idCategoria],
+            idCliente,
             idCategoria
         )
         expect(resultado).toHaveLength(0)
@@ -68,11 +71,12 @@ describe('Testes unitários do Use-Case: Buscar Solicitações Disponíveis para
         servicoRepositoryMock.buscarPorIdPrestador.mockResolvedValue([servico1, servico2])
         solicitacaoRepositoryMock.buscarDisponiveisParaPrestador.mockResolvedValue([])
         // Act
-        await useCase.execute(idPrestador)
+        await useCase.execute(idPrestador, idCliente)
         // Assert — categoria duplicada deve aparecer apenas uma vez
         expect(solicitacaoRepositoryMock.buscarDisponiveisParaPrestador).toHaveBeenCalledWith(
             idPrestador,
             [idCategoria],
+            idCliente,
             undefined
         )
     })
@@ -82,8 +86,19 @@ describe('Testes unitários do Use-Case: Buscar Solicitações Disponíveis para
         servicoRepositoryMock.buscarPorIdPrestador.mockResolvedValue([])
         solicitacaoRepositoryMock.buscarDisponiveisParaPrestador.mockResolvedValue([])
         // Act
-        const resultado = await useCase.execute(idPrestador)
+        const resultado = await useCase.execute(idPrestador, idCliente)
         // Assert
         expect(resultado).toHaveLength(0)
+    })
+
+    it('não deve repassar solicitações do próprio cliente logado ao repositório', async () => {
+        // Arrange — idCliente é passado ao repo para exclusão; cabe ao repo filtrar no BD
+        servicoRepositoryMock.buscarPorIdPrestador.mockResolvedValue([servico])
+        solicitacaoRepositoryMock.buscarDisponiveisParaPrestador.mockResolvedValue([])
+        // Act
+        await useCase.execute(idPrestador, idCliente)
+        // Assert — idCliente deve ser propagado ao repositório como terceiro argumento
+        const chamada = solicitacaoRepositoryMock.buscarDisponiveisParaPrestador.mock.calls[0]
+        expect(chamada[2]).toBe(idCliente)
     })
 })

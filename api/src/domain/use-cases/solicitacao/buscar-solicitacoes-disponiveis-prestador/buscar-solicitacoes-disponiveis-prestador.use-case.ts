@@ -12,14 +12,16 @@ export class BuscarSolicitacoesDisponiveisPrestadorUseCase {
      * Retorna as solicitações abertas visíveis ao prestador autenticado.
      * Inclui solicitações gerais (sem prestador direto) e diretas endereçadas a ele,
      * nas categorias dos serviços que o prestador oferece.
+     * Exclui as próprias solicitações do usuário logado para evitar auto-orçamento.
      * @param idPrestador - ID do prestador autenticado extraído do token JWT.
+     * @param idCliente - ID do cliente logado; suas solicitações são excluídas da listagem.
      * @param idCategoria - Categoria específica para filtrar (opcional).
      * @returns Lista de solicitações disponíveis. Retorna array vazio se nenhuma for encontrada.
      */
-    async execute(idPrestador: string, idCategoria?: string): Promise<Solicitacao[]> {
+    async execute(idPrestador: string, idCliente: string, idCategoria?: string): Promise<Solicitacao[]> {
         const servicos = await this.servicoRepository.buscarPorIdPrestador(idPrestador)
         const idsCategorias = [...new Set(servicos.map(s => s.idCategoria))]
 
-        return this.solicitacaoRepository.buscarDisponiveisParaPrestador(idPrestador, idsCategorias, idCategoria)
+        return this.solicitacaoRepository.buscarDisponiveisParaPrestador(idPrestador, idsCategorias, idCliente, idCategoria)
     }
 }

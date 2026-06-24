@@ -88,14 +88,16 @@ describe('Testes de Integração do Repository: Solicitação MongoDB', () => {
 
     describe('buscarDisponiveisParaPrestador', () => {
         const idPrestador = new Types.ObjectId().toString()
+        const idCliente = new Types.ObjectId().toString()
         const idCategoria = new Types.ObjectId().toString()
+        const idClienteExcluido = new Types.ObjectId().toString()
 
         it('deve retornar solicitações gerais abertas da categoria do prestador', async () => {
             // Arrange
             const geral = SolicitacaoMother.criarValido({ idCategoria })
             await SolicitacaoModel.create(SolicitacaoMapper.paraDocumento(geral))
             // Act
-            const resultado = await repository.buscarDisponiveisParaPrestador(idPrestador, [idCategoria])
+            const resultado = await repository.buscarDisponiveisParaPrestador(idPrestador, [idCategoria], idClienteExcluido)
             // Assert
             expect(resultado).toHaveLength(1)
             expect(resultado[0]).toBeInstanceOf(Solicitacao)
@@ -107,7 +109,7 @@ describe('Testes de Integração do Repository: Solicitação MongoDB', () => {
             const direta = SolicitacaoMother.criarValido({ idCategoria, idPrestadorDireto: idPrestador })
             await SolicitacaoModel.create(SolicitacaoMapper.paraDocumento(direta))
             // Act
-            const resultado = await repository.buscarDisponiveisParaPrestador(idPrestador, [idCategoria])
+            const resultado = await repository.buscarDisponiveisParaPrestador(idPrestador, [idCategoria], idClienteExcluido)
             // Assert
             expect(resultado).toHaveLength(1)
             expect(resultado[0].idPrestadorDireto).toBe(idPrestador)
@@ -122,7 +124,7 @@ describe('Testes de Integração do Repository: Solicitação MongoDB', () => {
             })
             await SolicitacaoModel.create(SolicitacaoMapper.paraDocumento(diretaOutroPrestador))
             // Act
-            const resultado = await repository.buscarDisponiveisParaPrestador(idPrestador, [idCategoria])
+            const resultado = await repository.buscarDisponiveisParaPrestador(idPrestador, [idCategoria], idClienteExcluido)
             // Assert
             expect(resultado).toHaveLength(0)
         })
@@ -134,7 +136,7 @@ describe('Testes de Integração do Repository: Solicitação MongoDB', () => {
             await SolicitacaoModel.create(SolicitacaoMapper.paraDocumento(cancelada))
             await SolicitacaoModel.create(SolicitacaoMapper.paraDocumento(encerrada))
             // Act
-            const resultado = await repository.buscarDisponiveisParaPrestador(idPrestador, [idCategoria])
+            const resultado = await repository.buscarDisponiveisParaPrestador(idPrestador, [idCategoria], idClienteExcluido)
             // Assert
             expect(resultado).toHaveLength(0)
         })
@@ -150,6 +152,7 @@ describe('Testes de Integração do Repository: Solicitação MongoDB', () => {
             const resultado = await repository.buscarDisponiveisParaPrestador(
                 idPrestador,
                 [idCategoria, outraCategoria],
+                idClienteExcluido,
                 idCategoria
             )
             // Assert
@@ -161,9 +164,22 @@ describe('Testes de Integração do Repository: Solicitação MongoDB', () => {
             // Arrange
             await SolicitacaoModel.create(SolicitacaoMapper.paraDocumento(SolicitacaoMother.criarValido({ idCategoria })))
             // Act
-            const resultado = await repository.buscarDisponiveisParaPrestador(idPrestador, [])
+            const resultado = await repository.buscarDisponiveisParaPrestador(idPrestador, [], idClienteExcluido)
             // Assert
             expect(resultado).toHaveLength(0)
+        })
+
+        it('não deve retornar solicitações criadas pelo próprio cliente logado', async () => {
+            // Arrange — solicitacao do próprio cliente + outra de cliente diferente
+            const solicitacaoPropria = SolicitacaoMother.criarValido({ idCategoria, idCliente })
+            const solicitacaoOutro = SolicitacaoMother.criarValido({ idCategoria })
+            await SolicitacaoModel.create(SolicitacaoMapper.paraDocumento(solicitacaoPropria))
+            await SolicitacaoModel.create(SolicitacaoMapper.paraDocumento(solicitacaoOutro))
+            // Act — exclui solicitações do idCliente logado
+            const resultado = await repository.buscarDisponiveisParaPrestador(idPrestador, [idCategoria], idCliente)
+            // Assert
+            expect(resultado).toHaveLength(1)
+            expect(resultado[0].idCliente).not.toBe(idCliente)
         })
     })
 

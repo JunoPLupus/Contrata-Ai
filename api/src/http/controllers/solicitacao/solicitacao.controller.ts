@@ -38,6 +38,7 @@ export class SolicitacaoController {
         const idCategoria = request.query.idCategoria as string | undefined
         const solicitacoes = await this.buscarSolicitacoesDisponiveisPrestadorUseCase.execute(
             request.user!.idPrestador!,
+            request.user!.idCliente,
             idCategoria
         )
         response.status(200).json(SolicitacaoMapper.paraListaRespostaDTO(solicitacoes))

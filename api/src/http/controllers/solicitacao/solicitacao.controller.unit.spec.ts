@@ -92,7 +92,7 @@ describe('SolicitacaoController', () => {
             // Act
             await controller.buscarDisponiveis(req as any, res as any)
             // Assert
-            expect(buscarDisponiveisUseCaseMock.execute).toHaveBeenCalledWith(idPrestador, undefined)
+            expect(buscarDisponiveisUseCaseMock.execute).toHaveBeenCalledWith(idPrestador, idCliente, undefined)
             expect(res.status).toHaveBeenCalledWith(200)
         })
 
@@ -104,7 +104,7 @@ describe('SolicitacaoController', () => {
             // Act
             await controller.buscarDisponiveis(req as any, res as any)
             // Assert
-            expect(buscarDisponiveisUseCaseMock.execute).toHaveBeenCalledWith(idPrestador, idCategoria)
+            expect(buscarDisponiveisUseCaseMock.execute).toHaveBeenCalledWith(idPrestador, idCliente, idCategoria)
         })
     })
 
