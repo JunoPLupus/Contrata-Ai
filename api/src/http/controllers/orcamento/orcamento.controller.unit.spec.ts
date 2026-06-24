@@ -57,6 +57,9 @@ describe('OrcamentoController', () => {
             // Act
             await controller.cadastrar(req as any, res as any)
             // Assert
+            expect(cadastrarUseCaseMock.execute).toHaveBeenCalledWith(
+                expect.objectContaining({ idClienteDoPrestador: idCliente })
+            )
             expect(res.status).toHaveBeenCalledWith(201)
             expect(res.json).toHaveBeenCalledWith(OrcamentoMapper.paraRespostaDTO(orcamentoMock))
         })

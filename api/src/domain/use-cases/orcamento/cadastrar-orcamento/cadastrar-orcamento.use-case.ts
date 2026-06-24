@@ -36,6 +36,10 @@ export class CadastrarOrcamentoUseCase {
         const solicitacao = await this.solicitacaoRepository.buscarPorId(dto.idSolicitacao)
         if (!solicitacao) throw new RecursoNaoEncontradoError('Solicitação')
 
+        if (dto.idClienteDoPrestador && solicitacao.idCliente === dto.idClienteDoPrestador) {
+            throw new OperacaoNaoPermitidaError('Não é permitido enviar orçamento para a própria solicitação.')
+        }
+
         if (solicitacao.status !== StatusSolicitacao.ABERTA) {
             throw new OperacaoNaoPermitidaError(
                 "Só é possível enviar orçamento para solicitações com status 'aberta'."

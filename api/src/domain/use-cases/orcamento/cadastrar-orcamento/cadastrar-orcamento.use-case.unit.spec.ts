@@ -75,6 +75,17 @@ describe('CadastrarOrcamentoUseCase', () => {
         await expect(useCase.execute(dto)).rejects.toThrow(RecursoNaoEncontradoError)
     })
 
+    it('deve lançar OperacaoNaoPermitidaError se prestador tentar orçar solicitação própria', async () => {
+        // Arrange
+        const idClienteDoPrestador = new Types.ObjectId().toString()
+        const solicitacao = SolicitacaoMother.criarValido({ idCliente: idClienteDoPrestador })
+        solicitacaoRepoMock.buscarPorId.mockResolvedValue(solicitacao)
+        const dto = OrcamentoMother.criarDTO({ idClienteDoPrestador })
+        // Act & Assert
+        await expect(useCase.execute(dto)).rejects.toThrow(OperacaoNaoPermitidaError)
+        expect(orcamentoRepoMock.inserir).not.toHaveBeenCalled()
+    })
+
     it('deve lançar OperacaoNaoPermitidaError se solicitação não estiver aberta', async () => {
         // Arrange
         const solicitacao = SolicitacaoMother.criarValido({ status: StatusSolicitacao.ENCERRADA })
