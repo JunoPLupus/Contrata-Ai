@@ -7,6 +7,7 @@ import { BuscarServicosPrestadorLogadoUseCase } from "../../../domain/use-cases/
 import { BuscarServicoPorIdUseCase } from "../../../domain/use-cases/servico/buscar-servico-por-id/buscar-servico-por-id.use-case";
 import { AtualizarServicoUseCase } from "../../../domain/use-cases/servico/atualizar-servico/atualizar-servico.use-case";
 import { DeletarServicoUseCase } from "../../../domain/use-cases/servico/deletar-servico/deletar-servico.use-case";
+import { BuscarServicosDoPrestadorUseCase } from "../../../domain/use-cases/servico/buscar-servicos-do-prestador/buscar-servicos-do-prestador.use-case";
 import { ServicoMother } from "../../../test-helpers/servico.mother";
 import { ServicoMapper } from "../../mappers/servico/servico.mapper";
 
@@ -17,6 +18,7 @@ describe('ServicoController', () => {
     let buscarServicoPorIdUseCaseMock: jest.Mocked<BuscarServicoPorIdUseCase>
     let atualizarServicoUseCaseMock: jest.Mocked<AtualizarServicoUseCase>
     let deletarServicoUseCaseMock: jest.Mocked<DeletarServicoUseCase>
+    let buscarServicosDoPrestadorUseCaseMock: jest.Mocked<BuscarServicosDoPrestadorUseCase>
     let req: Partial<Request>
     let res: Partial<Response>
 
@@ -28,13 +30,15 @@ describe('ServicoController', () => {
         buscarServicoPorIdUseCaseMock = { execute: jest.fn() } as any
         atualizarServicoUseCaseMock = { execute: jest.fn() } as any
         deletarServicoUseCaseMock = { execute: jest.fn() } as any
+        buscarServicosDoPrestadorUseCaseMock = { execute: jest.fn() } as any
 
         controller = new ServicoController(
             cadastrarServicoUseCaseMock,
             buscarServicosPrestadorLogadoUseCaseMock,
             buscarServicoPorIdUseCaseMock,
             atualizarServicoUseCaseMock,
-            deletarServicoUseCaseMock
+            deletarServicoUseCaseMock,
+            buscarServicosDoPrestadorUseCaseMock
         )
 
         res = {
@@ -129,6 +133,26 @@ describe('ServicoController', () => {
             expect(deletarServicoUseCaseMock.execute).toHaveBeenCalledWith(idServico, idPrestador)
             expect(res.status).toHaveBeenCalledWith(204)
             expect(res.send).toHaveBeenCalled()
+        })
+    })
+
+    describe('buscarDoPrestador()', () => {
+        it('deve retornar 200 com lista de serviços do prestador', async () => {
+            // Arrange
+            const servicosMock = [
+                ServicoMother.criarValido({ idPrestador }),
+                ServicoMother.criarValido({ idPrestador })
+            ]
+            req = { params: { idPrestador } }
+            buscarServicosDoPrestadorUseCaseMock.execute.mockResolvedValue(servicosMock)
+
+            // Act
+            await controller.buscarDoPrestador(req as any, res as any)
+
+            // Assert
+            expect(buscarServicosDoPrestadorUseCaseMock.execute).toHaveBeenCalledWith(idPrestador)
+            expect(res.status).toHaveBeenCalledWith(200)
+            expect(res.json).toHaveBeenCalledWith(ServicoMapper.paraListaRespostaDTO(servicosMock))
         })
     })
 })

@@ -1,4 +1,5 @@
 import { Request, Response } from "express";
+import { Types } from "mongoose";
 
 import { PrestadorController } from "./prestador.controller";
 import { CadastrarPrestadorUseCase } from "../../../../domain/use-cases/usuario/prestador/cadastrar-prestador/cadastrar-prestador.use-case";
@@ -6,8 +7,20 @@ import { BuscarPrestadorPorIdUseCase } from "../../../../domain/use-cases/usuari
 import { AtualizarPrestadorUseCase } from "../../../../domain/use-cases/usuario/prestador/atualizar-prestador/atualizar-prestador.use-case";
 import { InativarPrestadorUseCase } from "../../../../domain/use-cases/usuario/prestador/inativar-prestador/inativar-prestador.use-case";
 import { AtivarPrestadorUseCase } from "../../../../domain/use-cases/usuario/prestador/ativar-prestador/ativar-prestador.use-case";
+import { BuscarPrestadoresUseCase } from "../../../../domain/use-cases/prestador/buscar-prestadores/buscar-prestadores.use-case";
+import { BuscarPrestadoresPorCidadeUseCase } from "../../../../domain/use-cases/prestador/buscar-prestadores-por-cidade/buscar-prestadores-por-cidade.use-case";
 import { PrestadorMother } from "../../../../test-helpers/prestador.mother";
 import { PrestadorMapper } from "../../../mappers/usuario/prestador/prestador.mapper";
+import { PrestadorBuscaResultado } from "../../../../domain/dto/prestador/prestador-busca-resultado.dto";
+import { CampoObrigatorioVazioError } from "../../../../domain/errors/campo-obrigatorio-vazio.error";
+
+const criarResultadoMock = (parcial?: Partial<PrestadorBuscaResultado>): PrestadorBuscaResultado => ({
+    id: new Types.ObjectId().toString(),
+    nome: 'João Silva',
+    descricao: 'Eletricista residencial',
+    cidade: 'São Paulo',
+    ...parcial
+})
 
 describe('Prestador Controller', () => {
     let controller : PrestadorController
@@ -16,6 +29,8 @@ describe('Prestador Controller', () => {
     let atualizarPrestadorUseCaseMock : jest.Mocked<AtualizarPrestadorUseCase>
     let inativarPrestadorUseCaseMock : jest.Mocked<InativarPrestadorUseCase>
     let ativarPrestadorUseCaseMock : jest.Mocked<AtivarPrestadorUseCase>
+    let buscarPrestadoresUseCaseMock : jest.Mocked<BuscarPrestadoresUseCase>
+    let buscarPrestadoresPorCidadeUseCaseMock : jest.Mocked<BuscarPrestadoresPorCidadeUseCase>
     let req : Partial<Request>
     let res : Partial<Response>
 
@@ -25,12 +40,16 @@ describe('Prestador Controller', () => {
         atualizarPrestadorUseCaseMock = { execute: jest.fn() } as any
         inativarPrestadorUseCaseMock = { execute: jest.fn() } as any
         ativarPrestadorUseCaseMock = { execute: jest.fn() } as any
+        buscarPrestadoresUseCaseMock = { execute: jest.fn() } as any
+        buscarPrestadoresPorCidadeUseCaseMock = { execute: jest.fn() } as any
         controller = new PrestadorController(
             cadastrarPrestadorUseCaseMock,
             buscarPrestadorPorIdUseCaseMock,
             atualizarPrestadorUseCaseMock,
             inativarPrestadorUseCaseMock,
-            ativarPrestadorUseCaseMock
+            ativarPrestadorUseCaseMock,
+            buscarPrestadoresUseCaseMock,
+            buscarPrestadoresPorCidadeUseCaseMock
         )
 
         req = { user: { ...PrestadorMother.criarDTO(), idPrestador: '507f1f77bcf86cd799439022' } }
@@ -113,5 +132,64 @@ describe('Prestador Controller', () => {
         expect(ativarPrestadorUseCaseMock.execute).toHaveBeenCalledWith(req.user!.idPrestador)
         expect(res.status).toHaveBeenCalledWith(204)
         expect(res.send).toHaveBeenCalled()
+    })
+
+    describe('buscar()', () => {
+        it('deve retornar 200 com lista de prestadores sem filtros', async () => {
+            // Arrange
+            const resultados = [criarResultadoMock(), criarResultadoMock()]
+            req.query = {}
+            buscarPrestadoresUseCaseMock.execute.mockResolvedValue(resultados)
+            // Act
+            await controller.buscar(req as any, res as any)
+            // Assert
+            expect(buscarPrestadoresUseCaseMock.execute).toHaveBeenCalledWith({ idCategoria: undefined, nomePrestador: undefined })
+            expect(res.status).toHaveBeenCalledWith(200)
+            expect(res.json).toHaveBeenCalledWith(PrestadorMapper.paraListaBuscaRespostaDto(resultados))
+        })
+
+        it('deve repassar idCategoria ao use-case', async () => {
+            // Arrange
+            const idCategoria = new Types.ObjectId().toString()
+            req.query = { idCategoria }
+            buscarPrestadoresUseCaseMock.execute.mockResolvedValue([criarResultadoMock()])
+            // Act
+            await controller.buscar(req as any, res as any)
+            // Assert
+            expect(buscarPrestadoresUseCaseMock.execute).toHaveBeenCalledWith({ idCategoria, nomePrestador: undefined })
+        })
+
+        it('deve repassar nomePrestador ao use-case', async () => {
+            // Arrange
+            req.query = { nomePrestador: 'João' }
+            buscarPrestadoresUseCaseMock.execute.mockResolvedValue([criarResultadoMock()])
+            // Act
+            await controller.buscar(req as any, res as any)
+            // Assert
+            expect(buscarPrestadoresUseCaseMock.execute).toHaveBeenCalledWith({ idCategoria: undefined, nomePrestador: 'João' })
+        })
+    })
+
+    describe('buscarPorDistancia()', () => {
+        it('deve retornar 200 com lista de prestadores da cidade informada', async () => {
+            // Arrange
+            const resultados = [criarResultadoMock({ cidade: 'Curitiba' })]
+            req.query = { cidade: 'Curitiba' }
+            buscarPrestadoresPorCidadeUseCaseMock.execute.mockResolvedValue(resultados)
+            // Act
+            await controller.buscarPorDistancia(req as any, res as any)
+            // Assert
+            expect(buscarPrestadoresPorCidadeUseCaseMock.execute).toHaveBeenCalledWith('Curitiba')
+            expect(res.status).toHaveBeenCalledWith(200)
+            expect(res.json).toHaveBeenCalledWith(PrestadorMapper.paraListaBuscaRespostaDto(resultados))
+        })
+
+        it('deve propagar erro quando cidade não for informada', async () => {
+            // Arrange
+            req.query = {}
+            buscarPrestadoresPorCidadeUseCaseMock.execute.mockRejectedValue(new CampoObrigatorioVazioError('cidade'))
+            // Act & Assert
+            await expect(controller.buscarPorDistancia(req as any, res as any)).rejects.toThrow(CampoObrigatorioVazioError)
+        })
     })
 })

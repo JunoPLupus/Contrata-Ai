@@ -13,6 +13,8 @@ import { BuscarPrestadorPorIdUseCase } from "../domain/use-cases/usuario/prestad
 import { AtualizarPrestadorUseCase } from "../domain/use-cases/usuario/prestador/atualizar-prestador/atualizar-prestador.use-case";
 import { InativarPrestadorUseCase } from "../domain/use-cases/usuario/prestador/inativar-prestador/inativar-prestador.use-case";
 import { AtivarPrestadorUseCase } from "../domain/use-cases/usuario/prestador/ativar-prestador/ativar-prestador.use-case";
+import { BuscarPrestadoresUseCase } from "../domain/use-cases/prestador/buscar-prestadores/buscar-prestadores.use-case";
+import { BuscarPrestadoresPorCidadeUseCase } from "../domain/use-cases/prestador/buscar-prestadores-por-cidade/buscar-prestadores-por-cidade.use-case";
 import { PrestadorController } from "../http/controllers/usuario/prestador/prestador.controller";
 import { LoginUseCase } from "../domain/use-cases/usuario/shared/login/login.use-case";
 import { AuthController } from "../http/controllers/usuario/shared/auth/auth.controller";
@@ -22,6 +24,7 @@ import { BuscarServicosPrestadorLogadoUseCase } from "../domain/use-cases/servic
 import { BuscarServicoPorIdUseCase } from "../domain/use-cases/servico/buscar-servico-por-id/buscar-servico-por-id.use-case";
 import { AtualizarServicoUseCase } from "../domain/use-cases/servico/atualizar-servico/atualizar-servico.use-case";
 import { DeletarServicoUseCase } from "../domain/use-cases/servico/deletar-servico/deletar-servico.use-case";
+import { BuscarServicosDoPrestadorUseCase } from "../domain/use-cases/servico/buscar-servicos-do-prestador/buscar-servicos-do-prestador.use-case";
 import { ServicoController } from "../http/controllers/servico/servico.controller";
 import { ClienteController } from "../http/controllers/usuario/cliente/cliente.controller";
 import { CategoriaMongodbRepositoryImpl } from "../infra/repositories/categoria/categoria-mongodb.repository.impl";
@@ -91,12 +94,16 @@ const buscarPrestadorPorIdUseCase = new BuscarPrestadorPorIdUseCase(prestadorRep
 const atualizarPrestadorUseCase = new AtualizarPrestadorUseCase(prestadorRepository)
 const inativarPrestadorUseCase = new InativarPrestadorUseCase(prestadorRepository)
 const ativarPrestadorUseCase = new AtivarPrestadorUseCase(prestadorRepository)
+const buscarPrestadoresUseCase = new BuscarPrestadoresUseCase(prestadorRepository)
+const buscarPrestadoresPorCidadeUseCase = new BuscarPrestadoresPorCidadeUseCase(prestadorRepository)
 export const prestadorController = new PrestadorController(
     cadastrarPrestadorUseCase,
     buscarPrestadorPorIdUseCase,
     atualizarPrestadorUseCase,
     inativarPrestadorUseCase,
-    ativarPrestadorUseCase
+    ativarPrestadorUseCase,
+    buscarPrestadoresUseCase,
+    buscarPrestadoresPorCidadeUseCase
 )
 //#endregion
 
@@ -120,12 +127,14 @@ const buscarServicosPrestadorLogadoUseCase = new BuscarServicosPrestadorLogadoUs
 const buscarServicoPorIdUseCase = new BuscarServicoPorIdUseCase(servicoRepository)
 const atualizarServicoUseCase = new AtualizarServicoUseCase(servicoRepository, categoriaRepository)
 const deletarServicoUseCase = new DeletarServicoUseCase(servicoRepository)
+const buscarServicosDoPrestadorUseCase = new BuscarServicosDoPrestadorUseCase(servicoRepository, prestadorRepository)
 export const servicoController = new ServicoController(
     cadastrarServicoUseCase,
     buscarServicosPrestadorLogadoUseCase,
     buscarServicoPorIdUseCase,
     atualizarServicoUseCase,
-    deletarServicoUseCase
+    deletarServicoUseCase,
+    buscarServicosDoPrestadorUseCase
 )
 //#endregion
 
@@ -203,7 +212,7 @@ export const avaliacaoController = new AvaliacaoController(
 )
 //#endregion
 
-//#region — re-exportar orcamentoController (depende de aceitarOrcamentoUseCase instanciado acima)
+//#region - re-exportar orcamentoController (depende de aceitarOrcamentoUseCase instanciado acima)
 export const orcamentoController = new OrcamentoController(
     cadastrarOrcamentoUseCase,
     buscarOrcamentosPrestadorLogadoUseCase,
