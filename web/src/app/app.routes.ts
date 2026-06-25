@@ -32,7 +32,12 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./shared/layouts/prestador/prestador-layout.component').then(m => m.PrestadorLayoutComponent),
     children: [
-      { path: '', redirectTo: 'gerar-orcamento', pathMatch: 'full' },
+      { path: '', redirectTo: 'hub', pathMatch: 'full' },
+      {
+        path: 'hub',
+        loadComponent: () =>
+          import('./features/prestador/hub/hub-prestador.component').then(m => m.HubPrestadorComponent),
+      },
       {
         path: 'gerar-orcamento',
         loadComponent: () =>
