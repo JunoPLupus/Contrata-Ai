@@ -44,6 +44,19 @@ import { AtualizarOrcamentoUseCase } from "../domain/use-cases/orcamento/atualiz
 import { AceitarOrcamentoUseCase } from "../domain/use-cases/orcamento/aceitar-orcamento/aceitar-orcamento.use-case";
 import { BuscarOrcamentosDaSolicitacaoUseCase } from "../domain/use-cases/orcamento/buscar-orcamentos-da-solicitacao/buscar-orcamentos-da-solicitacao.use-case";
 import { OrcamentoController } from "../http/controllers/orcamento/orcamento.controller";
+import { ContratoMongodbRepositoryImpl } from "../infra/repositories/contrato/contrato-mongodb.repository.impl";
+import { ExtensaoPrazoMongodbRepositoryImpl } from "../infra/repositories/extensao-prazo/extensao-prazo-mongodb.repository.impl";
+import { CriarContratoUseCase } from "../domain/use-cases/contrato/criar-contrato/criar-contrato.use-case";
+import { BuscarContratosDoUsuarioUseCase } from "../domain/use-cases/contrato/buscar-contratos-do-usuario/buscar-contratos-do-usuario.use-case";
+import { BuscarContratoPorIdUseCase } from "../domain/use-cases/contrato/buscar-contrato-por-id/buscar-contrato-por-id.use-case";
+import { AtualizarContratoUseCase } from "../domain/use-cases/contrato/atualizar-contrato/atualizar-contrato.use-case";
+import { AtualizarStatusContratoUseCase } from "../domain/use-cases/contrato/atualizar-status-contrato/atualizar-status-contrato.use-case";
+import { ConcluirContratoUseCase } from "../domain/use-cases/contrato/concluir-contrato/concluir-contrato.use-case";
+import { CancelarContratoUseCase } from "../domain/use-cases/contrato/cancelar-contrato/cancelar-contrato.use-case";
+import { SolicitarExtensaoPrazoUseCase } from "../domain/use-cases/extensao-prazo/solicitar-extensao-prazo/solicitar-extensao-prazo.use-case";
+import { ResponderExtensaoPrazoUseCase } from "../domain/use-cases/extensao-prazo/responder-extensao-prazo/responder-extensao-prazo.use-case";
+import { ContratoController } from "../http/controllers/contrato/contrato.controller";
+import { ExtensaoPrazoController } from "../http/controllers/extensao-prazo/extensao-prazo.controller";
 
 //#region usuario.routes.ts
 const usuarioRepository = new UsuarioMongodbRepositoryImpl()
@@ -128,8 +141,37 @@ const cadastrarOrcamentoUseCase = new CadastrarOrcamentoUseCase(orcamentoReposit
 const buscarOrcamentosPrestadorLogadoUseCase = new BuscarOrcamentosPrestadorLogadoUseCase(orcamentoRepository)
 const buscarOrcamentoPorIdUseCase = new BuscarOrcamentoPorIdUseCase(orcamentoRepository, solicitacaoRepository)
 const atualizarOrcamentoUseCase = new AtualizarOrcamentoUseCase(orcamentoRepository)
-const aceitarOrcamentoUseCase = new AceitarOrcamentoUseCase(orcamentoRepository, solicitacaoRepository, atualizarSolicitacaoUseCase)
 const buscarOrcamentosDaSolicitacaoUseCase = new BuscarOrcamentosDaSolicitacaoUseCase(orcamentoRepository, solicitacaoRepository)
+//#endregion
+
+//#region contrato.routes.ts
+const contratoRepository = new ContratoMongodbRepositoryImpl()
+const extensaoPrazoRepository = new ExtensaoPrazoMongodbRepositoryImpl()
+const criarContratoUseCase = new CriarContratoUseCase(contratoRepository)
+const aceitarOrcamentoUseCase = new AceitarOrcamentoUseCase(orcamentoRepository, solicitacaoRepository, atualizarSolicitacaoUseCase, criarContratoUseCase)
+const buscarContratosDoUsuarioUseCase = new BuscarContratosDoUsuarioUseCase(contratoRepository)
+const buscarContratoPorIdUseCase = new BuscarContratoPorIdUseCase(contratoRepository, prestadorRepository, usuarioRepository)
+const atualizarContratoUseCase = new AtualizarContratoUseCase(contratoRepository)
+const atualizarStatusContratoUseCase = new AtualizarStatusContratoUseCase(contratoRepository)
+const concluirContratoUseCase = new ConcluirContratoUseCase(contratoRepository)
+const cancelarContratoUseCase = new CancelarContratoUseCase(contratoRepository, usuarioRepository)
+const solicitarExtensaoPrazoUseCase = new SolicitarExtensaoPrazoUseCase(contratoRepository, extensaoPrazoRepository)
+const responderExtensaoPrazoUseCase = new ResponderExtensaoPrazoUseCase(contratoRepository, extensaoPrazoRepository)
+export const contratoController = new ContratoController(
+    buscarContratosDoUsuarioUseCase,
+    buscarContratoPorIdUseCase,
+    atualizarContratoUseCase,
+    atualizarStatusContratoUseCase,
+    concluirContratoUseCase,
+    cancelarContratoUseCase
+)
+export const extensaoPrazoController = new ExtensaoPrazoController(
+    solicitarExtensaoPrazoUseCase,
+    responderExtensaoPrazoUseCase
+)
+//#endregion
+
+//#region — re-exportar orcamentoController (depende de aceitarOrcamentoUseCase instanciado acima)
 export const orcamentoController = new OrcamentoController(
     cadastrarOrcamentoUseCase,
     buscarOrcamentosPrestadorLogadoUseCase,
