@@ -53,10 +53,20 @@ import { AtualizarContratoUseCase } from "../domain/use-cases/contrato/atualizar
 import { AtualizarStatusContratoUseCase } from "../domain/use-cases/contrato/atualizar-status-contrato/atualizar-status-contrato.use-case";
 import { ConcluirContratoUseCase } from "../domain/use-cases/contrato/concluir-contrato/concluir-contrato.use-case";
 import { CancelarContratoUseCase } from "../domain/use-cases/contrato/cancelar-contrato/cancelar-contrato.use-case";
+import { RelatarProblemaContratoUseCase } from "../domain/use-cases/contrato/relatar-problema-contrato/relatar-problema-contrato.use-case";
 import { SolicitarExtensaoPrazoUseCase } from "../domain/use-cases/extensao-prazo/solicitar-extensao-prazo/solicitar-extensao-prazo.use-case";
 import { ResponderExtensaoPrazoUseCase } from "../domain/use-cases/extensao-prazo/responder-extensao-prazo/responder-extensao-prazo.use-case";
 import { ContratoController } from "../http/controllers/contrato/contrato.controller";
 import { ExtensaoPrazoController } from "../http/controllers/extensao-prazo/extensao-prazo.controller";
+import { AvaliacaoMongodbRepositoryImpl } from "../infra/repositories/avaliacao/avaliacao-mongodb.repository.impl";
+import { CadastrarAvaliacaoUseCase } from "../domain/use-cases/avaliacao/cadastrar-avaliacao/cadastrar-avaliacao.use-case";
+import { BuscarAvaliacaoPorIdUseCase } from "../domain/use-cases/avaliacao/buscar-avaliacao-por-id/buscar-avaliacao-por-id.use-case";
+import { BuscarAvaliacaoDoContratoUseCase } from "../domain/use-cases/avaliacao/buscar-avaliacao-do-contrato/buscar-avaliacao-do-contrato.use-case";
+import { BuscarAvaliacoesDoClienteLogadoUseCase } from "../domain/use-cases/avaliacao/buscar-avaliacoes-do-cliente-logado/buscar-avaliacoes-do-cliente-logado.use-case";
+import { BuscarAvaliacoesDoPrestadorUseCase } from "../domain/use-cases/avaliacao/buscar-avaliacoes-do-prestador/buscar-avaliacoes-do-prestador.use-case";
+import { AtualizarAvaliacaoUseCase } from "../domain/use-cases/avaliacao/atualizar-avaliacao/atualizar-avaliacao.use-case";
+import { DeletarAvaliacaoUseCase } from "../domain/use-cases/avaliacao/deletar-avaliacao/deletar-avaliacao.use-case";
+import { AvaliacaoController } from "../http/controllers/avaliacao/avaliacao.controller";
 
 //#region usuario.routes.ts
 const usuarioRepository = new UsuarioMongodbRepositoryImpl()
@@ -155,6 +165,7 @@ const atualizarContratoUseCase = new AtualizarContratoUseCase(contratoRepository
 const atualizarStatusContratoUseCase = new AtualizarStatusContratoUseCase(contratoRepository)
 const concluirContratoUseCase = new ConcluirContratoUseCase(contratoRepository)
 const cancelarContratoUseCase = new CancelarContratoUseCase(contratoRepository, usuarioRepository)
+const relatarProblemaContratoUseCase = new RelatarProblemaContratoUseCase(contratoRepository)
 const solicitarExtensaoPrazoUseCase = new SolicitarExtensaoPrazoUseCase(contratoRepository, extensaoPrazoRepository)
 const responderExtensaoPrazoUseCase = new ResponderExtensaoPrazoUseCase(contratoRepository, extensaoPrazoRepository)
 export const contratoController = new ContratoController(
@@ -163,11 +174,32 @@ export const contratoController = new ContratoController(
     atualizarContratoUseCase,
     atualizarStatusContratoUseCase,
     concluirContratoUseCase,
-    cancelarContratoUseCase
+    cancelarContratoUseCase,
+    relatarProblemaContratoUseCase
 )
 export const extensaoPrazoController = new ExtensaoPrazoController(
     solicitarExtensaoPrazoUseCase,
     responderExtensaoPrazoUseCase
+)
+//#endregion
+
+//#region avaliacao.routes.ts
+const avaliacaoRepository = new AvaliacaoMongodbRepositoryImpl()
+const cadastrarAvaliacaoUseCase = new CadastrarAvaliacaoUseCase(avaliacaoRepository, contratoRepository)
+const buscarAvaliacaoPorIdUseCase = new BuscarAvaliacaoPorIdUseCase(avaliacaoRepository)
+const buscarAvaliacaoDoContratoUseCase = new BuscarAvaliacaoDoContratoUseCase(avaliacaoRepository)
+const buscarAvaliacoesDoClienteLogadoUseCase = new BuscarAvaliacoesDoClienteLogadoUseCase(avaliacaoRepository)
+const buscarAvaliacoesDoPrestadorUseCase = new BuscarAvaliacoesDoPrestadorUseCase(avaliacaoRepository)
+const atualizarAvaliacaoUseCase = new AtualizarAvaliacaoUseCase(avaliacaoRepository)
+const deletarAvaliacaoUseCase = new DeletarAvaliacaoUseCase(avaliacaoRepository)
+export const avaliacaoController = new AvaliacaoController(
+    cadastrarAvaliacaoUseCase,
+    buscarAvaliacaoPorIdUseCase,
+    buscarAvaliacaoDoContratoUseCase,
+    buscarAvaliacoesDoClienteLogadoUseCase,
+    buscarAvaliacoesDoPrestadorUseCase,
+    atualizarAvaliacaoUseCase,
+    deletarAvaliacaoUseCase
 )
 //#endregion
 
