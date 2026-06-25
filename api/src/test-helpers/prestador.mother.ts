@@ -33,7 +33,9 @@ export class PrestadorMother {
             buscarPorId: jest.fn(),
             atualizar: jest.fn(),
             inativar: jest.fn(),
-            ativar: jest.fn()
+            ativar: jest.fn(),
+            buscar: jest.fn(),
+            buscarPorCidade: jest.fn()
         }
     }
 }
