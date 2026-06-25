@@ -33,6 +33,6 @@ export class StatusExtensaoPrazoValueObject extends ValueObjectBase {
             throw new FormatoInvalidoError('status')
         }
 
-        this.valor = valor as StatusExtensaoPrazoTipo
+        this.valor = valor 
     }
 }
