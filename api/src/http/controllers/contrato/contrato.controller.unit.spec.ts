@@ -8,9 +8,11 @@ import { AtualizarContratoUseCase } from "../../../domain/use-cases/contrato/atu
 import { AtualizarStatusContratoUseCase } from "../../../domain/use-cases/contrato/atualizar-status-contrato/atualizar-status-contrato.use-case";
 import { ConcluirContratoUseCase } from "../../../domain/use-cases/contrato/concluir-contrato/concluir-contrato.use-case";
 import { CancelarContratoUseCase } from "../../../domain/use-cases/contrato/cancelar-contrato/cancelar-contrato.use-case";
+import { RelatarProblemaContratoUseCase } from "../../../domain/use-cases/contrato/relatar-problema-contrato/relatar-problema-contrato.use-case";
 import { ContratоMother } from "../../../test-helpers/contrato.mother";
 import { ContratoMapper } from "../../mappers/contrato/contrato.mapper";
 import { StatusContrato } from "../../../domain/value-objects/contrato/status/status.vo";
+import { TipoProblema } from "../../../domain/value-objects/contrato/problema/tipo-problema.vo";
 
 describe('Testes Unitários do Controller: Contrato', () => {
     let controller: ContratoController
@@ -20,6 +22,7 @@ describe('Testes Unitários do Controller: Contrato', () => {
     let atualizarStatusMock: jest.Mocked<AtualizarStatusContratoUseCase>
     let concluirMock: jest.Mocked<ConcluirContratoUseCase>
     let cancelarMock: jest.Mocked<CancelarContratoUseCase>
+    let relatarProblemaMock: jest.Mocked<RelatarProblemaContratoUseCase>
     let req: Partial<Request>
     let res: Partial<Response>
 
@@ -33,6 +36,7 @@ describe('Testes Unitários do Controller: Contrato', () => {
         atualizarStatusMock = { execute: jest.fn() } as any
         concluirMock = { execute: jest.fn() } as any
         cancelarMock = { execute: jest.fn() } as any
+        relatarProblemaMock = { execute: jest.fn() } as any
 
         controller = new ContratoController(
             buscarDoUsuarioMock,
@@ -40,7 +44,8 @@ describe('Testes Unitários do Controller: Contrato', () => {
             atualizarMock,
             atualizarStatusMock,
             concluirMock,
-            cancelarMock
+            cancelarMock,
+            relatarProblemaMock
         )
 
         res = {
@@ -147,6 +152,25 @@ describe('Testes Unitários do Controller: Contrato', () => {
             await controller.cancelar(req as any, res as any)
             // Assert
             expect(cancelarMock.execute).toHaveBeenCalledWith(idContrato, idCliente, idPrestador, { motivo: 'Motivo de cancelamento' })
+            expect(res.status).toHaveBeenCalledWith(200)
+        })
+    })
+
+    describe('relatarProblema()', () => {
+        it('deve retornar 200 com ContratoRespostaDTO com problema registrado', async () => {
+            // Arrange
+            const idContrato = new Types.ObjectId().toString()
+            const contrato = ContratоMother.criarValido({ idCliente, status: StatusContrato.CONCLUIDO })
+            req = {
+                user: { idCliente, idPrestador },
+                params: { id: idContrato },
+                body: { tipo: TipoProblema.ATRASO, descricao: 'Descricao detalhada do problema com mais de dez caracteres' }
+            }
+            relatarProblemaMock.execute.mockResolvedValue(contrato)
+            // Act
+            await controller.relatarProblema(req as any, res as any)
+            // Assert
+            expect(relatarProblemaMock.execute).toHaveBeenCalledWith(idContrato, idCliente, { tipo: TipoProblema.ATRASO, descricao: req.body.descricao })
             expect(res.status).toHaveBeenCalledWith(200)
         })
     })

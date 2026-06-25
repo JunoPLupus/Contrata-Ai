@@ -6,9 +6,11 @@ import { AtualizarContratoUseCase } from "../../../domain/use-cases/contrato/atu
 import { AtualizarStatusContratoUseCase } from "../../../domain/use-cases/contrato/atualizar-status-contrato/atualizar-status-contrato.use-case";
 import { ConcluirContratoUseCase } from "../../../domain/use-cases/contrato/concluir-contrato/concluir-contrato.use-case";
 import { CancelarContratoUseCase } from "../../../domain/use-cases/contrato/cancelar-contrato/cancelar-contrato.use-case";
+import { RelatarProblemaContratoUseCase } from "../../../domain/use-cases/contrato/relatar-problema-contrato/relatar-problema-contrato.use-case";
 import { ContratoAtualizacaoDTO } from "../../../domain/dto/contrato/contrato-atualizacao.dto";
 import { ContratoStatusDTO } from "../../../domain/dto/contrato/contrato-status.dto";
 import { ContratoCancelamentoDTO } from "../../../domain/dto/contrato/contrato-cancelamento.dto";
+import { ContratoProblemaDTO } from "../../../domain/dto/contrato/contrato-problema.dto";
 import { ContratoMapper } from "../../mappers/contrato/contrato.mapper";
 
 export class ContratoController {
@@ -18,7 +20,8 @@ export class ContratoController {
         private readonly atualizarContratoUseCase: AtualizarContratoUseCase,
         private readonly atualizarStatusContratoUseCase: AtualizarStatusContratoUseCase,
         private readonly concluirContratoUseCase: ConcluirContratoUseCase,
-        private readonly cancelarContratoUseCase: CancelarContratoUseCase
+        private readonly cancelarContratoUseCase: CancelarContratoUseCase,
+        private readonly relatarProblemaContratoUseCase: RelatarProblemaContratoUseCase
     ) {}
 
     public async buscarDoUsuario(request: Request, response: Response): Promise<void> {
@@ -80,6 +83,19 @@ export class ContratoController {
             request.params.id as string,
             request.user!.idCliente,
             request.user!.idPrestador,
+            dto
+        )
+        response.status(200).json(ContratoMapper.paraRespostaDTO(contrato))
+    }
+
+    public async relatarProblema(request: Request, response: Response): Promise<void> {
+        const dto: ContratoProblemaDTO = {
+            tipo: request.body.tipo,
+            descricao: request.body.descricao,
+        }
+        const contrato = await this.relatarProblemaContratoUseCase.execute(
+            request.params.id as string,
+            request.user!.idCliente,
             dto
         )
         response.status(200).json(ContratoMapper.paraRespostaDTO(contrato))

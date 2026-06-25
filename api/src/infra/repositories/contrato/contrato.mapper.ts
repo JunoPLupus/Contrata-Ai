@@ -22,6 +22,13 @@ export class ContratoMapper {
             whatsappLiberado: doc.whatsapp_liberado,
             motivoCancelamento: doc.motivo_cancelamento,
             canceladoPor: doc.cancelado_por?.toString(),
+            problema: doc.problema
+                ? {
+                    tipo: doc.problema.tipo,
+                    descricao: doc.problema.descricao,
+                    dataCriacao: doc.problema.data_criacao,
+                }
+                : undefined,
         })
     }
 
@@ -40,6 +47,13 @@ export class ContratoMapper {
             whatsapp_liberado: contrato.whatsappLiberado,
             motivo_cancelamento: contrato.motivoCancelamento,
             cancelado_por: contrato.canceladoPor ? new Types.ObjectId(contrato.canceladoPor) : undefined,
+            problema: contrato.problema
+                ? {
+                    tipo: contrato.problema.tipo,
+                    descricao: contrato.problema.descricao,
+                    data_criacao: contrato.problema.dataCriacao,
+                }
+                : undefined,
         }
     }
 }

@@ -21,6 +21,7 @@ export class ContratоMother {
         whatsappLiberado: boolean
         motivoCancelamento: string
         canceladoPor: string
+        problema: { tipo: string; descricao: string; dataCriacao?: Date }
     }>): Contrato {
         return ContratoFactory.criar({
             id: dados?.id ?? new Types.ObjectId().toString(),
@@ -37,6 +38,7 @@ export class ContratоMother {
             whatsappLiberado: dados?.whatsappLiberado ?? true,
             motivoCancelamento: dados?.motivoCancelamento,
             canceladoPor: dados?.canceladoPor,
+            problema: dados?.problema,
         })
     }
 

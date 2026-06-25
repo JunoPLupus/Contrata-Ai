@@ -16,6 +16,7 @@ export type ContratoRespostaDTO = Pick<
     | 'whatsappLiberado'
     | 'motivoCancelamento'
     | 'canceladoPor'
+    | 'problema'
 > & {
     whatsappPrestador?: string
 }

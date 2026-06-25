@@ -1,6 +1,6 @@
 import { Router } from 'express'
 
-import { contratoController, extensaoPrazoController } from "../../../shared/container";
+import { contratoController, extensaoPrazoController, avaliacaoController } from "../../../shared/container";
 import { exigeAutenticacao } from "../../middlewares/exige-autenticacao/exige-autenticacao.middleware";
 import { exigePerfilPrestador } from "../../middlewares/exige-perfil-prestador/exige-perfil-prestador.middleware";
 
@@ -14,5 +14,7 @@ contratoRouter.patch('/contratos/:id/concluir', exigeAutenticacao, (req, res) =>
 contratoRouter.patch('/contratos/:id/cancelar', exigeAutenticacao, (req, res) => contratoController.cancelar(req, res))
 contratoRouter.post('/contratos/:id/estender-prazo', exigeAutenticacao, exigePerfilPrestador, (req, res) => extensaoPrazoController.solicitarExtensao(req, res))
 contratoRouter.patch('/contratos/:id/estender-prazo/:idExtensao/responder', exigeAutenticacao, (req, res) => extensaoPrazoController.responderExtensao(req, res))
+contratoRouter.patch('/contratos/:id/relatar-problema', exigeAutenticacao, (req, res) => contratoController.relatarProblema(req, res))
+contratoRouter.get('/contratos/:idContrato/avaliacao', (req, res) => avaliacaoController.buscarDoContrato(req, res))
 
 export default contratoRouter
