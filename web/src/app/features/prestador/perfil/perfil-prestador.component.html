@@ -1,0 +1,124 @@
+<div class="perfil-page">
+
+  <!-- ── Breadcrumb / título ───────────────────────────────────────────────── -->
+  <header class="page-header">
+    <div class="page-header__breadcrumb">
+      <span class="page-header__crumb">Prestador</span>
+      <span class="page-header__sep" aria-hidden="true">/</span>
+      <span class="page-header__crumb page-header__crumb--active">Meu Perfil</span>
+    </div>
+    <h1 class="page-header__title">Meu Perfil</h1>
+    <p class="page-header__subtitle">Visualize e gerencie como você aparece para os clientes.</p>
+  </header>
+
+  <!-- ══════════════════════════════════════════════════════
+       SEÇÃO 1 — Cabeçalho do perfil
+  ══════════════════════════════════════════════════════ -->
+  <section class="perfil-card" aria-label="Informações do perfil">
+    <div class="perfil-card__top">
+
+      <div class="perfil-card__identity">
+        <!-- Avatar -->
+        <div class="avatar" aria-hidden="true">
+          @if (prestador.foto) {
+            <img [src]="prestador.foto" [alt]="usuario.nome" class="avatar__img" />
+          } @else {
+            <span class="avatar__initials">{{ iniciais }}</span>
+          }
+        </div>
+
+        <!-- Dados principais -->
+        <div class="perfil-card__info">
+          <h2 class="perfil-card__nome">{{ usuario.nome }}</h2>
+
+          <div class="categorias" role="list" aria-label="Categorias de atuação">
+            @for (cat of categorias; track cat._id) {
+              <span class="categoria-chip" role="listitem">{{ cat.nome }}</span>
+            }
+          </div>
+
+          <div class="perfil-card__meta">
+            @if (usuario.whatsapp) {
+              <span class="meta-item">
+                <span class="meta-item__icon" aria-hidden="true">📱</span>
+                <span>{{ usuario.whatsapp }}</span>
+              </span>
+            }
+
+            <span class="meta-item" [attr.aria-label]="'Nota média ' + (notaMedia | number:'1.1-1') + ' de 5'">
+              <span class="stars-inline" aria-hidden="true">
+                @for (star of starsArray(notaMedia); track $index) {
+                  <span class="star" [class.star--filled]="star.filled">★</span>
+                }
+              </span>
+              <span class="nota-texto">
+                {{ notaMedia | number:'1.1-1' }}
+                <span class="nota-count">({{ avaliacoes.length }} avaliações)</span>
+              </span>
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Botão editar -->
+      <button type="button" class="btn-editar" aria-label="Editar perfil">
+        ✏️ Editar perfil
+      </button>
+
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════════════
+       SEÇÃO 2 — Sobre
+  ══════════════════════════════════════════════════════ -->
+  <section class="perfil-section" aria-labelledby="sobre-titulo">
+    <div class="section-header">
+      <h2 class="section-title" id="sobre-titulo">Sobre</h2>
+    </div>
+    <div class="sobre-card">
+      <p class="sobre-texto">{{ prestador.descricao }}</p>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════════════
+       SEÇÃO 3 — Avaliações recebidas
+  ══════════════════════════════════════════════════════ -->
+  <section class="perfil-section" aria-labelledby="avaliacoes-titulo">
+    <div class="section-header">
+      <div class="section-header__left">
+        <span class="section-badge" aria-hidden="true">{{ avaliacoes.length }} avaliações</span>
+        <h2 class="section-title" id="avaliacoes-titulo">Avaliações recebidas</h2>
+      </div>
+    </div>
+
+    <div class="avaliacoes-lista">
+      @for (av of avaliacoes; track av._id) {
+        <article class="avaliacao-card" [attr.aria-label]="'Avaliação de ' + autorDisplay(av)">
+
+          <div class="avaliacao-card__header">
+            <div class="avaliacao-card__autor-info">
+              <span class="avaliacao-card__autor">{{ autorDisplay(av) }}</span>
+              <span class="avaliacao-card__data">{{ av.data | date:'dd/MM/yyyy' }}</span>
+            </div>
+            <div
+              class="avaliacao-card__nota"
+              [attr.aria-label]="'Nota ' + av.nota + ' de 5'"
+              aria-hidden="false"
+            >
+              @for (star of starsArray(av.nota); track $index) {
+                <span class="star" [class.star--filled]="star.filled" aria-hidden="true">★</span>
+              }
+              <span class="nota-numero">{{ av.nota }}/5</span>
+            </div>
+          </div>
+
+          @if (av.comentario) {
+            <p class="avaliacao-card__comentario">{{ av.comentario }}</p>
+          }
+
+        </article>
+      }
+    </div>
+  </section>
+
+</div>

@@ -43,6 +43,11 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/prestador/gerar-orcamento/gerar-orcamento.component').then(m => m.GerarOrcamentoComponent),
       },
+      {
+        path: 'perfil',
+        loadComponent: () =>
+          import('./features/prestador/perfil/perfil-prestador.component').then(m => m.PerfilPrestadorComponent),
+      },
     ],
   },
 ];
