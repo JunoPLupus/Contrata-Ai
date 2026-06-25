@@ -1,5 +1,5 @@
 import { Router } from 'express'
-import { prestadorController } from "../../../../shared/container";
+import { prestadorController, avaliacaoController } from "../../../../shared/container";
 import { exigeAutenticacao } from "../../../middlewares/exige-autenticacao/exige-autenticacao.middleware";
 import { exigePerfilPrestador } from "../../../middlewares/exige-perfil-prestador/exige-perfil-prestador.middleware";
 
@@ -10,5 +10,6 @@ prestadorRouter.put('/prestadores', exigeAutenticacao, exigePerfilPrestador, (re
 prestadorRouter.patch('/prestadores/inativar', exigeAutenticacao, exigePerfilPrestador, (req, res) => prestadorController.inativar(req, res))
 prestadorRouter.patch('/prestadores/ativar', exigeAutenticacao, exigePerfilPrestador, (req, res) => prestadorController.ativar(req, res))
 prestadorRouter.get('/prestadores/:id', exigeAutenticacao, (req, res) => prestadorController.buscarPorId(req, res))
+prestadorRouter.get('/prestadores/:idPrestador/avaliacoes', (req, res) => avaliacaoController.buscarDoPrestador(req, res))
 
 export default prestadorRouter
