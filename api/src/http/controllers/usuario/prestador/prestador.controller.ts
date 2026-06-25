@@ -3,6 +3,8 @@ import { BuscarPrestadorPorIdUseCase } from "../../../../domain/use-cases/usuari
 import { AtualizarPrestadorUseCase } from "../../../../domain/use-cases/usuario/prestador/atualizar-prestador/atualizar-prestador.use-case";
 import { InativarPrestadorUseCase } from "../../../../domain/use-cases/usuario/prestador/inativar-prestador/inativar-prestador.use-case";
 import { AtivarPrestadorUseCase } from "../../../../domain/use-cases/usuario/prestador/ativar-prestador/ativar-prestador.use-case";
+import { BuscarPrestadoresUseCase } from "../../../../domain/use-cases/prestador/buscar-prestadores/buscar-prestadores.use-case";
+import { BuscarPrestadoresPorCidadeUseCase } from "../../../../domain/use-cases/prestador/buscar-prestadores-por-cidade/buscar-prestadores-por-cidade.use-case";
 import { AtualizarPrestadorDTO } from "../../../../domain/dto/prestador/atualizar-prestador.dto";
 import { PrestadorRespostaCadastroDTO } from "../../../dto/usuario/prestador/prestador-resposta-cadastro.dto";
 import { Prestador } from "../../../../domain/entities/prestador/prestador.entity";
@@ -16,7 +18,9 @@ export class PrestadorController {
         private readonly buscarPrestadorPorIdUseCase : BuscarPrestadorPorIdUseCase,
         private readonly atualizarPrestadorUseCase : AtualizarPrestadorUseCase,
         private readonly inativarPrestadorUseCase : InativarPrestadorUseCase,
-        private readonly ativarPrestadorUseCase : AtivarPrestadorUseCase
+        private readonly ativarPrestadorUseCase : AtivarPrestadorUseCase,
+        private readonly buscarPrestadoresUseCase : BuscarPrestadoresUseCase,
+        private readonly buscarPrestadoresPorCidadeUseCase : BuscarPrestadoresPorCidadeUseCase
     ) {}
 
     /**
@@ -94,5 +98,32 @@ export class PrestadorController {
         await this.ativarPrestadorUseCase.execute(request.user!.idPrestador!)
 
         response.status(204).send()
+    }
+
+    /**
+     * Busca prestadores ativos por categoria e/ou nome (RF06).
+     * @param request - Query params opcionais: `idCategoria`, `nomePrestador`.
+     * @param response - 200 com lista de prestadores encontrados.
+     */
+    public async buscar(request: Request, response: Response) : Promise<void> {
+        const idCategoria = request.query.idCategoria as string | undefined
+        const nomePrestador = request.query.nomePrestador as string | undefined
+
+        const resultados = await this.buscarPrestadoresUseCase.execute({ idCategoria, nomePrestador })
+
+        response.status(200).json(PrestadorMapper.paraListaBuscaRespostaDto(resultados))
+    }
+
+    /**
+     * Busca prestadores ativos por cidade (RF07).
+     * @param request - Query param obrigatório: `cidade`.
+     * @param response - 200 com lista de prestadores da cidade informada.
+     */
+    public async buscarPorDistancia(request: Request, response: Response) : Promise<void> {
+        const cidade = request.query.cidade as string | undefined
+
+        const resultados = await this.buscarPrestadoresPorCidadeUseCase.execute(cidade)
+
+        response.status(200).json(PrestadorMapper.paraListaBuscaRespostaDto(resultados))
     }
 }
