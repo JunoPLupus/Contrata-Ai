@@ -1,4 +1,5 @@
 import { Prestador } from "../entities/prestador/prestador.entity";
+import { PrestadorBuscaResultado } from "../dto/prestador/prestador-busca-resultado.dto";
 
 export abstract class IPrestadorRepository {
     /**
@@ -33,4 +34,20 @@ export abstract class IPrestadorRepository {
      * @param id - `id` do prestador a ser ativado.
      */
     abstract ativar(id : string) : Promise<void>;
+
+    /**
+     * Busca prestadores ativos por categoria de serviço e/ou nome (match parcial).
+     * Junta dados de `usuarios` (nome, cidade) e `servicos` (categoria).
+     * @param filtros - Filtros opcionais: `idCategoria` e/ou `nomePrestador`.
+     * @returns Projeção de leitura; lista vazia se nada casar.
+     */
+    abstract buscar(filtros: { idCategoria?: string; nomePrestador?: string }): Promise<PrestadorBuscaResultado[]>;
+
+    /**
+     * Busca prestadores ativos cujo usuário tem `localizacao_cidade` igual à cidade informada.
+     * Comparação case-insensitive.
+     * @param cidade - Nome da cidade a filtrar.
+     * @returns Projeção de leitura; lista vazia se nada casar.
+     */
+    abstract buscarPorCidade(cidade: string): Promise<PrestadorBuscaResultado[]>;
 }
