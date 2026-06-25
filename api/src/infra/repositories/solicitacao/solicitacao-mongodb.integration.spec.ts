@@ -33,60 +33,52 @@ describe('Testes de Integração do Repository: Solicitação MongoDB', () => {
         }
     })
 
-    it('deve inserir uma solicitação e retorná-la com id', async () => {
-        // Arrange
-        const solicitacaoMock = SolicitacaoMother.criarValido()
-        // Act
-        const inserida = await repository.inserir(solicitacaoMock)
-        // Assert
-        expect(inserida).toBeInstanceOf(Solicitacao)
-        expect(inserida.id).toBeDefined()
-        expect(inserida.descricao).toBe(solicitacaoMock.descricao)
-        expect(inserida.status).toBe(StatusSolicitacao.ABERTA)
+    describe('buscarPorId()', () => {
+        it('deve buscar solicitação por ID e retornar entidade', async () => {
+            // Arrange
+            const solicitacaoMock = SolicitacaoMother.criarValido()
+            const documentoInserido = await SolicitacaoModel.create(SolicitacaoMapper.paraDocumento(solicitacaoMock))
+            // Act
+            const encontrada = await repository.buscarPorId(documentoInserido.id.toString())
+            // Assert
+            expect(encontrada).toBeInstanceOf(Solicitacao)
+            expect(encontrada?.descricao).toBe(solicitacaoMock.descricao)
+        })
+
+        it('deve retornar null quando ID não for encontrado', async () => {
+            // Arrange
+            const idInexistente = new Types.ObjectId().toString()
+            // Act
+            const resultado = await repository.buscarPorId(idInexistente)
+            // Assert
+            expect(resultado).toBeNull()
+        })
     })
 
-    it('deve buscar solicitação por ID e retornar entidade', async () => {
-        // Arrange
-        const solicitacaoMock = SolicitacaoMother.criarValido()
-        const documentoInserido = await SolicitacaoModel.create(SolicitacaoMapper.paraDocumento(solicitacaoMock))
-        // Act
-        const encontrada = await repository.buscarPorId(documentoInserido.id.toString())
-        // Assert
-        expect(encontrada).toBeInstanceOf(Solicitacao)
-        expect(encontrada?.descricao).toBe(solicitacaoMock.descricao)
+    describe('buscarPorIdCliente()', () => {
+        it('deve buscar solicitações por idCliente e retornar lista', async () => {
+            // Arrange
+            const idCliente = new Types.ObjectId().toString()
+            const s1 = SolicitacaoMother.criarValido({ idCliente })
+            const s2 = SolicitacaoMother.criarValido({ idCliente })
+            await SolicitacaoModel.create(SolicitacaoMapper.paraDocumento(s1))
+            await SolicitacaoModel.create(SolicitacaoMapper.paraDocumento(s2))
+            // Act
+            const resultado = await repository.buscarPorIdCliente(idCliente)
+            // Assert
+            expect(resultado).toHaveLength(2)
+            expect(resultado.every(s => s.idCliente === idCliente)).toBe(true)
+        })
+
+        it('deve retornar array vazio quando cliente não tiver solicitações', async () => {
+            // Arrange & Act
+            const resultado = await repository.buscarPorIdCliente(new Types.ObjectId().toString())
+            // Assert
+            expect(resultado).toHaveLength(0)
+        })
     })
 
-    it('deve retornar null quando ID não for encontrado', async () => {
-        // Arrange
-        const idInexistente = new Types.ObjectId().toString()
-        // Act
-        const resultado = await repository.buscarPorId(idInexistente)
-        // Assert
-        expect(resultado).toBeNull()
-    })
-
-    it('deve buscar solicitações por idCliente e retornar lista', async () => {
-        // Arrange
-        const idCliente = new Types.ObjectId().toString()
-        const s1 = SolicitacaoMother.criarValido({ idCliente })
-        const s2 = SolicitacaoMother.criarValido({ idCliente })
-        await SolicitacaoModel.create(SolicitacaoMapper.paraDocumento(s1))
-        await SolicitacaoModel.create(SolicitacaoMapper.paraDocumento(s2))
-        // Act
-        const resultado = await repository.buscarPorIdCliente(idCliente)
-        // Assert
-        expect(resultado).toHaveLength(2)
-        expect(resultado.every(s => s.idCliente === idCliente)).toBe(true)
-    })
-
-    it('deve retornar array vazio quando cliente não tiver solicitações', async () => {
-        // Arrange & Act
-        const resultado = await repository.buscarPorIdCliente(new Types.ObjectId().toString())
-        // Assert
-        expect(resultado).toHaveLength(0)
-    })
-
-    describe('buscarDisponiveisParaPrestador', () => {
+    describe('buscarDisponiveisParaPrestador()', () => {
         const idPrestador = new Types.ObjectId().toString()
         const idCliente = new Types.ObjectId().toString()
         const idCategoria = new Types.ObjectId().toString()
@@ -183,7 +175,21 @@ describe('Testes de Integração do Repository: Solicitação MongoDB', () => {
         })
     })
 
-    describe('atualizar', () => {
+    describe('inserir()', () => {
+        it('deve inserir uma solicitação e retorná-la com id', async () => {
+            // Arrange
+            const solicitacaoMock = SolicitacaoMother.criarValido()
+            // Act
+            const inserida = await repository.inserir(solicitacaoMock)
+            // Assert
+            expect(inserida).toBeInstanceOf(Solicitacao)
+            expect(inserida.id).toBeDefined()
+            expect(inserida.descricao).toBe(solicitacaoMock.descricao)
+            expect(inserida.status).toBe(StatusSolicitacao.ABERTA)
+        })
+    })
+
+    describe('atualizar()', () => {
         it('deve atualizar status da solicitação e retorná-la atualizada', async () => {
             // Arrange
             const solicitacaoMock = SolicitacaoMother.criarValido()

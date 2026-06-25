@@ -44,7 +44,8 @@ export class UsuarioMother {
             buscarPorId: jest.fn(),
             inserir: jest.fn(),
             atualizar: jest.fn(),
-            vincularPrestador: jest.fn()
+            vincularPrestador: jest.fn(),
+            incrementarFlagCancelamento: jest.fn()
         }
     }
 }

@@ -42,4 +42,11 @@ export class UsuarioMongodbRepositoryImpl implements IUsuarioRepository {
             { $set: { id_prestador: new Types.ObjectId(idPrestador) } }
         )
     }
+
+    public async incrementarFlagCancelamento(idUsuario: string): Promise<void> {
+        await UsuarioModel.updateOne(
+            { _id: idUsuario },
+            { $inc: { reputacao_flag_cancelamento: 1 } }
+        )
+    }
 }
