@@ -2,6 +2,7 @@ import { Orcamento } from "../../../entities/orcamento/orcamento.entity";
 import { IOrcamentoRepository } from "../../../repositories/orcamento.repository";
 import { ISolicitacaoRepository } from "../../../repositories/solicitacao.repository";
 import { AtualizarSolicitacaoUseCase } from "../../solicitacao/atualizar-solicitacao/atualizar-solicitacao.use-case";
+import { CriarContratoUseCase } from "../../contrato/criar-contrato/criar-contrato.use-case";
 import { RecursoNaoEncontradoError } from "../../../errors/recurso-nao-encontrado.error";
 import { AcessoProibidoError } from "../../../errors/acesso-proibido.error";
 import { OperacaoNaoPermitidaError } from "../../../errors/operacao-nao-permitida.error";
@@ -12,7 +13,8 @@ export class AceitarOrcamentoUseCase {
     constructor(
         private readonly orcamentoRepository: IOrcamentoRepository,
         private readonly solicitacaoRepository: ISolicitacaoRepository,
-        private readonly atualizarSolicitacaoUseCase: AtualizarSolicitacaoUseCase
+        private readonly atualizarSolicitacaoUseCase: AtualizarSolicitacaoUseCase,
+        private readonly criarContratoUseCase: CriarContratoUseCase
     ) {}
 
     /**
@@ -20,8 +22,9 @@ export class AceitarOrcamentoUseCase {
      * 1. O orçamento aceito → `aceito` + `dataAceite` preenchida.
      * 2. Todos os demais orçamentos `pendente` da solicitação → `encerrado`.
      * 3. A solicitação → `encerrada` (via `AtualizarSolicitacaoUseCase`).
+     * 4. O contrato é criado com `cienciaPagamento` e `whatsappLiberado` = true (via `CriarContratoUseCase`).
      *
-     * @remarks Os passos 1–3 não são atômicos (sem transação Mongo).
+     * @remarks Os passos 1–4 não são atômicos (sem transação Mongo).
      *   Em caso de falha parcial, pode haver inconsistência — candidato a melhoria
      *   futura com sessão/transação Mongo (ver ADR-013).
      *
@@ -64,6 +67,19 @@ export class AceitarOrcamentoUseCase {
             idCliente,
             { status: StatusSolicitacao.ENCERRADA }
         )
+
+        const prazoEstimado = orcamentoAceito.dataAceite
+            ? new Date(orcamentoAceito.dataAceite.getTime() + orcamentoAceito.prazoDias * 24 * 60 * 60 * 1000)
+            : undefined
+
+        await this.criarContratoUseCase.execute({
+            idSolicitacao: orcamento.idSolicitacao,
+            idOrcamento: orcamentoAceito.id!,
+            idCliente,
+            idPrestador: orcamentoAceito.idPrestador,
+            dataAceite: orcamentoAceito.dataAceite!,
+            prazoEstimado,
+        })
 
         return orcamentoAceito
     }
