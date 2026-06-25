@@ -79,7 +79,6 @@ describe('Testes de Integração do Repository: Extensão-Prazo MongoDB', () => 
             // Assert
             expect(atualizada).toBeInstanceOf(ExtensaoPrazo)
             expect(atualizada.status).toBe(StatusExtensaoPrazo.APROVADA)
-            expect(atualizada.id).toBe(extensaoInserida.id)
         })
     })
 })

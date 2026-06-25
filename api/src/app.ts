@@ -9,6 +9,7 @@ import categoriaRouter from "./http/routes/categoria/categoria.routes";
 import solicitacaoRouter from "./http/routes/solicitacao/solicitacao.routes";
 import orcamentoRouter from "./http/routes/orcamento/orcamento.routes";
 import contratoRouter from "./http/routes/contrato/contrato.routes";
+import avaliacaoRouter from "./http/routes/avaliacao/avaliacao.routes";
 import { errorHandler } from "./http/middlewares/error-handler/error-handler.middleware";
 
 const rotaRaiz = '/contrataai-api'
@@ -24,6 +25,7 @@ app.use(rotaRaiz, categoriaRouter)
 app.use(rotaRaiz, solicitacaoRouter)
 app.use(rotaRaiz, orcamentoRouter)
 app.use(rotaRaiz, contratoRouter)
+app.use(rotaRaiz, avaliacaoRouter)
 
 app.use(errorHandler)
 

@@ -1,5 +1,6 @@
 import { Schema, model, Types } from "mongoose";
 import { StatusContrato } from "../../../domain/value-objects/contrato/status/status.vo";
+import { TipoProblema } from "../../../domain/value-objects/contrato/problema/tipo-problema.vo";
 
 export interface IContratoDocument {
     id_solicitacao: Types.ObjectId
@@ -15,6 +16,7 @@ export interface IContratoDocument {
     whatsapp_liberado: boolean
     motivo_cancelamento?: string
     cancelado_por?: Types.ObjectId
+    problema?: { tipo: string; descricao: string; data_criacao: Date }
 }
 
 const ContratoSchema = new Schema<IContratoDocument>({
@@ -36,9 +38,14 @@ const ContratoSchema = new Schema<IContratoDocument>({
     whatsapp_liberado: { type: Boolean, required: true, default: false },
     motivo_cancelamento: { type: String },
     cancelado_por: { type: Types.ObjectId, ref: 'Usuario' },
+    problema: {
+        type: {
+            tipo: { type: String, enum: Object.values(TipoProblema) },
+            descricao: { type: String },
+            data_criacao: { type: Date },
+        },
+        _id: false,
+    },
 })
-
-ContratoSchema.index({ id_cliente: 1 })
-ContratoSchema.index({ id_prestador: 1 })
 
 export const ContratoModel = model('Contrato', ContratoSchema, 'contratos')

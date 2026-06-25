@@ -36,6 +36,6 @@ export class StatusContratoValueObject extends ValueObjectBase {
             throw new FormatoInvalidoError('status')
         }
 
-        this.valor = valor as StatusContratoTipo
+        this.valor = valor
     }
 }

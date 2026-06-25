@@ -127,5 +127,19 @@ describe('Testes de Integracao do Repository: Contrato MongoDB', () => {
             expect(atualizado.status).toBe(StatusContrato.CONCLUIDO)
             expect(atualizado.id).toBe(contratoInserido.id)
         })
+
+        it('deve persistir o problema relatado e recuperá-lo corretamente', async () => {
+            // Arrange
+            const documentoInserido = await ContratoModel.create(ContratoMapper.paraDocumento(contratoMock))
+            const contratoInserido = ContratoMapper.paraEntidade(documentoInserido)
+            contratoInserido.relatarProblema('atraso', 'Descricao detalhada do problema')
+            // Act
+            const atualizado = await repository.atualizar(contratoInserido)
+            // Assert
+            expect(atualizado.problema).toBeDefined()
+            expect(atualizado.problema?.tipo).toBe('atraso')
+            expect(atualizado.problema?.descricao).toBe('Descricao detalhada do problema')
+            expect(atualizado.problema?.dataCriacao).toBeInstanceOf(Date)
+        })
     })
 })

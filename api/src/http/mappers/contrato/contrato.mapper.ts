@@ -19,11 +19,12 @@ export class ContratoMapper {
             whatsappLiberado: contrato.whatsappLiberado,
             motivoCancelamento: contrato.motivoCancelamento,
             canceladoPor: contrato.canceladoPor,
+            problema: contrato.problema,
             whatsappPrestador: (contrato as ContratoComWhatsapp).whatsappPrestador,
         }
     }
 
     public static paraListaRespostaDTO(contratos: Contrato[]): ContratoRespostaDTO[] {
-        return contratos.map(c => ContratoMapper.paraRespostaDTO(c))
+        return contratos.map(c => this.paraRespostaDTO(c))
     }
 }

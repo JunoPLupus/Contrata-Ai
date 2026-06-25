@@ -1,6 +1,7 @@
 import { Contrato } from "../entities/contrato/contrato.entity";
 import { StringValueObject } from "../value-objects/shared/string/string.vo";
 import { StatusContratoValueObject, StatusContrato, StatusContratoTipo } from "../value-objects/contrato/status/status.vo";
+import { TipoProblemaValueObject, TipoProblemaTipo } from "../value-objects/contrato/problema/tipo-problema.vo";
 
 export class ContratoFactory {
     public static criar(dados: {
@@ -18,6 +19,7 @@ export class ContratoFactory {
         whatsappLiberado?: boolean
         motivoCancelamento?: string
         canceladoPor?: string
+        problema?: { tipo: string; descricao: string; dataCriacao?: Date }
     }): Contrato {
         return Contrato.criarContrato({
             id: dados.id,
@@ -34,6 +36,13 @@ export class ContratoFactory {
             whatsappLiberado: dados.whatsappLiberado ?? false,
             motivoCancelamento: dados.motivoCancelamento,
             canceladoPor: dados.canceladoPor,
+            problema: dados.problema
+                ? {
+                    tipo: new TipoProblemaValueObject(dados.problema.tipo as TipoProblemaTipo),
+                    descricao: new StringValueObject('descrição', dados.problema.descricao, 10),
+                    dataCriacao: dados.problema.dataCriacao ?? new Date(),
+                }
+                : undefined,
         })
     }
 }

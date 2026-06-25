@@ -77,6 +77,7 @@ describe('Testes Unitários do Controller: Extensão-Prazo', () => {
                 { decisao: StatusExtensaoPrazo.APROVADA }
             )
             expect(res.status).toHaveBeenCalledWith(200)
+            expect(res.json).toHaveBeenCalledWith(ExtensaoPrazoMapper.paraRespostaDTO(extensao))
         })
     })
 })
