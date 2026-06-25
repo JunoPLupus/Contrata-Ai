@@ -20,6 +20,11 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/cliente/home/home.component').then(m => m.HomeComponent),
       },
+      {
+        path: 'solicitar-orcamento',
+        loadComponent: () =>
+          import('./features/cliente/solicitar-orcamento/solicitar-orcamento.component').then(m => m.SolicitarOrcamentoComponent),
+      },
     ],
   },
   {

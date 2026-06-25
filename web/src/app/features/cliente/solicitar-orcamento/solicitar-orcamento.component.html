@@ -1,0 +1,133 @@
+<div class="solicitar-page">
+
+  <!-- Cabeçalho da página -->
+  <div class="page-header">
+    <button type="button" class="btn-back" (click)="voltar()" aria-label="Voltar">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+           width="18" height="18" fill="currentColor" aria-hidden="true">
+        <path d="M15.41 16.59 10.83 12l4.58-4.59L14 6l-6 6 6 6z"/>
+      </svg>
+      Voltar
+    </button>
+    <div class="page-header__text">
+      <span class="page-eyebrow">NOVO PEDIDO</span>
+      <h1 class="page-title">Solicite um orçamento</h1>
+      <p class="page-subtitle">Descreva o que você precisa e receba propostas de prestadores.</p>
+    </div>
+  </div>
+
+  <!-- Card do formulário -->
+  <div class="form-card">
+
+    <!-- Toggle Geral / Direto -->
+    <div class="tipo-toggle" role="group" aria-label="Tipo de solicitação">
+      <button
+        type="button"
+        class="tipo-toggle__btn"
+        [class.active]="tipoControl.value === 'geral'"
+        (click)="selecionarTipo('geral')">
+        🌐 Geral
+      </button>
+      <button
+        type="button"
+        class="tipo-toggle__btn"
+        [class.active]="tipoControl.value === 'direto'"
+        (click)="selecionarTipo('direto')">
+        🎯 Direto
+      </button>
+    </div>
+
+    @if (tipoControl.value === 'geral') {
+      <p class="tipo-desc">Seu pedido será visível para todos os prestadores da categoria.</p>
+    }
+    @if (tipoControl.value === 'direto') {
+      <p class="tipo-desc">Seu pedido será enviado diretamente para o prestador escolhido.</p>
+    }
+
+    <form [formGroup]="form" (ngSubmit)="onSubmit()" novalidate class="form-fields">
+
+      <!-- Categoria -->
+      <div class="field">
+        <label class="field__label" for="id_categoria">Categoria</label>
+        <div class="field__wrapper"
+             [class.field__wrapper--error]="categoriaControl.invalid && (categoriaControl.dirty || submitted)">
+          <span class="field__icon">🏷️</span>
+          <select
+            class="field__select"
+            id="id_categoria"
+            formControlName="id_categoria">
+            <option value="">Selecione uma categoria...</option>
+            @for (cat of categorias; track cat._id) {
+              <option [value]="cat._id">{{ cat.nome }}</option>
+            }
+          </select>
+        </div>
+        @if (categoriaControl.invalid && (categoriaControl.dirty || submitted)) {
+          <p class="field__error" role="alert">Selecione uma categoria.</p>
+        }
+      </div>
+
+      <!-- Descrição -->
+      <div class="field">
+        <label class="field__label" for="descricao">
+          Descrição do serviço
+          <span class="field__label-hint">Seja específico para atrair melhores propostas</span>
+        </label>
+        <div class="field__wrapper field__wrapper--textarea"
+             [class.field__wrapper--error]="descricaoControl.invalid && (descricaoControl.dirty || submitted)">
+          <textarea
+            class="field__textarea"
+            id="descricao"
+            formControlName="descricao"
+            rows="5"
+            placeholder="Ex: Preciso trocar 3 tomadas e instalar um interruptor de 3 vias no quarto. A casa tem padrão monofásico..."
+          ></textarea>
+        </div>
+        @if (descricaoControl.invalid && (descricaoControl.dirty || submitted)) {
+          <p class="field__error" role="alert">
+            @if (descricaoControl.errors?.['required']) { Descrição é obrigatória. }
+            @else if (descricaoControl.errors?.['minlength']) { Descreva com pelo menos 10 caracteres. }
+          </p>
+        }
+      </div>
+
+      <!-- Prestador (somente quando tipo = 'direto') -->
+      @if (tipoControl.value === 'direto') {
+        <div class="field">
+          <label class="field__label" for="id_prestador_direto">Prestador</label>
+          <div class="field__wrapper"
+               [class.field__wrapper--error]="prestadorControl.invalid && (prestadorControl.dirty || submitted)">
+            <span class="field__icon">🔧</span>
+            <select
+              class="field__select"
+              id="id_prestador_direto"
+              formControlName="id_prestador_direto">
+              <option value="">Selecione um prestador...</option>
+              @for (p of prestadores; track p._id) {
+                <option [value]="p._id">{{ p.nome }}</option>
+              }
+            </select>
+          </div>
+          @if (prestadorControl.invalid && (prestadorControl.dirty || submitted)) {
+            <p class="field__error" role="alert">Selecione um prestador para envio direto.</p>
+          }
+        </div>
+      }
+
+      <!-- Botão de envio -->
+      <button
+        type="submit"
+        class="btn-enviar"
+        [disabled]="form.invalid && submitted">
+        Enviar Solicitação
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+             width="18" height="18" fill="currentColor" aria-hidden="true">
+          <path d="M2.01 21 23 12 2.01 3 2 10l15 2-15 2z"/>
+        </svg>
+      </button>
+
+    </form>
+
+  </div>
+
+</div>

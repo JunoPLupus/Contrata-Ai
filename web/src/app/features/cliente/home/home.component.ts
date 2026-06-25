@@ -1,5 +1,6 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
+import { Router } from '@angular/router';
 import { Pedido } from '../../../core/models/pedido.model';
 import { PEDIDOS_MOCK } from './data/pedidos.mock';
 
@@ -11,6 +12,7 @@ import { PEDIDOS_MOCK } from './data/pedidos.mock';
   styleUrl: './home.component.scss',
 })
 export class HomeComponent {
+  private readonly router = inject(Router);
   abaTopo: 'meus-pedidos' | 'historico' = 'meus-pedidos';
   abaStatus: 'aberto' | 'andamento' | 'concluido' = 'aberto';
 
@@ -44,7 +46,7 @@ export class HomeComponent {
   }
 
   novoOrcamento(): void {
-    console.log('Solicitar novo orçamento');
+    this.router.navigate(['/cliente/solicitar-orcamento']);
   }
 
   getStars(nota: number): number[] {
