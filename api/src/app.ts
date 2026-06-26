@@ -1,4 +1,5 @@
 import express from 'express';
+import cors from 'cors';
 
 import prestadorRouter from "./http/routes/usuario/prestador/prestador.routes";
 import usuarioRouter from "./http/routes/usuario/shared/usuario.routes";
@@ -14,6 +15,17 @@ import { errorHandler } from "./http/middlewares/error-handler/error-handler.mid
 
 const rotaRaiz = '/contrataai-api'
 const app = express()
+
+const allowedOrigins = process.env.CORS_ORIGIN
+    ? process.env.CORS_ORIGIN.split(',')
+    : ['http://localhost:4200']
+
+app.use(cors({
+    origin: allowedOrigins,
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+}))
+
 app.use(express.json())
 
 app.use(rotaRaiz, usuarioRouter)

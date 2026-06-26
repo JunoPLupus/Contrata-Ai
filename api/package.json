@@ -30,7 +30,8 @@
     "@types/validator": "^13.15.10"
   },
   "scripts": {
-    "start": "node server.js",
+    "build": "tsc",
+    "start": "node dist/server.js",
     "dev": "nodemon --exec ts-node src/server.ts",
     "test": "jest",
     "test:unit": "jest --testPathPattern=unit",
