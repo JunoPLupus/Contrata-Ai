@@ -1,6 +1,8 @@
 import express from 'express';
 import cors from 'cors';
+import swaggerUi from 'swagger-ui-express';
 
+import { swaggerSpec, ROTA_DOCS } from "./http/docs/swagger.config";
 import prestadorRouter from "./http/routes/usuario/prestador/prestador.routes";
 import usuarioRouter from "./http/routes/usuario/shared/usuario.routes";
 import authRouter from "./http/routes/usuario/shared/auth/auth.routes";
@@ -27,6 +29,11 @@ app.use(cors({
 }))
 
 app.use(express.json())
+
+app.use(ROTA_DOCS, swaggerUi.serve, swaggerUi.setup(swaggerSpec))
+app.get(`${ROTA_DOCS}.json`, (_req, res) => {
+    res.json(swaggerSpec)
+})
 
 app.use(rotaRaiz, usuarioRouter)
 app.use(rotaRaiz, clienteRouter)
