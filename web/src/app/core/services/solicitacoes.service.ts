@@ -2,6 +2,7 @@ import { Injectable, inject, signal } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Solicitacao, TipoSolicitacao } from '../models/solicitacao.model';
+import { Categoria } from '../models/categoria.model';
 import { AuthService } from './auth.service';
 import { environment } from '../../../environments/environment';
 
@@ -17,30 +18,25 @@ export class SolicitacoesService {
     return this._solicitacoes.asReadonly();
   }
 
-  getMinhasSolicitacoes(): Observable<Solicitacao[]> {
+  private get headers(): HttpHeaders {
     const token = this.authService.getToken();
-    const headers = new HttpHeaders({ Authorization: `Bearer ${token}` });
-    return this.http.get<Solicitacao[]>(`${this.baseUrl}/solicitacoes`, { headers });
+    return new HttpHeaders({ Authorization: `Bearer ${token}` });
+  }
+
+  getMinhasSolicitacoes(): Observable<Solicitacao[]> {
+    return this.http.get<Solicitacao[]>(`${this.baseUrl}/solicitacoes`, { headers: this.headers });
+  }
+
+  getCategorias(): Observable<Categoria[]> {
+    return this.http.get<Categoria[]>(`${this.baseUrl}/categorias`, { headers: this.headers });
   }
 
   criar(dados: {
-    id_cliente: string;
     id_categoria: string;
     tipo: TipoSolicitacao;
     descricao: string;
     id_prestador_direto?: string;
-  }): Solicitacao {
-    const nova: Solicitacao = {
-      _id: Date.now().toString(),
-      id_cliente: dados.id_cliente,
-      id_categoria: dados.id_categoria,
-      tipo: dados.tipo,
-      descricao: dados.descricao,
-      id_prestador_direto: dados.id_prestador_direto,
-      status: 'aberta',
-      data_solicitacao: new Date(),
-    };
-    this._solicitacoes.update(lista => [...lista, nova]);
-    return nova;
+  }): Observable<Solicitacao> {
+    return this.http.post<Solicitacao>(`${this.baseUrl}/solicitacoes`, dados, { headers: this.headers });
   }
 }
