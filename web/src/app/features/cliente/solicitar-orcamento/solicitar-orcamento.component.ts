@@ -19,8 +19,15 @@ export class SolicitarOrcamentoComponent implements OnInit {
   private readonly solicitacoesService = inject(SolicitacoesService);
 
   protected submitted = false;
-  protected categorias: Categoria[] = [];
-  protected readonly prestadores: { _id: string; nome: string }[] = [];
+  protected categorias: Categoria[] = [
+    { _id: 'mock-cat-1', nome: 'Elétrica', descricao: 'Serviços elétricos' },
+    { _id: 'mock-cat-2', nome: 'Hidráulica', descricao: 'Encanamento e vazamentos' },
+    { _id: 'mock-cat-3', nome: 'Pintura', descricao: 'Pintura residencial e comercial' },
+    { _id: 'mock-cat-4', nome: 'Limpeza', descricao: 'Limpeza residencial e comercial' },
+    { _id: 'mock-cat-5', nome: 'Jardinagem', descricao: 'Manutenção de jardins' },
+    { _id: 'mock-cat-6', nome: 'TI & Tecnologia', descricao: 'Suporte técnico e redes' },
+  ];
+  protected prestadores: { _id: string; nome: string }[] = [];
   protected readonly loading = signal(false);
   protected readonly erro = signal('');
 
@@ -38,7 +45,12 @@ export class SolicitarOrcamentoComponent implements OnInit {
 
   ngOnInit(): void {
     this.solicitacoesService.getCategorias().subscribe({
-      next: (cats) => this.categorias = cats,
+      next: (cats) => { if (cats?.length) this.categorias = cats; },
+      error: () => {},
+    });
+
+    this.solicitacoesService.buscarPrestadores().subscribe({
+      next: (prestadores) => this.prestadores = prestadores,
       error: () => {},
     });
 
@@ -60,6 +72,7 @@ export class SolicitarOrcamentoComponent implements OnInit {
 
   onSubmit(): void {
     this.submitted = true;
+    console.log('form válido?', this.form.valid, this.form.value);
     if (this.form.invalid) return;
 
     const v = this.form.value;

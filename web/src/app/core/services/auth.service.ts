@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, map } from 'rxjs';
+import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 
 @Injectable({
@@ -13,9 +13,7 @@ export class AuthService {
   constructor(private http: HttpClient) {}
 
   login(email: string, senha: string): Observable<string> {
-    return this.http.post<{ token: string }>(`${this.baseUrl}/login`, { email, senha }).pipe(
-      map(response => response.token)
-    );
+    return this.http.post(`${this.baseUrl}/login`, { email, senha }, { responseType: 'text' });
   }
 
   cadastrar(dados: any): Observable<any> {
@@ -23,11 +21,12 @@ export class AuthService {
   }
 
   salvarToken(token: string): void {
-    localStorage.setItem('token', token);
+    localStorage.setItem('token', token.replace(/^"|"$/g, ''));
   }
 
   getToken(): string | null {
-    return localStorage.getItem('token');
+    const t = localStorage.getItem('token');
+    return t ? t.replace(/^"|"$/g, '') : null;
   }
 
   logout(): void {

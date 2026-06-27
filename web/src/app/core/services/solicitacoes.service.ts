@@ -1,15 +1,13 @@
 import { Injectable, inject, signal } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Solicitacao, TipoSolicitacao } from '../models/solicitacao.model';
 import { Categoria } from '../models/categoria.model';
-import { AuthService } from './auth.service';
 import { environment } from '../../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class SolicitacoesService {
   private readonly http = inject(HttpClient);
-  private readonly authService = inject(AuthService);
   private readonly baseUrl = environment.apiUrl;
 
   private readonly _solicitacoes = signal<Solicitacao[]>([]);
@@ -18,17 +16,26 @@ export class SolicitacoesService {
     return this._solicitacoes.asReadonly();
   }
 
-  private get headers(): HttpHeaders {
-    const token = this.authService.getToken();
-    return new HttpHeaders({ Authorization: `Bearer ${token}` });
-  }
-
   getMinhasSolicitacoes(): Observable<Solicitacao[]> {
-    return this.http.get<Solicitacao[]>(`${this.baseUrl}/solicitacoes`, { headers: this.headers });
+    const token = localStorage.getItem('token');
+    const headers = { Authorization: `Bearer ${token}` };
+    return this.http.get<Solicitacao[]>(`${this.baseUrl}/solicitacoes`, { headers });
   }
 
   getCategorias(): Observable<Categoria[]> {
-    return this.http.get<Categoria[]>(`${this.baseUrl}/categorias`, { headers: this.headers });
+    const token = localStorage.getItem('token');
+    const headers = { Authorization: `Bearer ${token}` };
+    return this.http.get<Categoria[]>(`${this.baseUrl}/categorias`, { headers });
+  }
+
+  buscarPrestadores(nome?: string): Observable<{ _id: string; nome: string }[]> {
+    const token = localStorage.getItem('token');
+    const headers = { Authorization: `Bearer ${token}` };
+    const params = nome ? `?nome=${encodeURIComponent(nome)}` : '';
+    return this.http.get<{ _id: string; nome: string }[]>(
+      `${this.baseUrl}/prestadores/buscar${params}`,
+      { headers }
+    );
   }
 
   criar(dados: {
@@ -37,6 +44,8 @@ export class SolicitacoesService {
     descricao: string;
     id_prestador_direto?: string;
   }): Observable<Solicitacao> {
-    return this.http.post<Solicitacao>(`${this.baseUrl}/solicitacoes`, dados, { headers: this.headers });
+    const token = localStorage.getItem('token');
+    const headers = { Authorization: `Bearer ${token}` };
+    return this.http.post<Solicitacao>(`${this.baseUrl}/solicitacoes`, dados, { headers });
   }
 }
