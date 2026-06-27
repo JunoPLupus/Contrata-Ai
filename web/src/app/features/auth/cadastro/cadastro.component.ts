@@ -1,8 +1,9 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { CadastroPayload, PerfilCadastro } from '../../../core/models/cadastro.model';
+import { AuthService } from '../../../core/services/auth.service';
 
 @Component({
   selector: 'app-cadastro',
@@ -13,10 +14,14 @@ import { CadastroPayload, PerfilCadastro } from '../../../core/models/cadastro.m
 })
 export class CadastroComponent {
   private readonly fb = inject(FormBuilder);
+  private readonly authService = inject(AuthService);
+  private readonly router = inject(Router);
 
   perfilSelecionado: PerfilCadastro = 'cliente';
   senhaVisivel = false;
   protected submitted = false;
+  protected readonly loading = signal(false);
+  protected readonly erro = signal('');
 
   protected readonly form = this.fb.group({
     nome: ['', [Validators.required, Validators.minLength(3)]],
@@ -50,9 +55,19 @@ export class CadastroComponent {
       whatsapp: v.whatsapp!,
       senha: v.senha!,
       perfilEscolhido: this.perfilSelecionado,
-      // TODO: chamar rota de cadastro conforme perfilSelecionado (cliente vs cliente+prestador). Endpoints a confirmar com a Juno.
       aceiteTermos: v.aceiteTermos!,
     };
-    console.log(payload);
+    this.loading.set(true);
+    this.erro.set('');
+    this.authService.cadastrar(payload).subscribe({
+      next: () => {
+        this.loading.set(false);
+        this.router.navigate(['/login'], { state: { mensagem: 'Cadastro realizado com sucesso! Faça login para continuar.' } });
+      },
+      error: () => {
+        this.loading.set(false);
+        this.erro.set('Erro ao cadastrar. Verifique os dados e tente novamente.');
+      },
+    });
   }
 }
