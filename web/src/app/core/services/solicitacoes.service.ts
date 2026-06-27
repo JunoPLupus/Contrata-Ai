@@ -1,13 +1,26 @@
-// Service in-memory. Trocar por HTTP quando a API estiver pronta.
-import { Injectable, signal } from '@angular/core';
+import { Injectable, inject, signal } from '@angular/core';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { Observable } from 'rxjs';
 import { Solicitacao, TipoSolicitacao } from '../models/solicitacao.model';
+import { AuthService } from './auth.service';
+import { environment } from '../../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class SolicitacoesService {
+  private readonly http = inject(HttpClient);
+  private readonly authService = inject(AuthService);
+  private readonly baseUrl = environment.apiUrl;
+
   private readonly _solicitacoes = signal<Solicitacao[]>([]);
 
   get solicitacoes() {
     return this._solicitacoes.asReadonly();
+  }
+
+  getMinhasSolicitacoes(): Observable<Solicitacao[]> {
+    const token = this.authService.getToken();
+    const headers = new HttpHeaders({ Authorization: `Bearer ${token}` });
+    return this.http.get<Solicitacao[]>(`${this.baseUrl}/solicitacoes`, { headers });
   }
 
   criar(dados: {
