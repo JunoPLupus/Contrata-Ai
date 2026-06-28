@@ -1,7 +1,7 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { OrcamentosService } from '../../../core/services/orcamentos.service';
 
 @Component({
@@ -14,23 +14,22 @@ import { OrcamentosService } from '../../../core/services/orcamentos.service';
 export class GerarOrcamentoComponent {
   private readonly fb = inject(FormBuilder);
   private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
   private readonly orcamentosService = inject(OrcamentosService);
+
+  readonly solicitacaoMock = {
+    titulo: 'Solicitação',
+    tags: [] as string[],
+    descricao: '',
+    localizacao: '',
+    periodo: '',
+    fotos: [] as string[],
+  };
 
   protected submitted = false;
   protected chipSelecionado: 'amanha' | 'dois-dias' | null = null;
-
-  // Dados mockados da solicitação que o prestador está respondendo
-  readonly solicitacaoMock = {
-    titulo: 'Instalação de ar-condicionado split 12.000 BTUs',
-    tags: ['Urgente', 'Residencial'],
-    descricao:
-      'Preciso instalar um ar-condicionado split de 12.000 BTUs no quarto principal. ' +
-      'A parede é de alvenaria e há tomada 220V disponível a cerca de 2 metros do local desejado. ' +
-      'Necessário perfurar a parede para passagem de tubulação.',
-    localizacao: 'Brasília, DF — Asa Norte',
-    periodo: 'Manhã (08h – 12h)',
-    fotos: ['foto1', 'foto2', 'foto3'],
-  };
+  protected loading = signal(false);
+  protected erro = signal('');
 
   protected readonly form = this.fb.group({
     valor: [null as number | null, [Validators.required, Validators.min(0.01)]],
@@ -48,14 +47,25 @@ export class GerarOrcamentoComponent {
     this.submitted = true;
     if (this.form.invalid) return;
 
+    const idSolicitacao = this.route.snapshot.queryParamMap.get('idSolicitacao') ?? '';
     const v = this.form.value;
+
+    this.loading.set(true);
+    this.erro.set('');
+
     this.orcamentosService.criar({
-      id_solicitacao: 'mock-solicitacao-001',
-      id_prestador: 'mock-prestador-001',
+      id_solicitacao: idSolicitacao,
       valor: v.valor!,
       prazo_dias: v.prazo_dias ?? undefined,
+    }).subscribe({
+      next: () => {
+        this.loading.set(false);
+        this.router.navigate(['/prestador/hub']);
+      },
+      error: (err) => {
+        this.loading.set(false);
+        this.erro.set(err?.error?.message ?? 'Erro ao enviar orçamento. Tente novamente.');
+      },
     });
-
-    this.router.navigate(['/prestador/painel']);
   }
 }

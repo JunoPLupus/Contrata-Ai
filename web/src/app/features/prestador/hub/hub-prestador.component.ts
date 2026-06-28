@@ -1,8 +1,11 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { forkJoin } from 'rxjs';
 import { Solicitacao } from '../../../core/models/solicitacao.model';
 import { Orcamento } from '../../../core/models/orcamento.model';
+import { environment } from '../../../../environments/environment';
 
 @Component({
   selector: 'app-hub-prestador',
@@ -11,93 +14,43 @@ import { Orcamento } from '../../../core/models/orcamento.model';
   templateUrl: './hub-prestador.component.html',
   styleUrl: './hub-prestador.component.scss',
 })
-export class HubPrestadorComponent {
-  constructor(private readonly router: Router) {}
+export class HubPrestadorComponent implements OnInit {
+  constructor(private readonly router: Router, private readonly http: HttpClient) {}
 
-  readonly solicitacoesGerais: Solicitacao[] = [
-    {
-      _id: 'sol-001',
-      id_cliente: 'cli-001',
-      id_categoria: 'cat-climatizacao',
-      tipo: 'geral',
-      descricao: 'Instalação de ar-condicionado split 12.000 BTUs no quarto principal. Parede de alvenaria, tomada 220V disponível.',
-      status: 'aberta',
-      data_solicitacao: new Date('2026-06-20T09:00:00'),
-    },
-    {
-      _id: 'sol-002',
-      id_cliente: 'cli-002',
-      id_categoria: 'cat-pintura',
-      tipo: 'geral',
-      descricao: 'Pintura interna de apartamento 60m². Duas demãos com massa corrida e tinta acrílica. Quatro cômodos.',
-      status: 'aberta',
-      data_solicitacao: new Date('2026-06-21T14:30:00'),
-    },
-    {
-      _id: 'sol-003',
-      id_cliente: 'cli-003',
-      id_categoria: 'cat-eletrica',
-      tipo: 'geral',
-      descricao: 'Troca de quadro de disjuntores e revisão geral da instalação elétrica em casa de 80m².',
-      status: 'aberta',
-      data_solicitacao: new Date('2026-06-22T11:00:00'),
-    },
-  ];
+  solicitacoesGerais: Solicitacao[] = [];
+  solicitacoesDiretas: Solicitacao[] = [];
+  orcamentosEnviados: any[] = [];
+  loading = signal(false);
+  erro = signal('');
 
-  readonly solicitacoesDiretas: Solicitacao[] = [
-    {
-      _id: 'sol-004',
-      id_cliente: 'cli-004',
-      id_categoria: 'cat-climatizacao',
-      id_prestador_direto: 'prest-001',
-      tipo: 'direto',
-      descricao: 'Manutenção preventiva em dois aparelhos de ar-condicionado split. Limpeza, recarga de gás e verificação.',
-      status: 'aberta',
-      data_solicitacao: new Date('2026-06-23T08:00:00'),
-    },
-    {
-      _id: 'sol-005',
-      id_cliente: 'cli-005',
-      id_categoria: 'cat-eletrica',
-      id_prestador_direto: 'prest-001',
-      tipo: 'direto',
-      descricao: 'Instalação de tomadas externas e iluminação de jardim com timer automático.',
-      status: 'aberta',
-      data_solicitacao: new Date('2026-06-24T16:00:00'),
-    },
-  ];
+  private getHeaders(): HttpHeaders {
+    const raw = localStorage.getItem('token') ?? '';
+    const token = raw.replace(/^"|"$/g, '');
+    return new HttpHeaders({ Authorization: `Bearer ${token}` });
+  }
 
-  readonly orcamentosEnviados: (Orcamento & { descricaoServico: string })[] = [
-    {
-      _id: 'orc-001',
-      id_solicitacao: 'sol-010',
-      id_prestador: 'prest-001',
-      valor: 350,
-      prazo_dias: 2,
-      status: 'aceito',
-      data_resposta: new Date('2026-06-18T10:00:00'),
-      descricaoServico: 'Instalação de ventilador de teto com controle remoto',
-    },
-    {
-      _id: 'orc-002',
-      id_solicitacao: 'sol-011',
-      id_prestador: 'prest-001',
-      valor: 1200,
-      prazo_dias: 5,
-      status: 'pendente',
-      descricaoServico: 'Revisão completa do sistema elétrico residencial',
-    },
-    {
-      _id: 'orc-003',
-      id_solicitacao: 'sol-012',
-      id_prestador: 'prest-001',
-      valor: 800,
-      prazo_dias: 3,
-      status: 'encerrado',
-      data_resposta: new Date('2026-06-15T09:00:00'),
-      descricaoServico: 'Instalação de chuveiro elétrico e adaptação de tomada 220V',
-    },
-  ];
+  ngOnInit(): void {
+    this.loading.set(true);
+    const headers = this.getHeaders();
+    const api = environment.apiUrl;
+
+    forkJoin({
+      gerais: this.http.get<Solicitacao[]>(`${api}/solicitacoes/disponiveis`, { headers }),
+      diretas: this.http.get<Solicitacao[]>(`${api}/solicitacoes?tipo=direto`, { headers }),
+      orcamentos: this.http.get<any[]>(`${api}/orcamentos`, { headers }),
+    }).subscribe({
+      next: ({ gerais, diretas, orcamentos }) => {
+        this.solicitacoesGerais = gerais;
+        this.solicitacoesDiretas = diretas.filter(s => s.tipo === 'direto');
+        this.orcamentosEnviados = orcamentos;
+        this.loading.set(false);
+      },
+      error: () => {
+        this.erro.set('Erro ao carregar dados. Tente novamente.');
+        this.loading.set(false);
+      },
+    });
+  }
 
   navegarParaGerarOrcamento(idSolicitacao: string): void {
     this.router.navigate(['/prestador/gerar-orcamento'], {
