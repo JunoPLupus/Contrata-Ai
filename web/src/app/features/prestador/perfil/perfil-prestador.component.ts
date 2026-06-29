@@ -1,9 +1,9 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Prestador } from '../../../core/models/prestador.model';
-import { Usuario } from '../../../core/models/usuario.model';
-import { Avaliacao } from '../../../core/models/avaliacao.model';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Categoria } from '../../../core/models/categoria.model';
+import { Avaliacao } from '../../../core/models/avaliacao.model';
+import { environment } from '../../../../environments/environment';
 
 type AvaliacaoDisplay = Avaliacao & { nome_cliente?: string };
 
@@ -14,76 +14,53 @@ type AvaliacaoDisplay = Avaliacao & { nome_cliente?: string };
   templateUrl: './perfil-prestador.component.html',
   styleUrl: './perfil-prestador.component.scss',
 })
-export class PerfilPrestadorComponent {
+export class PerfilPrestadorComponent implements OnInit {
+  constructor(private readonly http: HttpClient) {}
 
-  readonly prestador: Prestador = {
-    _id: 'prest-001',
-    id_usuario: 'usr-001',
-    foto: '',
-    telefone_profissional: '(11) 98765-4321',
-    descricao:
-      'Eletricista certificado com mais de 12 anos de experiência em instalações residenciais e comerciais. ' +
-      'Especializado em instalação de ar-condicionado, quadros de distribuição, redes de dados e automação residencial. ' +
-      'Atendo toda a Grande São Paulo com pontualidade e materiais de qualidade. ' +
-      'Emito nota fiscal e ofereço garantia de 90 dias em todos os serviços realizados.',
-  };
+  prestador: any = null;
+  usuario: any = null;
+  categorias: Categoria[] = [];
+  avaliacoes: AvaliacaoDisplay[] = [];
+  loading = signal(false);
+  erro = signal('');
 
-  readonly usuario: Usuario = {
-    _id: 'usr-001',
-    nome: 'Carlos Souza',
-    email: 'carlos.souza@email.com',
-    whatsapp: '(11) 98765-4321',
-    localizacao_cidade: 'São Paulo',
-  };
+  private getHeaders(): HttpHeaders {
+    const raw = localStorage.getItem('token') ?? '';
+    const token = raw.replace(/^"|"$/g, '');
+    return new HttpHeaders({ Authorization: `Bearer ${token}` });
+  }
 
-  readonly categorias: Categoria[] = [
-    { _id: 'cat-eletrica', nome: 'Elétrica' },
-    { _id: 'cat-climatizacao', nome: 'Climatização' },
-  ];
+  ngOnInit(): void {
+    this.loading.set(true);
+    const headers = this.getHeaders();
+    const api = environment.apiUrl;
 
-  readonly avaliacoes: AvaliacaoDisplay[] = [
-    {
-      _id: 'av-001',
-      id_prestador: 'prest-001',
-      id_cliente: 'cli-001',
-      nota: 5,
-      comentario:
-        'Profissional excelente! Chegou no horário combinado, fez o serviço com muito cuidado e deixou tudo limpo. Recomendo sem hesitar.',
-      data: new Date('2026-06-10T10:00:00'),
-      anonima: false,
-      nome_cliente: 'Maria Santos',
-    },
-    {
-      _id: 'av-002',
-      id_prestador: 'prest-001',
-      id_cliente: 'cli-002',
-      nota: 4,
-      comentario:
-        'Ótimo trabalho na instalação do ar-condicionado. Único ponto foi um atraso de 30 minutos, mas avisou com antecedência.',
-      data: new Date('2026-05-28T14:00:00'),
-      anonima: true,
-    },
-    {
-      _id: 'av-003',
-      id_prestador: 'prest-001',
-      id_cliente: 'cli-003',
-      nota: 5,
-      comentario:
-        'Fez a troca do quadro elétrico com muita competência. Explicou tudo que foi feito e o preço foi muito justo.',
-      data: new Date('2026-05-15T09:00:00'),
-      anonima: false,
-      nome_cliente: 'João Pereira',
-    },
-    {
-      _id: 'av-004',
-      id_prestador: 'prest-001',
-      id_cliente: 'cli-004',
-      nota: 3,
-      comentario: 'Serviço bem feito, mas demorou mais que o prazo combinado.',
-      data: new Date('2026-04-20T11:00:00'),
-      anonima: true,
-    },
-  ];
+    this.http.get<any>(`${api}/prestadores`, { headers }).subscribe({
+      next: (dados) => {
+        this.prestador = dados;
+        this.usuario = typeof dados.id_usuario === 'object' ? dados.id_usuario : { nome: '', email: '' };
+        this.categorias = Array.isArray(dados.categorias) ? dados.categorias : [];
+
+        const idPrestador = dados._id || dados.id;
+        this.http
+          .get<AvaliacaoDisplay[]>(`${api}/prestadores/${idPrestador}/avaliacoes`, { headers })
+          .subscribe({
+            next: (avs) => {
+              this.avaliacoes = avs;
+              this.loading.set(false);
+            },
+            error: () => {
+              this.erro.set('Erro ao carregar avaliações.');
+              this.loading.set(false);
+            },
+          });
+      },
+      error: () => {
+        this.erro.set('Erro ao carregar perfil. Tente novamente.');
+        this.loading.set(false);
+      },
+    });
+  }
 
   get notaMedia(): number {
     if (!this.avaliacoes.length) return 0;
@@ -92,10 +69,11 @@ export class PerfilPrestadorComponent {
   }
 
   get iniciais(): string {
-    return this.usuario.nome
+    const nome: string = this.usuario?.nome ?? '';
+    return nome
       .split(' ')
       .slice(0, 2)
-      .map(n => n[0])
+      .map((n: string) => n[0])
       .join('')
       .toUpperCase();
   }

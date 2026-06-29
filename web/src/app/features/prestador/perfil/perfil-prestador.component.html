@@ -20,8 +20,8 @@
       <div class="perfil-card__identity">
         <!-- Avatar -->
         <div class="avatar" aria-hidden="true">
-          @if (prestador.foto) {
-            <img [src]="prestador.foto" [alt]="usuario.nome" class="avatar__img" />
+          @if (prestador?.foto) {
+            <img [src]="prestador.foto" [alt]="usuario?.nome" class="avatar__img" />
           } @else {
             <span class="avatar__initials">{{ iniciais }}</span>
           }
@@ -29,7 +29,7 @@
 
         <!-- Dados principais -->
         <div class="perfil-card__info">
-          <h2 class="perfil-card__nome">{{ usuario.nome }}</h2>
+          <h2 class="perfil-card__nome">{{ usuario?.nome }}</h2>
 
           <div class="categorias" role="list" aria-label="Categorias de atuação">
             @for (cat of categorias; track cat._id) {
@@ -38,7 +38,7 @@
           </div>
 
           <div class="perfil-card__meta">
-            @if (usuario.whatsapp) {
+            @if (usuario?.whatsapp) {
               <span class="meta-item">
                 <span class="meta-item__icon" aria-hidden="true">📱</span>
                 <span>{{ usuario.whatsapp }}</span>
@@ -76,7 +76,7 @@
       <h2 class="section-title" id="sobre-titulo">Sobre</h2>
     </div>
     <div class="sobre-card">
-      <p class="sobre-texto">{{ prestador.descricao }}</p>
+      <p class="sobre-texto">{{ prestador?.descricao }}</p>
     </div>
   </section>
 
