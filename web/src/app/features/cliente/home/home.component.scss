@@ -1,0 +1,624 @@
+// ── Status color tokens ───────────────────────────────────────────────────────
+$color-aberto: var(--color-accent);
+$color-andamento: #3b82f6;
+$color-concluido: #22c55e;
+$color-avaliado: #22c55e;
+
+// ── Page layout (2 colunas) ───────────────────────────────────────────────────
+.home-page {
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  gap: 24px;
+  align-items: start;
+}
+
+// ── Coluna principal ──────────────────────────────────────────────────────────
+.home-main {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  min-width: 0;
+}
+
+// ── Page header ───────────────────────────────────────────────────────────────
+.page-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.page-header__text {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.page-eyebrow {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--color-accent);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.page-title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  line-height: 1.15;
+  letter-spacing: -0.03em;
+  max-width: 22ch;
+}
+
+.title-accent {
+  color: var(--color-accent);
+}
+
+// ── Toggle pílula ─────────────────────────────────────────────────────────────
+.toggle-pill {
+  display: inline-flex;
+  background: var(--color-border);
+  border-radius: 100px;
+  padding: 3px;
+  gap: 2px;
+  flex-shrink: 0;
+  margin-top: 8px;
+}
+
+.toggle-pill__btn {
+  padding: 8px 18px;
+  border-radius: 100px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: background 0.18s, color 0.18s, box-shadow 0.18s;
+
+  &--active {
+    background: var(--color-white);
+    color: var(--color-text-primary);
+    font-weight: 600;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+  }
+}
+
+// ── Status tabs ───────────────────────────────────────────────────────────────
+.status-tabs {
+  display: flex;
+  gap: 4px;
+  border-bottom: 1px solid var(--color-border);
+  padding-bottom: 0;
+}
+
+.status-tab {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 16px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  border-radius: 0;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+  margin-bottom: -1px;
+
+  &:hover {
+    color: var(--color-text-primary);
+  }
+
+  &--active {
+    color: var(--color-text-primary);
+    font-weight: 600;
+    border-bottom-color: var(--color-accent);
+  }
+}
+
+.status-tab__dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+
+  &--aberto { background: var(--color-accent); }
+  &--andamento { background: #3b82f6; }
+  &--concluido { background: #22c55e; }
+}
+
+.status-tab__count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: 100px;
+  background: #f3f4f6;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+}
+
+// ── Lista de pedidos ─────────────────────────────────────────────────────────
+.pedidos-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+// ── Card de pedido ────────────────────────────────────────────────────────────
+.pedido-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  background: var(--color-white);
+  border-radius: 16px;
+  padding: 20px 24px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06), 0 0 0 1px var(--color-border);
+  transition: box-shadow 0.18s;
+
+  &:hover {
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1), 0 0 0 1px var(--color-border);
+  }
+}
+
+// Thumbnail circular
+.card-thumb {
+  flex-shrink: 0;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--color-navy);
+  color: var(--color-white);
+  font-size: 1.25rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-transform: uppercase;
+
+  &--aberto { background: #1a1a2e; }
+  &--andamento { background: #1d4ed8; }
+  &--avaliado, &--concluido { background: #15803d; }
+}
+
+// Conteúdo central
+.card-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.card-badge {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--color-text-secondary);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.card-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+
+.card-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-top: 4px;
+}
+
+.card-desc {
+  font-size: 0.875rem;
+  color: var(--color-text-secondary);
+  line-height: 1.5;
+}
+
+.card-info {
+  font-size: 0.875rem;
+  color: var(--color-text-secondary);
+}
+
+.card-info__count {
+  color: var(--color-accent);
+  font-weight: 700;
+}
+
+.card-info__label {
+  color: var(--color-text-secondary);
+}
+
+// Status inline badge
+.status-inline {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 100px;
+  font-size: 0.75rem;
+  font-weight: 600;
+
+  &--andamento {
+    background: rgba(59, 130, 246, 0.1);
+    color: #1d4ed8;
+  }
+}
+
+// Star rating
+.star-rating {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  margin-top: 2px;
+}
+
+.star {
+  font-size: 1.1rem;
+  color: #d1d5db;
+
+  &--filled {
+    color: #f59e0b;
+  }
+}
+
+.star-value {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  margin-left: 4px;
+}
+
+.badge-avaliado {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 100px;
+  background: rgba(243, 147, 32, 0.12);
+  color: var(--color-accent);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-left: 6px;
+}
+
+// ── Ações do card ─────────────────────────────────────────────────────────────
+.card-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+// Botões de ação
+%btn-base {
+  padding: 8px 14px;
+  border-radius: var(--radius-button);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  white-space: nowrap;
+  transition: background 0.15s, box-shadow 0.15s, opacity 0.15s;
+}
+
+.btn-outline-accent {
+  @extend %btn-base;
+  background: transparent;
+  border: 1.5px solid var(--color-accent);
+  color: var(--color-accent);
+
+  &:hover {
+    background: rgba(243, 147, 32, 0.08);
+  }
+}
+
+.btn-ghost {
+  @extend %btn-base;
+  background: transparent;
+  color: var(--color-text-secondary);
+
+  &:hover {
+    background: var(--color-surface);
+    color: var(--color-text-primary);
+  }
+}
+
+.btn-icon-delete {
+  @extend %btn-base;
+  background: transparent;
+  color: #ef4444;
+  padding: 6px 10px;
+
+  &:hover {
+    background: rgba(239, 68, 68, 0.08);
+  }
+}
+
+.btn-green {
+  @extend %btn-base;
+  background: #22c55e;
+  color: var(--color-white);
+
+  &:hover {
+    background: #16a34a;
+  }
+}
+
+.btn-outline {
+  @extend %btn-base;
+  background: transparent;
+  border: 1.5px solid var(--color-border);
+  color: var(--color-text-primary);
+
+  &:hover {
+    border-color: #9ca3af;
+    background: var(--color-surface);
+  }
+}
+
+.btn-primary-action {
+  @extend %btn-base;
+  background: var(--color-accent);
+  color: var(--color-white);
+
+  &:hover {
+    background: #d97706;
+    box-shadow: 0 4px 12px rgba(243, 147, 32, 0.35);
+  }
+}
+
+// ── Estado vazio ──────────────────────────────────────────────────────────────
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 60px 24px;
+  background: var(--color-white);
+  border-radius: 16px;
+  box-shadow: 0 0 0 1px var(--color-border);
+  text-align: center;
+}
+
+.empty-state__icon {
+  font-size: 3.5rem;
+  line-height: 1;
+}
+
+.empty-state__title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+
+.empty-state__subtitle {
+  font-size: 0.9375rem;
+  color: var(--color-text-secondary);
+}
+
+.btn-solicitar {
+  margin-top: 8px;
+  padding: 12px 28px;
+  background: var(--color-accent);
+  color: var(--color-white);
+  font-size: 1rem;
+  font-weight: 700;
+  border: none;
+  border-radius: var(--radius-button);
+  cursor: pointer;
+  transition: background 0.15s, box-shadow 0.15s;
+
+  &:hover {
+    background: #d97706;
+    box-shadow: 0 6px 20px rgba(243, 147, 32, 0.4);
+  }
+}
+
+// ── Botão flutuante ───────────────────────────────────────────────────────────
+.fab {
+  position: fixed;
+  bottom: 32px;
+  right: 32px;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--color-accent);
+  color: var(--color-white);
+  font-size: 1.75rem;
+  font-weight: 400;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 8px 24px rgba(243, 147, 32, 0.45), 0 2px 8px rgba(0, 0, 0, 0.15);
+  z-index: 50;
+  transition: background 0.15s, transform 0.15s, box-shadow 0.15s;
+
+  &:hover {
+    background: #d97706;
+    transform: scale(1.08);
+    box-shadow: 0 12px 32px rgba(243, 147, 32, 0.55), 0 4px 12px rgba(0, 0, 0, 0.2);
+  }
+
+  &:active {
+    transform: scale(0.96);
+  }
+}
+
+// ── Sidebar ───────────────────────────────────────────────────────────────────
+.home-sidebar {
+  position: sticky;
+  top: 88px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.sidebar-card {
+  background: var(--color-white);
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06), 0 0 0 1px var(--color-border);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+
+  &--dica {
+    background: #eef4ff;
+    border: 1px solid #c7d7fb;
+  }
+}
+
+.sidebar-card__title {
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+
+.sidebar-card__text {
+  font-size: 0.875rem;
+  color: var(--color-text-secondary);
+  line-height: 1.6;
+}
+
+.sidebar-card__btn {
+  align-self: flex-start;
+  padding: 10px 20px;
+  font-size: 0.875rem;
+}
+
+.sidebar-card__link {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-accent);
+  text-align: center;
+  padding-top: 4px;
+  transition: color 0.15s;
+
+  &:hover {
+    color: #d97706;
+    text-decoration: underline;
+  }
+}
+
+// ── Chat list ─────────────────────────────────────────────────────────────────
+.chat-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.chat-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.chat-item__avatar {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--color-navy);
+  color: var(--color-white);
+  font-size: 0.875rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-transform: uppercase;
+}
+
+.chat-item__body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.chat-item__name {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.chat-item__msg {
+  font-size: 0.8125rem;
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.chat-item__online {
+  flex-shrink: 0;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #22c55e;
+  border: 2px solid var(--color-white);
+  box-shadow: 0 0 0 1px #22c55e;
+}
+
+// ── Responsivo ────────────────────────────────────────────────────────────────
+@media (max-width: 1023px) {
+  .home-page {
+    grid-template-columns: 1fr;
+  }
+
+  .home-sidebar {
+    position: static;
+  }
+
+  .page-title {
+    font-size: 1.875rem;
+  }
+}
+
+@media (max-width: 767px) {
+  .pedido-card {
+    flex-direction: column;
+    gap: 12px;
+    padding: 16px;
+  }
+
+  .card-actions {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: flex-start;
+  }
+
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .status-tabs {
+    overflow-x: auto;
+  }
+
+  .fab {
+    bottom: 20px;
+    right: 20px;
+  }
+}

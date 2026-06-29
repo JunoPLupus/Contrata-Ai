@@ -1,0 +1,154 @@
+<div class="hub-page">
+
+  <!-- ── Cabeçalho ── -->
+  <header class="page-header">
+    <div class="page-header__breadcrumb">
+      <span class="page-header__crumb">Prestador</span>
+      <span class="page-header__sep" aria-hidden="true">/</span>
+      <span class="page-header__crumb page-header__crumb--active">Central de Oportunidades</span>
+    </div>
+    <h1 class="page-header__title">Central de Oportunidades</h1>
+    <p class="page-header__subtitle">Veja solicitações disponíveis, pedidos diretos e acompanhe seus orçamentos enviados.</p>
+  </header>
+
+  <!-- ══════════════════════════════════════════════════════
+       SEÇÃO 1 — Solicitações disponíveis (tipo geral)
+  ══════════════════════════════════════════════════════ -->
+  <section class="hub-section" aria-labelledby="gerais-titulo">
+    <div class="section-header">
+      <div class="section-header__left">
+        <span class="section-badge section-badge--geral">Abertas</span>
+        <h2 class="section-title" id="gerais-titulo">Solicitações disponíveis</h2>
+      </div>
+      <p class="section-subtitle">Serviços gerais que qualquer prestador pode orçar.</p>
+    </div>
+
+    <div class="cards-grid">
+      @for (sol of solicitacoesGerais; track sol._id) {
+        <article class="sol-card" aria-label="Solicitação disponível">
+          <div class="sol-card__top">
+            <span class="sol-card__id">#{{ sol._id.slice(-3) }}</span>
+            <span class="sol-card__status sol-card__status--aberta">{{ sol.status }}</span>
+          </div>
+
+          <p class="sol-card__desc">{{ sol.descricao }}</p>
+
+          <div class="sol-card__meta">
+            <span class="sol-card__meta-item">
+              <span aria-hidden="true">📅</span>
+              {{ sol.data_solicitacao | date:'dd/MM/yyyy' }}
+            </span>
+          </div>
+
+          <button
+            type="button"
+            class="btn-primary"
+            (click)="navegarParaGerarOrcamento(sol._id)"
+            [attr.aria-label]="'Gerar orçamento para solicitação ' + sol._id"
+          >
+            Gerar orçamento
+          </button>
+        </article>
+      }
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════════════
+       SEÇÃO 2 — Solicitações diretas
+  ══════════════════════════════════════════════════════ -->
+  <section class="hub-section" aria-labelledby="diretas-titulo">
+    <div class="section-header">
+      <div class="section-header__left">
+        <span class="section-badge section-badge--direto">Direto para você</span>
+        <h2 class="section-title" id="diretas-titulo">Solicitações diretas</h2>
+      </div>
+      <p class="section-subtitle">Clientes que escolheram especificamente você para realizar o serviço.</p>
+    </div>
+
+    <div class="cards-grid">
+      @for (sol of solicitacoesDiretas; track sol._id) {
+        <article class="sol-card sol-card--direto" aria-label="Solicitação direta">
+          <div class="sol-card__top">
+            <span class="sol-card__id">#{{ sol._id.slice(-3) }}</span>
+            <span class="sol-card__status sol-card__status--aberta">{{ sol.status }}</span>
+          </div>
+
+          <p class="sol-card__desc">{{ sol.descricao }}</p>
+
+          <div class="sol-card__meta">
+            <span class="sol-card__meta-item">
+              <span aria-hidden="true">📅</span>
+              {{ sol.data_solicitacao | date:'dd/MM/yyyy' }}
+            </span>
+          </div>
+
+          <button
+            type="button"
+            class="btn-primary"
+            (click)="navegarParaGerarOrcamento(sol._id)"
+            [attr.aria-label]="'Gerar orçamento para solicitação direta ' + sol._id"
+          >
+            Gerar orçamento
+          </button>
+        </article>
+      }
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════════════
+       SEÇÃO 3 — Meus orçamentos enviados
+  ══════════════════════════════════════════════════════ -->
+  <section class="hub-section" aria-labelledby="enviados-titulo">
+    <div class="section-header">
+      <div class="section-header__left">
+        <span class="section-badge section-badge--enviado">{{ orcamentosEnviados.length }} enviados</span>
+        <h2 class="section-title" id="enviados-titulo">Meus orçamentos enviados</h2>
+      </div>
+      <p class="section-subtitle">Acompanhe o status de cada proposta que você enviou.</p>
+    </div>
+
+    <div class="table-card">
+      <table class="orc-table" role="table" aria-label="Lista de orçamentos enviados">
+        <thead>
+          <tr>
+            <th scope="col">Serviço</th>
+            <th scope="col">Valor</th>
+            <th scope="col">Prazo</th>
+            <th scope="col">Resposta</th>
+            <th scope="col">Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (orc of orcamentosEnviados; track orc._id) {
+            <tr>
+              <td class="orc-table__servico">
+                <span class="orc-table__id">#{{ orc.id_solicitacao.slice(-3) }}</span>
+                {{ orc.descricaoServico }}
+              </td>
+              <td class="orc-table__valor">R$ {{ orc.valor | number:'1.2-2' }}</td>
+              <td>{{ orc.prazo_dias }} dias</td>
+              <td>
+                @if (orc.data_resposta) {
+                  {{ orc.data_resposta | date:'dd/MM/yyyy' }}
+                } @else {
+                  <span class="orc-table__sem-resposta">—</span>
+                }
+              </td>
+              <td>
+                <span
+                  class="status-badge"
+                  [class.status-badge--aceito]="orc.status === 'aceito'"
+                  [class.status-badge--pendente]="orc.status === 'pendente'"
+                  [class.status-badge--encerrado]="orc.status === 'encerrado'"
+                >
+                  {{ statusLabel(orc.status) }}
+                </span>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+</div>
