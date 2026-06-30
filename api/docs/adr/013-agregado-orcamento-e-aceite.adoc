@@ -1,0 +1,117 @@
+= ADR-013: Agregado Orçamento, status `cancelado` e fluxo de aceite com cascata
+:date: 2026-06-24
+:status: Accepted
+
+== Contexto
+
+O agregado *Orçamento* (RF11–RF16, UC11–UC15) representa a proposta que um prestador
+envia em resposta a uma solicitação de orçamento. Ao modelar suas rotas e regras,
+surgiram decisões que se afastam ou estendem o que estava definido nos ADR-011 e
+ADR-012, e que precisam ficar registradas:
+
+* O conjunto de status inicialmente previsto para o orçamento era
+  `pendente | aceito | encerrado`. Faltava um estado para o caso em que o próprio
+  prestador retira a proposta antes de qualquer aceite.
+* O *aceite* de um orçamento (UC12) é uma ação do *cliente dono da solicitação*, não do
+  prestador. As demais operações de orçamento (cadastrar, atualizar) são do prestador.
+  Expor o aceite no mesmo `PATCH /orcamentos/{id}` do prestador misturaria dois atores,
+  duas autorizações e dois conjuntos de efeitos colaterais num único endpoint.
+* O aceite dispara efeitos em cascata sobre outros agregados: encerra os demais
+  orçamentos da solicitação (RN06/UC14) e encerra a própria solicitação (RF12/UC12).
+* Um prestador não deve poder responder a mesma solicitação mais de uma vez.
+
+== Decisão
+
+=== 1. Quatro status de orçamento
+
+O campo `status` do orçamento assume um conjunto fechado de quatro valores, encapsulado
+num Value Object dedicado (`StatusOrcamentoValueObject`), seguindo o padrão de
+`StatusSolicitacaoValueObject` (ADR-009 / convenção de VO):
+
+* `pendente` — estado inicial no cadastro (padrão).
+* `aceito` — definido pelo cliente dono da solicitação ao aceitar a proposta.
+* `encerrado` — definido automaticamente nos demais orçamentos quando outro é aceito.
+* `cancelado` — definido pelo prestador dono ao retirar a própria proposta.
+
+`aceito`, `encerrado` e `cancelado` são *estados terminais*: uma vez atingidos, o status
+não pode mais ser alterado.
+
+Transições permitidas (a partir de `pendente`):
+
+[cols="1,1,3"]
+|===
+| Transição | Ator | Como
+
+| `pendente → aceito`
+| Cliente dono da solicitação
+| `PATCH /orcamentos/{id}/aceitar`
+
+| `pendente → encerrado`
+| Sistema (automático)
+| Cascata disparada pelo aceite de outro orçamento da mesma solicitação
+
+| `pendente → cancelado`
+| Prestador dono do orçamento
+| `PATCH /orcamentos/{id}`
+|===
+
+=== 2. Rota dedicada para o aceite
+
+O aceite é exposto em `PATCH /orcamentos/{id}/aceitar`, acessível apenas ao *cliente dono
+da solicitação* à qual o orçamento pertence, e somente quando o orçamento está
+`pendente`. As demais rotas de orçamento permanecem do prestador
+(`GET /orcamentos`, `POST /orcamentos`, `PATCH /orcamentos/{id}`) e
+`GET /orcamentos/{id}` é compartilhada (cliente dono da solicitação ou prestador dono do
+orçamento).
+
+Esta separação — em vez de um `PATCH` unificado com ramificação por ator — foi escolhida
+para preservar o Princípio da Responsabilidade Única: atores, autorização e efeitos
+colaterais distintos vivem em endpoints e use cases distintos
+(`AtualizarOrcamentoUseCase` para o prestador, `AceitarOrcamentoUseCase` para o cliente).
+
+Isso diverge da ideia inicial de "PATCH do orçamento apenas do prestador" e do espírito
+de "PATCH unificado" do ADR-012; a divergência está localizada neste agregado e
+justificada pela natureza cross-agregado e cross-ator do aceite.
+
+=== 3. Aceite reutiliza `AtualizarSolicitacaoUseCase` e encerra a cascata
+
+O `AceitarOrcamentoUseCase` *compõe* outros use cases/repositórios (precedente:
+`CadastrarClientePrestadorUseCase`, ADR-003), orquestrando:
+
+. Marca o orçamento como `aceito` e preenche `data_aceite` (via método de domínio
+  `marcarComoAceito()` na entidade, que encapsula o invariante "data_aceite só existe
+  quando aceito").
+. Encerra os demais orçamentos `pendente`s da mesma solicitação (`→ encerrado`).
+. Encerra a solicitação (`aberta → encerrada`) reutilizando o
+  `AtualizarSolicitacaoUseCase` — cumprindo o que o ADR-012 §Consequências já previa
+  ("A transição `aberta → encerrada` deve ser implementada pelo agregado Orçamento ao ser
+  adicionado, reutilizando diretamente o `AtualizarSolicitacaoUseCase`").
+
+=== 4. Não-atomicidade conhecida
+
+O projeto não utiliza transações/sessões do MongoDB. Os três passos do aceite (item 3)
+não são atômicos: uma falha parcial pode deixar estados inconsistentes (ex.: orçamento
+aceito sem a solicitação encerrada). A decisão é manter a consistência com o restante do
+projeto (sem transação) e registrar a limitação como dívida técnica, candidata a uso de
+sessão/transação Mongo no futuro. As escritas são ordenadas para minimizar impacto
+(orçamento aceito → demais orçamentos → solicitação).
+
+=== 5. Unicidade de orçamento por solicitação e prestador
+
+Um prestador responde a cada solicitação no máximo uma vez. A regra é garantida por um
+*índice único composto* `{ id_solicitacao: 1, id_prestador: 1 }` no schema do orçamento,
+seguindo o padrão do ADR-010: a violação gera `MongoServerError` código `11000`,
+traduzido pelo `error-handler` para `422`.
+
+== Consequências
+
+* O agregado Orçamento possui um endpoint de aceite explícito e dedicado, com autorização
+  e efeitos colaterais isolados em seu próprio use case.
+* O `AtualizarOrcamentoUseCase` (prestador) permanece simples: edita `valor`/`prazo_dias`/
+  `status` apenas enquanto `pendente`, com a única transição de status `pendente → cancelado`.
+* A reutilização do `AtualizarSolicitacaoUseCase` mantém as regras de transição de status
+  da solicitação em um único lugar (DRY).
+* A divergência com ADR-011/ADR-012 (rota de aceite separada) está documentada e localizada;
+  outros agregados não são afetados.
+* A não-atomicidade do aceite é uma limitação aceita e documentada.
+* A unicidade `(solicitação, prestador)` é responsabilidade do banco, consistente com ADR-010.

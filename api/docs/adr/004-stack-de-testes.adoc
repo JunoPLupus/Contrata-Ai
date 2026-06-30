@@ -1,0 +1,37 @@
+= ADR-004: Stack de testes — Jest, ts-jest e mongodb-memory-server
+:date: 2026-05-07
+:status: Accepted
+
+== Contexto
+
+A API é desenvolvida em TypeScript com Node.js e MongoDB. Para aplicar TDD, é necessário
+um ambiente de testes que execute arquivos `.ts` diretamente, sem etapa de compilação
+manual, e que permita testar a camada de repositório sem depender de um banco de dados
+externo em execução.
+
+== Decisão
+
+Adotar a seguinte stack de testes:
+
+* *Jest* (v29) — test runner principal. A versão 29 foi escolhida em vez da 30 pela
+  compatibilidade garantida com o ts-jest na data desta decisão.
+* *ts-jest* — transformador que permite ao Jest executar arquivos `.ts` diretamente,
+  sem necessidade de compilar para `.js` antes de rodar os testes.
+* *mongodb-memory-server* — sobe uma instância real do MongoDB em memória durante os
+  testes de repositório. Garante testes determinísticos e isolados sem depender de
+  infraestrutura externa.
+* *Supertest* — para testes de integração das rotas HTTP (camada de controller).
+  Utilizado em uma etapa posterior, após os use cases estarem implementados.
+
+A configuração do Jest no `package.json` utiliza `preset: "ts-jest"` e
+`testEnvironment: "node"`.
+
+== Consequências
+
+* Testes de use case rodam sem banco real, usando repositórios falsos (mocks/stubs).
+* Testes de repositório usam o mongodb-memory-server, sem necessidade de configurar
+  banco separado para o ambiente de testes.
+* Não há necessidade de gerenciar variáveis de ambiente distintas para banco de testes
+  versus banco de desenvolvimento na maioria dos casos.
+* O ambiente de testes é totalmente reproduzível em qualquer máquina sem configuração
+  adicional.

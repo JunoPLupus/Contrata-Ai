@@ -5,7 +5,6 @@ import { Router } from '@angular/router';
 import { SolicitacoesService } from '../../../core/services/solicitacoes.service';
 import { Categoria } from '../../../core/models/categoria.model';
 import { TipoSolicitacao } from '../../../core/models/solicitacao.model';
-
 @Component({
   selector: 'app-solicitar-orcamento',
   standalone: true,
@@ -17,7 +16,6 @@ export class SolicitarOrcamentoComponent implements OnInit {
   private readonly fb = inject(FormBuilder);
   private readonly router = inject(Router);
   private readonly solicitacoesService = inject(SolicitacoesService);
-
   protected submitted = false;
   protected categorias: Categoria[] = [
     { _id: 'mock-cat-1', nome: 'Elétrica', descricao: 'Serviços elétricos' },
@@ -30,19 +28,16 @@ export class SolicitarOrcamentoComponent implements OnInit {
   protected prestadores: { _id: string; nome: string }[] = [];
   protected readonly loading = signal(false);
   protected readonly erro = signal('');
-
   protected readonly form = this.fb.group({
     tipo: ['geral' as TipoSolicitacao],
     id_categoria: ['', Validators.required],
     descricao: ['', [Validators.required, Validators.minLength(10)]],
     id_prestador_direto: [''],
   });
-
   protected get tipoControl() { return this.form.controls.tipo; }
   protected get categoriaControl() { return this.form.controls.id_categoria; }
   protected get descricaoControl() { return this.form.controls.descricao; }
   protected get prestadorControl() { return this.form.controls.id_prestador_direto; }
-
   ngOnInit(): void {
     this.solicitacoesService.getCategorias().subscribe({
       next: (cats) => {
@@ -54,12 +49,10 @@ export class SolicitarOrcamentoComponent implements OnInit {
         this.categorias = this.categorias.map(c => ({ ...c, _id: '' }));
       },
     });
-
     this.solicitacoesService.buscarPrestadores().subscribe({
       next: (prestadores) => this.prestadores = prestadores,
       error: () => {},
     });
-
     this.tipoControl.valueChanges.subscribe(tipo => {
       const prestadorCtrl = this.prestadorControl;
       if (tipo === 'direto') {
@@ -71,22 +64,17 @@ export class SolicitarOrcamentoComponent implements OnInit {
       prestadorCtrl.updateValueAndValidity();
     });
   }
-
   selecionarTipo(tipo: TipoSolicitacao): void {
     this.tipoControl.setValue(tipo);
   }
-
   onSubmit(): void {
     this.submitted = true;
     console.log('form válido?', this.form.valid, this.form.value);
     if (this.form.invalid) return;
-
     const v = this.form.value;
     const tipo = v.tipo as TipoSolicitacao;
-
     this.loading.set(true);
     this.erro.set('');
-
     this.solicitacoesService.criar({
       id_categoria: v.id_categoria!,
       tipo,
@@ -102,7 +90,6 @@ export class SolicitarOrcamentoComponent implements OnInit {
       },
     });
   }
-
   voltar(): void {
     this.router.navigate(['/cliente/home']);
   }

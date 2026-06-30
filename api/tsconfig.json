@@ -8,8 +8,11 @@
     "rootDir": "./src",
     "outDir": "./dist",
     "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true
+    "forceConsistentCasingInFileNames": true,
+    "types": ["jest", "node"],
+    "typeRoots": ["./src/types", "./node_modules/@types"]
   },
+  "files": ["src/types/express.d.ts"],
   "include": ["src/**/*"],
   "exclude": ["node_modules"]
 }
