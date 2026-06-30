@@ -45,8 +45,14 @@ export class SolicitarOrcamentoComponent implements OnInit {
 
   ngOnInit(): void {
     this.solicitacoesService.getCategorias().subscribe({
-      next: (cats) => { if (cats?.length) this.categorias = cats; },
-      error: () => {},
+      next: (cats) => {
+        if (cats?.length) {
+          this.categorias = cats;
+        }
+      },
+      error: () => {
+        this.categorias = this.categorias.map(c => ({ ...c, _id: '' }));
+      },
     });
 
     this.solicitacoesService.buscarPrestadores().subscribe({
