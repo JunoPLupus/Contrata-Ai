@@ -16,7 +16,7 @@ export class HomeComponent implements OnInit {
   private readonly router = inject(Router);
   private readonly solicitacoesService = inject(SolicitacoesService);
 
-  abaTopo: 'meus-pedidos' | 'historico' = 'meus-pedidos';
+  abaTopo: 'meus-pedidos' | 'historico' = 'meus-pedidos'; 
   abaStatus: 'aberto' | 'andamento' | 'concluido' = 'aberto';
 
   readonly loading = signal(false);
