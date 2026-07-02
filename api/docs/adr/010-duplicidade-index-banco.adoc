@@ -1,0 +1,35 @@
+= ADR-010: Duplicidade de prestador tratada via unique index e MongoServerError
+:date: 2026-05-18
+:status: Accepted
+
+== Contexto
+
+Um cliente pode ter no máximo um perfil de prestador — a relação é 1 para 1.
+Surgiu a questão de onde tratar a tentativa de cadastro duplicado: no domínio
+(verificando existência antes de inserir) ou na infraestrutura (via restrição
+do banco de dados).
+
+Verificar existência no domínio exigiria uma query adicional a cada cadastro,
+mesmo nos casos — a maioria — em que não há duplicata.
+
+== Decisão
+
+A unicidade é garantida por `unique: true` no campo `id_cliente` do
+`PrestadorSchema`. Quando há violação, o MongoDB lança um `MongoServerError`
+com código `11000`, que é capturado no `errorHandler` e convertido em uma
+resposta 422 com mensagem amigável ao cliente.
+
+O nome da collection foi definido explicitamente como `"prestadores"` para
+evitar a pluralização automática em inglês feita pelo Mongoose.
+
+== Consequências
+
+* Nenhuma query adicional é feita para verificar duplicidade — o banco garante
+a restrição de forma eficiente via índice.
+* O `errorHandler` passa a conhecer `MongoServerError`, introduzindo uma
+dependência da infraestrutura na camada HTTP. Isso é aceitável pois o
+middleware já pertence à camada HTTP.
+* Se novos campos precisarem de unicidade, o mesmo padrão deve ser seguido:
+`unique: true` no schema e tratamento do código `11000` no handler.
+* A mensagem retornada ao cliente é genérica (`'Este cadastro já existe.'`)
+para não expor detalhes internos do banco.

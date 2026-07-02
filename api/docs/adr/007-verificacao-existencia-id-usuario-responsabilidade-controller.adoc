@@ -1,0 +1,45 @@
+= ADR-007: Verificação de existência do id_usuario é responsabilidade do controller
+:date: 2026-05-12
+:status: Accepted
+
+== Contexto
+
+O use case `CadastrarPrestador` recebe um `id_usuario` para vincular o perfil de
+prestador ao usuário correspondente. Surgiu a questão de onde deve ocorrer a
+verificação de que esse `id_usuario` realmente existe no banco de dados.
+
+Dois fluxos distintos invocam esse use case:
+
+* *Cadastro simultâneo*: o controller chama `CadastrarUsuario` seguido de
+  `CadastrarPrestador` na mesma requisição. O `id_usuario` vem diretamente do
+  retorno de `CadastrarUsuario`, sendo garantidamente válido.
+* *Ativação posterior do perfil prestador*: um cliente já cadastrado ativa o
+  perfil de prestador. O `id_usuario` virá do token JWT validado pelo middleware
+  de autenticação, sendo também garantidamente válido.
+
+== Decisão
+
+A verificação de existência do `id_usuario` é responsabilidade do controller e
+do middleware de autenticação, não do `CadastrarPrestadorUseCase`.
+
+O use case apenas valida que o campo não está vazio. A garantia de que o id
+corresponde a um usuário real é feita pela camada que orquestra a chamada:
+
+* No cadastro simultâneo: o controller passa o id retornado pelo use case anterior.
+* Na ativação posterior: o middleware de autenticação garante que o id do token
+  é válido antes de qualquer use case ser chamado.
+
+Fazer uma consulta extra ao banco dentro do use case para verificar existência
+seria redundante nesses fluxos e introduziria acoplamento desnecessário.
+
+== Consequências
+
+* `CadastrarPrestadorUseCase` permanece simples e sem dependência de consultas
+  adicionais ao banco.
+* O controller assume a responsabilidade de orquestrar os use cases na ordem
+  correta no fluxo de cadastro simultâneo.
+* O middleware de autenticação é o guardião do `id_usuario` nos fluxos
+  autenticados.
+* Se um novo fluxo surgir onde o `id_usuario` vem de fonte não confiável,
+  a verificação de existência deve ser adicionada nessa camada específica,
+  não no use case.
