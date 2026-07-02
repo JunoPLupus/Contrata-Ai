@@ -74,11 +74,11 @@ export class SolicitarOrcamentoComponent implements OnInit {
     this.loading.set(true);
     this.erro.set('');
     this.solicitacoesService.criar({
-      id_categoria: v.id_categoria!,
+      idCategoria: v.id_categoria!,
       tipo,
       descricao: v.descricao!,
       ...(tipo === 'direto' && v.id_prestador_direto
-        ? { id_prestador_direto: v.id_prestador_direto }
+        ? { idPrestadorDireto: v.id_prestador_direto }
         : {}),
     }).subscribe({
       next: () => this.router.navigate(['/cliente/home']),
