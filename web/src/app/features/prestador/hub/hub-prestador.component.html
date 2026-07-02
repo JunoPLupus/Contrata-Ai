@@ -36,7 +36,7 @@
           <div class="sol-card__meta">
             <span class="sol-card__meta-item">
               <span aria-hidden="true">📅</span>
-              {{ sol.data_solicitacao | date:'dd/MM/yyyy' }}
+              {{ sol.dataSolicitacao | date:'dd/MM/yyyy' }}
             </span>
           </div>
 
@@ -78,7 +78,7 @@
           <div class="sol-card__meta">
             <span class="sol-card__meta-item">
               <span aria-hidden="true">📅</span>
-              {{ sol.data_solicitacao | date:'dd/MM/yyyy' }}
+              {{ sol.dataSolicitacao | date:'dd/MM/yyyy' }}
             </span>
           </div>
 
@@ -122,14 +122,14 @@
           @for (orc of orcamentosEnviados; track orc._id) {
             <tr>
               <td class="orc-table__servico">
-                <span class="orc-table__id">#{{ orc.id_solicitacao.slice(-3) }}</span>
+                <span class="orc-table__id">#{{ orc.idSolicitacao?.slice(-3) }}</span>
                 {{ orc.descricaoServico }}
               </td>
               <td class="orc-table__valor">R$ {{ orc.valor | number:'1.2-2' }}</td>
               <td>{{ orc.prazo_dias }} dias</td>
               <td>
-                @if (orc.data_resposta) {
-                  {{ orc.data_resposta | date:'dd/MM/yyyy' }}
+                @if (orc.dataResposta) {
+                  {{ orc.dataResposta | date:'dd/MM/yyyy' }}
                 } @else {
                   <span class="orc-table__sem-resposta">—</span>
                 }
