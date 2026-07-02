@@ -58,7 +58,7 @@
             formControlName="id_categoria">
             <option value="">Selecione uma categoria...</option>
             @for (cat of categorias; track cat._id) {
-              <option [value]="cat._id">{{ cat.nome }}</option>
+              <option [value]="cat.id || cat._id">{{ cat.nome }}</option>
             }
           </select>
         </div>
