@@ -39,10 +39,10 @@ export class SolicitacoesService {
   }
 
   criar(dados: {
-    id_categoria: string;
+    idCategoria: string;
     tipo: TipoSolicitacao;
     descricao: string;
-    id_prestador_direto?: string;
+    idPrestadorDireto?: string;
   }): Observable<Solicitacao> {
     const token = localStorage.getItem('token');
     const headers = { Authorization: `Bearer ${token}` };
