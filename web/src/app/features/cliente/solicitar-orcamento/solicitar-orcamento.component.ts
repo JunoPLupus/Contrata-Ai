@@ -18,12 +18,12 @@ export class SolicitarOrcamentoComponent implements OnInit {
   private readonly solicitacoesService = inject(SolicitacoesService);
   protected submitted = false;
   protected categorias: Categoria[] = [
-    { _id: 'mock-cat-1', nome: 'Elétrica', descricao: 'Serviços elétricos' },
-    { _id: 'mock-cat-2', nome: 'Hidráulica', descricao: 'Encanamento e vazamentos' },
-    { _id: 'mock-cat-3', nome: 'Pintura', descricao: 'Pintura residencial e comercial' },
-    { _id: 'mock-cat-4', nome: 'Limpeza', descricao: 'Limpeza residencial e comercial' },
-    { _id: 'mock-cat-5', nome: 'Jardinagem', descricao: 'Manutenção de jardins' },
-    { _id: 'mock-cat-6', nome: 'TI & Tecnologia', descricao: 'Suporte técnico e redes' },
+    { _id: '', nome: 'Elétrica', descricao: 'Serviços elétricos' },
+    { _id: '', nome: 'Hidráulica', descricao: 'Encanamento e vazamentos' },
+    { _id: '', nome: 'Pintura', descricao: 'Pintura residencial e comercial' },
+    { _id: '', nome: 'Limpeza', descricao: 'Limpeza residencial e comercial' },
+    { _id: '', nome: 'Jardinagem', descricao: 'Manutenção de jardins' },
+    { _id: '', nome: 'TI & Tecnologia', descricao: 'Suporte técnico e redes' },
   ];
   protected prestadores: { _id: string; nome: string }[] = [];
   protected readonly loading = signal(false);
@@ -42,12 +42,10 @@ export class SolicitarOrcamentoComponent implements OnInit {
     this.solicitacoesService.getCategorias().subscribe({
       next: (cats) => {
         if (cats?.length) {
-          this.categorias = cats;
+          this.categorias = cats.map(c => ({ _id: c.id || c._id, nome: c.nome, descricao: c.descricao }));
         }
       },
-      error: () => {
-        this.categorias = this.categorias.map(c => ({ ...c, _id: '' }));
-      },
+      error: () => {},
     });
     this.solicitacoesService.buscarPrestadores().subscribe({
       next: (prestadores) => this.prestadores = prestadores,
