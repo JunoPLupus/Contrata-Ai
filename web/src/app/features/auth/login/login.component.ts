@@ -43,7 +43,8 @@ export class LoginComponent {
           this.authService.login(this.form.value.email!, this.form.value.senha!)
         );
         this.authService.salvarToken(token);
-        this.router.navigate(['/cliente/home']);
+        const tipo = this.authService.getTipoUsuario();
+        this.router.navigate([tipo === 'prestador' ? '/prestador/hub' : '/cliente/home']);
       } catch {
         this.erro.set('Email ou senha inválidos');
       } finally {

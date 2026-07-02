@@ -29,6 +29,17 @@ export class AuthService {
     return t ? t.replace(/^"|"$/g, '') : null;
   }
 
+  getTipoUsuario(): 'prestador' | 'cliente' {
+    const token = this.getToken();
+    if (!token) return 'cliente';
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      return payload.idPrestador ? 'prestador' : 'cliente';
+    } catch {
+      return 'cliente';
+    }
+  }
+
   logout(): void {
     localStorage.clear();
   }
