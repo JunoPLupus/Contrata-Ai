@@ -24,10 +24,10 @@
     </div>
 
     <div class="cards-grid">
-      @for (sol of solicitacoesGerais; track sol._id) {
+      @for (sol of solicitacoesGerais; track sol.id) {
         <article class="sol-card" aria-label="Solicitação disponível">
           <div class="sol-card__top">
-            <span class="sol-card__id">#{{ sol._id.slice(-3) }}</span>
+            <span class="sol-card__id">#{{ sol.id.slice(-3) }}</span>
             <span class="sol-card__status sol-card__status--aberta">{{ sol.status }}</span>
           </div>
 
@@ -36,15 +36,15 @@
           <div class="sol-card__meta">
             <span class="sol-card__meta-item">
               <span aria-hidden="true">📅</span>
-              {{ sol.data_solicitacao | date:'dd/MM/yyyy' }}
+              {{ sol.dataSolicitacao | date:'dd/MM/yyyy' }}
             </span>
           </div>
 
           <button
             type="button"
             class="btn-primary"
-            (click)="navegarParaGerarOrcamento(sol._id)"
-            [attr.aria-label]="'Gerar orçamento para solicitação ' + sol._id"
+            (click)="navegarParaGerarOrcamento(sol.id)"
+            [attr.aria-label]="'Gerar orçamento para solicitação ' + sol.id"
           >
             Gerar orçamento
           </button>
@@ -66,10 +66,10 @@
     </div>
 
     <div class="cards-grid">
-      @for (sol of solicitacoesDiretas; track sol._id) {
+      @for (sol of solicitacoesDiretas; track sol.id) {
         <article class="sol-card sol-card--direto" aria-label="Solicitação direta">
           <div class="sol-card__top">
-            <span class="sol-card__id">#{{ sol._id.slice(-3) }}</span>
+            <span class="sol-card__id">#{{ sol.id.slice(-3) }}</span>
             <span class="sol-card__status sol-card__status--aberta">{{ sol.status }}</span>
           </div>
 
@@ -78,15 +78,15 @@
           <div class="sol-card__meta">
             <span class="sol-card__meta-item">
               <span aria-hidden="true">📅</span>
-              {{ sol.data_solicitacao | date:'dd/MM/yyyy' }}
+              {{ sol.dataSolicitacao | date:'dd/MM/yyyy' }}
             </span>
           </div>
 
           <button
             type="button"
             class="btn-primary"
-            (click)="navegarParaGerarOrcamento(sol._id)"
-            [attr.aria-label]="'Gerar orçamento para solicitação direta ' + sol._id"
+            (click)="navegarParaGerarOrcamento(sol.id)"
+            [attr.aria-label]="'Gerar orçamento para solicitação direta ' + sol.id"
           >
             Gerar orçamento
           </button>
@@ -119,17 +119,17 @@
           </tr>
         </thead>
         <tbody>
-          @for (orc of orcamentosEnviados; track orc._id) {
+          @for (orc of orcamentosEnviados; track orc.id) {
             <tr>
               <td class="orc-table__servico">
-                <span class="orc-table__id">#{{ orc.id_solicitacao.slice(-3) }}</span>
+                <span class="orc-table__id">#{{ orc.idSolicitacao?.slice(-3) }}</span>
                 {{ orc.descricaoServico }}
               </td>
               <td class="orc-table__valor">R$ {{ orc.valor | number:'1.2-2' }}</td>
               <td>{{ orc.prazo_dias }} dias</td>
               <td>
-                @if (orc.data_resposta) {
-                  {{ orc.data_resposta | date:'dd/MM/yyyy' }}
+                @if (orc.dataResposta) {
+                  {{ orc.dataResposta | date:'dd/MM/yyyy' }}
                 } @else {
                   <span class="orc-table__sem-resposta">—</span>
                 }

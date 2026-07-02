@@ -16,7 +16,7 @@ export class HomeComponent implements OnInit {
   private readonly router = inject(Router);
   private readonly solicitacoesService = inject(SolicitacoesService);
 
-  abaTopo: 'meus-pedidos' | 'historico' = 'meus-pedidos';
+  abaTopo: 'meus-pedidos' | 'historico' = 'meus-pedidos'; 
   abaStatus: 'aberto' | 'andamento' | 'concluido' = 'aberto';
 
   readonly loading = signal(false);
@@ -44,13 +44,13 @@ export class HomeComponent implements OnInit {
       cancelada: 'concluido',
     };
     return {
-      id: s._id,
-      codigo: `#${s._id.slice(-6).toUpperCase()}`,
-      categoria: s.id_categoria,
+      id: s.id,
+      codigo: `#${s.id.slice(-6).toUpperCase()}`,
+      categoria: s.idCategoria,
       titulo: s.descricao.length > 60 ? s.descricao.slice(0, 57) + '…' : s.descricao,
       descricao: s.descricao,
       status: statusMap[s.status] ?? 'aberto',
-      dataInicio: s.data_solicitacao ? new Date(s.data_solicitacao) : undefined,
+      dataInicio: s.dataSolicitacao ? new Date(s.dataSolicitacao) : undefined,
     };
   }
 
