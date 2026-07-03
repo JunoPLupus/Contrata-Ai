@@ -28,12 +28,11 @@ export class SolicitacoesService {
     return this.http.get<Categoria[]>(`${this.baseUrl}/categorias`, { headers });
   }
 
-  buscarPrestadores(nome?: string): Observable<{ _id: string; nome: string }[]> {
+  buscarPrestadores(idCategoria: string): Observable<{ _id: string; nome: string }[]> {
     const token = localStorage.getItem('token');
     const headers = { Authorization: `Bearer ${token}` };
-    const params = nome ? `?nome=${encodeURIComponent(nome)}` : '';
     return this.http.get<{ _id: string; nome: string }[]>(
-      `${this.baseUrl}/prestadores/buscar${params}`,
+      `${this.baseUrl}/prestadores/buscar?idCategoria=${idCategoria}`,
       { headers }
     );
   }
