@@ -51,6 +51,12 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/prestador/perfil/perfil-prestador.component').then(m => m.PerfilPrestadorComponent),
       },
+      {
+        path: 'servicos',
+        canActivate: [authGuard],
+        loadComponent: () =>
+          import('./features/prestador/servicos/servicos.component').then(m => m.ServicosComponent),
+      },
     ],
   },
 ];
