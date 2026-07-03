@@ -1,6 +1,7 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink, RouterLinkActive } from '@angular/router';
+import { AuthService } from '../../../core/services/auth.service';
 
 @Component({
   selector: 'app-header-logado',
@@ -10,5 +11,9 @@ import { RouterLink, RouterLinkActive } from '@angular/router';
   styleUrl: './header-logado.component.scss',
 })
 export class HeaderLogadoComponent {
-  readonly nomeUsuario = 'Maria';
+  private readonly authService = inject(AuthService);
+
+  get nomeUsuario(): string {
+    return this.authService.getNomeUsuario();
+  }
 }

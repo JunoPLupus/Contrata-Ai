@@ -14,7 +14,9 @@ export class PrestadorLayoutComponent {
   private readonly authService = inject(AuthService);
   private readonly router = inject(Router);
 
-  readonly nomePrestador = 'Carlos Souza';
+  get nomePrestador(): string {
+    return this.authService.getNomeUsuario();
+  }
 
   readonly menuItems = [
     { label: 'Painel',         icon: '🏠', rota: '/prestador/painel' },
