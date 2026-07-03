@@ -1,6 +1,7 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { AuthService } from '../../../core/services/auth.service';
 
 @Component({
   selector: 'app-prestador-layout',
@@ -10,6 +11,9 @@ import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
   styleUrl: './prestador-layout.component.scss',
 })
 export class PrestadorLayoutComponent {
+  private readonly authService = inject(AuthService);
+  private readonly router = inject(Router);
+
   readonly nomePrestador = 'Carlos Souza';
 
   readonly menuItems = [
@@ -19,4 +23,9 @@ export class PrestadorLayoutComponent {
     { label: 'Finanças',       icon: '💰', rota: '/prestador/financas' },
     { label: 'Configurações',  icon: '⚙️',  rota: '/prestador/configuracoes' },
   ];
+
+  logout(): void {
+    this.authService.logout();
+    this.router.navigate(['/login']);
+  }
 }
