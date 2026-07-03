@@ -47,9 +47,15 @@ export class SolicitarOrcamentoComponent implements OnInit {
       },
       error: () => {},
     });
-    this.solicitacoesService.buscarPrestadores().subscribe({
-      next: (prestadores) => this.prestadores = prestadores,
-      error: () => {},
+    this.categoriaControl.valueChanges.subscribe(idCategoria => {
+      if (idCategoria) {
+        this.solicitacoesService.buscarPrestadores(idCategoria).subscribe({
+          next: (prestadores) => this.prestadores = prestadores,
+          error: () => {},
+        });
+      } else {
+        this.prestadores = [];
+      }
     });
     this.tipoControl.valueChanges.subscribe(tipo => {
       const prestadorCtrl = this.prestadorControl;
