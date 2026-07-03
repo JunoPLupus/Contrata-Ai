@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { LoginComponent } from './features/auth/login/login.component';
+import { authGuard } from './core/guards/auth.guard';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'login', pathMatch: 'full' },
@@ -11,6 +12,7 @@ export const routes: Routes = [
   },
   {
     path: 'cliente',
+    canActivate: [authGuard],
     loadComponent: () =>
       import('./shared/layouts/logado/logado-layout.component').then(m => m.LogadoLayoutComponent),
     children: [
@@ -29,6 +31,7 @@ export const routes: Routes = [
   },
   {
     path: 'prestador',
+    canActivate: [authGuard],
     loadComponent: () =>
       import('./shared/layouts/prestador/prestador-layout.component').then(m => m.PrestadorLayoutComponent),
     children: [
