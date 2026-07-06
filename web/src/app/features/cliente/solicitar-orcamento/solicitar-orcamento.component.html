@@ -103,8 +103,8 @@
               id="id_prestador_direto"
               formControlName="id_prestador_direto">
               <option value="">Selecione um prestador...</option>
-              @for (p of prestadores; track p._id) {
-                <option [value]="p._id">{{ p.nome }}</option>
+              @for (p of prestadores; track p.id) {
+                <option [value]="p.id">{{ p.nome }}</option>
               }
             </select>
           </div>

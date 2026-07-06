@@ -64,10 +64,35 @@
             Gerar orçamento
           </button>
         </article>
-      } @empty {
-        <div class="empty-state">
-          <p>Nenhuma solicitação disponível no momento.</p>
-        </div>
+      }
+
+      @for (sol of exemplosGerais; track sol.id) {
+        <article class="sol-card sol-card--exemplo" aria-label="Exemplo de solicitação disponível">
+          <div class="sol-card__top">
+            <span class="sol-card__id">#{{ sol.id.slice(-3) }}</span>
+            <span class="sol-card__status sol-card__status--aberta">{{ sol.status }}</span>
+          </div>
+
+          <span class="sol-card__badge-exemplo">Exemplo</span>
+
+          <p class="sol-card__desc">{{ sol.descricao }}</p>
+
+          <div class="sol-card__meta">
+            <span class="sol-card__meta-item">
+              <span aria-hidden="true">📅</span>
+              {{ sol.dataSolicitacao | date:'dd/MM/yyyy' }}
+            </span>
+          </div>
+
+          <button
+            type="button"
+            class="btn-primary"
+            [disabled]="true"
+            aria-label="Botão de exemplo desabilitado"
+          >
+            Gerar orçamento
+          </button>
+        </article>
       }
     </div>
   </section>
@@ -110,10 +135,35 @@
             Gerar orçamento
           </button>
         </article>
-      } @empty {
-        <div class="empty-state">
-          <p>Nenhuma solicitação direta no momento.</p>
-        </div>
+      }
+
+      @for (sol of exemplosDiretos; track sol.id) {
+        <article class="sol-card sol-card--direto sol-card--exemplo" aria-label="Exemplo de solicitação direta">
+          <div class="sol-card__top">
+            <span class="sol-card__id">#{{ sol.id.slice(-3) }}</span>
+            <span class="sol-card__status sol-card__status--aberta">{{ sol.status }}</span>
+          </div>
+
+          <span class="sol-card__badge-exemplo">Exemplo</span>
+
+          <p class="sol-card__desc">{{ sol.descricao }}</p>
+
+          <div class="sol-card__meta">
+            <span class="sol-card__meta-item">
+              <span aria-hidden="true">📅</span>
+              {{ sol.dataSolicitacao | date:'dd/MM/yyyy' }}
+            </span>
+          </div>
+
+          <button
+            type="button"
+            class="btn-primary"
+            [disabled]="true"
+            aria-label="Botão de exemplo desabilitado"
+          >
+            Gerar orçamento
+          </button>
+        </article>
       }
     </div>
   </section>
