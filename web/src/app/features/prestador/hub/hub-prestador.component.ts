@@ -23,6 +23,66 @@ export class HubPrestadorComponent implements OnInit {
   loading = signal(false);
   erro = signal('');
 
+  readonly exemplosGerais: Solicitacao[] = [
+    {
+      id: 'exemplo-001',
+      idCliente: 'demo',
+      idCategoria: 'demo',
+      tipo: 'geral',
+      descricao: 'Instalação de ventilador de teto na sala',
+      status: 'aberta',
+      dataSolicitacao: new Date('2026-07-01'),
+    },
+    {
+      id: 'exemplo-002',
+      idCliente: 'demo',
+      idCategoria: 'demo',
+      tipo: 'geral',
+      descricao: 'Pintura de muro externo de 15m',
+      status: 'aberta',
+      dataSolicitacao: new Date('2026-07-03'),
+    },
+    {
+      id: 'exemplo-003',
+      idCliente: 'demo',
+      idCategoria: 'demo',
+      tipo: 'geral',
+      descricao: 'Conserto de vazamento na pia da cozinha',
+      status: 'aberta',
+      dataSolicitacao: new Date('2026-07-05'),
+    },
+  ];
+
+  readonly exemplosDiretos: Solicitacao[] = [
+    {
+      id: 'exemplo-004',
+      idCliente: 'demo',
+      idCategoria: 'demo',
+      tipo: 'direto',
+      descricao: 'Montagem de guarda-roupa 6 portas',
+      status: 'aberta',
+      dataSolicitacao: new Date('2026-07-02'),
+    },
+    {
+      id: 'exemplo-005',
+      idCliente: 'demo',
+      idCategoria: 'demo',
+      tipo: 'direto',
+      descricao: 'Manutenção de ar-condicionado split',
+      status: 'aberta',
+      dataSolicitacao: new Date('2026-07-04'),
+    },
+    {
+      id: 'exemplo-006',
+      idCliente: 'demo',
+      idCategoria: 'demo',
+      tipo: 'direto',
+      descricao: 'Troca de fechadura da porta principal',
+      status: 'aberta',
+      dataSolicitacao: new Date('2026-07-06'),
+    },
+  ];
+
   private getHeaders(): HttpHeaders {
     const raw = localStorage.getItem('token') ?? '';
     const token = raw.replace(/^"|"$/g, '');
