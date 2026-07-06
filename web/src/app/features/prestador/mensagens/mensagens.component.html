@@ -1,0 +1,41 @@
+<div class="mensagens-page">
+
+  <!-- ── Cabeçalho ── -->
+  <header class="page-header">
+    <button type="button" class="btn-voltar" (click)="voltar()">
+      ← Voltar
+    </button>
+    <div class="page-header__breadcrumb">
+      <span class="page-header__crumb">Prestador</span>
+      <span class="page-header__sep" aria-hidden="true">/</span>
+      <span class="page-header__crumb page-header__crumb--active">Mensagens</span>
+    </div>
+    <h1 class="page-header__title">Mensagens</h1>
+  </header>
+
+  <!-- ── Lista de conversas ── -->
+  <section class="conversas-section" aria-label="Lista de conversas">
+    <div class="conversas-list">
+      @for (conv of conversas; track conv.nome) {
+        <article class="conversa-item" [class.conversa-item--nao-lida]="!conv.lida">
+          <div class="conversa-avatar" aria-hidden="true">{{ conv.inicial }}</div>
+          <div class="conversa-info">
+            <div class="conversa-info__top">
+              <span class="conversa-nome">{{ conv.nome }}</span>
+              <span class="conversa-horario">{{ conv.horario }}</span>
+            </div>
+            <p class="conversa-ultima-msg">{{ conv.ultimaMensagem }}</p>
+          </div>
+          @if (!conv.lida) {
+            <span class="conversa-badge-nao-lida" aria-label="Mensagem não lida"></span>
+          }
+        </article>
+      }
+    </div>
+
+    <p class="msg-aviso">
+      O chat completo estará disponível em breve. Esta é uma prévia visual.
+    </p>
+  </section>
+
+</div>

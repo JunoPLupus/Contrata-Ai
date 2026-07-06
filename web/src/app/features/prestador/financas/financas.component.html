@@ -1,0 +1,50 @@
+<div class="financas-page">
+
+  <!-- ── Cabeçalho ── -->
+  <header class="page-header">
+    <button type="button" class="btn-voltar" (click)="voltar()">
+      ← Voltar
+    </button>
+    <div class="page-header__breadcrumb">
+      <span class="page-header__crumb">Prestador</span>
+      <span class="page-header__sep" aria-hidden="true">/</span>
+      <span class="page-header__crumb page-header__crumb--active">Finanças</span>
+    </div>
+    <h1 class="page-header__title">Finanças</h1>
+  </header>
+
+  <!-- ── Gráfico de barras ── -->
+  <section class="chart-section" aria-label="Ganhos dos últimos 6 meses">
+    <h2 class="section-title">Ganhos dos últimos 6 meses</h2>
+
+    <div class="chart-card">
+      <div class="bar-chart" role="img" aria-label="Gráfico de ganhos mensais">
+        @for (mes of meses; track mes.label) {
+          <div class="bar-col">
+            <span class="bar-value">R$ {{ mes.valor | number:'1.0-0' }}</span>
+            <div
+              class="bar"
+              [style.height.%]="mes.altura"
+              [attr.aria-label]="mes.label + ': R$ ' + mes.valor"
+            ></div>
+            <span class="bar-label">{{ mes.label }}</span>
+          </div>
+        }
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Cards de resumo ── -->
+  <section class="resumo-section" aria-label="Resumo financeiro">
+    <h2 class="section-title">Resumo</h2>
+    <div class="resumo-grid">
+      @for (item of resumo; track item.titulo) {
+        <article class="resumo-card">
+          <span class="resumo-card__titulo">{{ item.titulo }}</span>
+          <span class="resumo-card__valor">{{ item.valor }}</span>
+        </article>
+      }
+    </div>
+  </section>
+
+</div>
