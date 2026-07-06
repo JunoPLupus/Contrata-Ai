@@ -57,6 +57,16 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/prestador/servicos/servicos.component').then(m => m.ServicosComponent),
       },
+      {
+        path: 'financas',
+        loadComponent: () =>
+          import('./features/prestador/financas/financas.component').then(m => m.FinancasComponent),
+      },
+      {
+        path: 'mensagens',
+        loadComponent: () =>
+          import('./features/prestador/mensagens/mensagens.component').then(m => m.MensagensComponent),
+      },
     ],
   },
 ];
