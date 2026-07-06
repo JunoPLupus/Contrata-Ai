@@ -1,5 +1,20 @@
 <div class="hub-page">
 
+  @if (loading()) {
+    <div class="loading-state">
+      <p>Carregando...</p>
+    </div>
+  }
+
+  @if (erro()) {
+    <div class="error-state">
+      <p>{{ erro() }}</p>
+      <button type="button" class="btn-primary" (click)="carregarDados()">Tentar novamente</button>
+    </div>
+  }
+
+  @if (!loading() && !erro()) {
+
   <!-- ── Cabeçalho ── -->
   <header class="page-header">
     <div class="page-header__breadcrumb">
@@ -158,5 +173,7 @@
       </table>
     </div>
   </section>
+
+  } <!-- /!loading && !erro -->
 
 </div>

@@ -30,6 +30,11 @@ export class HubPrestadorComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    this.carregarDados();
+  }
+
+  carregarDados(): void {
+    this.erro.set('');
     this.loading.set(true);
     const headers = this.getHeaders();
     const api = environment.apiUrl;

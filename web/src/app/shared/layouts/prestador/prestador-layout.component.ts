@@ -21,7 +21,7 @@ export class PrestadorLayoutComponent {
   readonly menuItems = [
     { label: 'Painel',         icon: '🏠', rota: '/prestador/painel' },
     { label: 'Pedidos',        icon: '📋', rota: '/prestador/hub' },
-    { label: 'Meus Serviços',  icon: '🛠️', rota: '/prestador/servicos' },
+    { label: 'Cadastrar Serviço',  icon: '🛠️', rota: '/prestador/servicos' },
     { label: 'Mensagens',      icon: '💬', rota: '/prestador/mensagens' },
     { label: 'Finanças',       icon: '💰', rota: '/prestador/financas' },
     { label: 'Configurações',  icon: '⚙️',  rota: '/prestador/configuracoes' },
