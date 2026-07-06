@@ -25,7 +25,7 @@ export class SolicitarOrcamentoComponent implements OnInit {
     { _id: '', nome: 'Jardinagem', descricao: 'Manutenção de jardins' },
     { _id: '', nome: 'TI & Tecnologia', descricao: 'Suporte técnico e redes' },
   ];
-  protected prestadores: { _id: string; nome: string }[] = [];
+  protected prestadores: { id: string; nome: string }[] = [];
   protected readonly loading = signal(false);
   protected readonly erro = signal('');
   protected readonly form = this.fb.group({

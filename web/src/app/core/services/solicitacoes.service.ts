@@ -28,10 +28,10 @@ export class SolicitacoesService {
     return this.http.get<Categoria[]>(`${this.baseUrl}/categorias`, { headers });
   }
 
-  buscarPrestadores(idCategoria: string): Observable<{ _id: string; nome: string }[]> {
+  buscarPrestadores(idCategoria: string): Observable<{ id: string; nome: string }[]> {
     const token = localStorage.getItem('token');
     const headers = { Authorization: `Bearer ${token}` };
-    return this.http.get<{ _id: string; nome: string }[]>(
+    return this.http.get<{ id: string; nome: string }[]>(
       `${this.baseUrl}/prestadores/buscar?idCategoria=${idCategoria}`,
       { headers }
     );
