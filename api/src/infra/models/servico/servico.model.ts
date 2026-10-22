@@ -8,7 +8,8 @@ export interface IServicoDocument {
     preco_min?: number,
     preco_max?: number,
     prazo_medio_horas?: number,
-    ativo: boolean
+    ativo: boolean,
+    atendimento_domiciliar: boolean
 }
 
 const ServicoSchema = new Schema<IServicoDocument>({
@@ -19,7 +20,8 @@ const ServicoSchema = new Schema<IServicoDocument>({
     preco_min: Number,
     preco_max: Number,
     prazo_medio_horas: Number,
-    ativo: { type: Boolean, required: true, default: true }
+    ativo: { type: Boolean, required: true, default: true },
+    atendimento_domiciliar: { type: Boolean, required: true, default: false }
 })
 
 export const ServicoModel = model("Servico", ServicoSchema, "servicos")

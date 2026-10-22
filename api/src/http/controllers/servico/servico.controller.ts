@@ -32,7 +32,8 @@ export class ServicoController {
             descricao: request.body.descricao,
             precoMin: request.body.precoMin,
             precoMax: request.body.precoMax,
-            prazoMedioHoras: request.body.prazoMedioHoras
+            prazoMedioHoras: request.body.prazoMedioHoras,
+            atendimentoDomiciliar: request.body.atendimentoDomiciliar
         }
         const servico = await this.cadastrarServicoUseCase.execute(servicoCadastroDTO)
         response.status(201).json(ServicoMapper.paraRespostaDTO(servico))
@@ -58,7 +59,8 @@ export class ServicoController {
             descricao: request.body.descricao,
             precoMin: request.body.precoMin,
             precoMax: request.body.precoMax,
-            prazoMedioHoras: request.body.prazoMedioHoras
+            prazoMedioHoras: request.body.prazoMedioHoras,
+            atendimentoDomiciliar: request.body.atendimentoDomiciliar
         }
         const servico = await this.atualizarServicoUseCase.execute(
             request.params.id as string,

@@ -36,6 +36,7 @@ export class AtualizarServicoUseCase {
         if (dados.precoMin !== undefined) servico.precoMin = dados.precoMin
         if (dados.precoMax !== undefined) servico.precoMax = dados.precoMax
         if (dados.prazoMedioHoras !== undefined) servico.prazoMedioHoras = dados.prazoMedioHoras
+        if (dados.atendimentoDomiciliar !== undefined) servico.atendimentoDomiciliar = dados.atendimentoDomiciliar
 
         return this.servicoRepository.atualizar(servico)
     }

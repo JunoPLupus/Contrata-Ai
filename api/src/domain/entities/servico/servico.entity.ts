@@ -2,6 +2,7 @@ import { ServicoProps } from "./servico.props";
 import { StringValueObject } from "../../value-objects/shared/string/string.vo";
 import { NumberValueObject } from "../../value-objects/shared/number/number.vo";
 import { IntegerValueObject } from "../../value-objects/shared/integer/integer.vo";
+import { BooleanValueObject } from "../../value-objects/shared/boolean/boolean.vo";
 
 export class Servico {
     private constructor(private readonly props: ServicoProps) {}
@@ -61,6 +62,14 @@ export class Servico {
     }
     set prazoMedioHoras(prazoMedioHoras: number) {
         this.props.prazoMedioHoras = new IntegerValueObject('prazoMedioHoras', prazoMedioHoras, 1)
+    }
+
+    /** `true` = o prestador vai até o cliente. */
+    get atendimentoDomiciliar(): boolean {
+        return this.props.atendimentoDomiciliar.valor
+    }
+    set atendimentoDomiciliar(atendimentoDomiciliar: boolean) {
+        this.props.atendimentoDomiciliar = new BooleanValueObject('atendimentoDomiciliar', atendimentoDomiciliar)
     }
 
     get ativo(): boolean {

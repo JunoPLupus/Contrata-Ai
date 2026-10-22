@@ -14,7 +14,8 @@ export class ServicoMother {
         precoMin: number,
         precoMax: number,
         prazoMedioHoras: number,
-        ativo: boolean
+        ativo: boolean,
+        atendimentoDomiciliar: boolean
     }>): Servico {
         return ServicoFactory.criar({
             idPrestador: dados?.idPrestador ?? new Types.ObjectId().toString(),
@@ -24,7 +25,8 @@ export class ServicoMother {
             precoMin: dados?.precoMin,
             precoMax: dados?.precoMax,
             prazoMedioHoras: dados?.prazoMedioHoras,
-            ativo: dados?.ativo
+            ativo: dados?.ativo,
+            atendimentoDomiciliar: dados?.atendimentoDomiciliar
         })
     }
 
