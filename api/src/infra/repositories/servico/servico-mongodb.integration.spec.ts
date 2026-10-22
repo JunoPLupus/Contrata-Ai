@@ -6,6 +6,7 @@ import { ServicoModel } from "../../models/servico/servico.model";
 import { ServicoMongodbRepositoryImpl } from "./servico-mongodb.repository.impl";
 import { ServicoMapper } from "./servico.mapper";
 import { ServicoMother } from "../../../test-helpers/servico.mother";
+import { ServicoFactory } from "../../../domain/factories/servico.factory";
 
 describe('Testes de Integração do Repository: Serviço MongoDB', () => {
 
@@ -43,6 +44,22 @@ describe('Testes de Integração do Repository: Serviço MongoDB', () => {
             expect(servico).not.toBeNull()
             expect(servico).toBeInstanceOf(Servico)
             expect(servico?.descricao).toBe(servicoMock.descricao)
+        })
+
+        it('deve persistir titulo e aceitar servico sem descricao', async () => {
+            // Arrange
+            const servicoSemDescricao = ServicoFactory.criar({
+                idPrestador: new Types.ObjectId().toString(),
+                idCategoria: new Types.ObjectId().toString(),
+                titulo: 'Eletricista residencial'
+            })
+            const documentoInserido = await ServicoModel.create(ServicoMapper.paraDocumento(servicoSemDescricao))
+            // Act
+            const servico = await repository.buscarPorId(documentoInserido.id.toString())
+            // Assert
+            expect(documentoInserido.titulo).toBe('Eletricista residencial')
+            expect(servico?.titulo).toBe('Eletricista residencial')
+            expect(servico?.descricao).toBeUndefined()
         })
 
         it('deve persistir e ler prazo_medio_horas', async () => {

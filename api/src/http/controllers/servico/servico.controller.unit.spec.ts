@@ -56,6 +56,7 @@ describe('ServicoController', () => {
                 user: { idCliente: new Types.ObjectId().toString(), idPrestador },
                 body: {
                     idCategoria: dtoMock.idCategoria,
+                    titulo: dtoMock.titulo,
                     descricao: dtoMock.descricao,
                     precoMin: dtoMock.precoMin,
                     precoMax: dtoMock.precoMax,

@@ -9,6 +9,7 @@ import { ServicoMother } from "../../../../test-helpers/servico.mother";
 import { CategoriaMother } from "../../../../test-helpers/categoria.mother";
 import { RecursoNaoEncontradoError } from "../../../errors/recurso-nao-encontrado.error";
 import { AcessoProibidoError } from "../../../errors/acesso-proibido.error";
+import { ValorLimiteError } from "../../../errors/valor-limite.error";
 
 describe('Testes unitários do Use-Case: Atualizar Serviço', () => {
     let atualizarServicoUseCase: AtualizarServicoUseCase
@@ -37,6 +38,29 @@ describe('Testes unitários do Use-Case: Atualizar Serviço', () => {
         expect(servicoRepositoryMock.atualizar).toHaveBeenCalled()
         expect(resultado).toBeInstanceOf(Servico)
         expect(resultado.descricao).toBe(dtoAtualizacao.descricao)
+    })
+
+    it('deve atualizar o titulo quando fornecido', async () => {
+        // Arrange
+        const idPrestador = new Types.ObjectId().toString()
+        const servicoMock: Servico = ServicoMother.criarValido({ idPrestador })
+        servicoRepositoryMock.buscarPorId.mockResolvedValue(servicoMock)
+        servicoRepositoryMock.atualizar.mockImplementation(async servico => servico)
+        // Act
+        const resultado = await atualizarServicoUseCase.execute('qualquer-id', idPrestador, { titulo: 'Eletricista predial' })
+        // Assert
+        expect(resultado.titulo).toBe('Eletricista predial')
+    })
+
+    it('deve lançar ValorLimiteError quando titulo tiver menos de 3 caracteres', async () => {
+        // Arrange
+        const idPrestador = new Types.ObjectId().toString()
+        servicoRepositoryMock.buscarPorId.mockResolvedValue(ServicoMother.criarValido({ idPrestador }))
+        // Act & Assert
+        await expect(
+            atualizarServicoUseCase.execute('qualquer-id', idPrestador, { titulo: 'ab' })
+        ).rejects.toThrow(ValorLimiteError)
+        expect(servicoRepositoryMock.atualizar).not.toHaveBeenCalled()
     })
 
     it('deve validar idCategoria quando fornecido na atualização', async () => {

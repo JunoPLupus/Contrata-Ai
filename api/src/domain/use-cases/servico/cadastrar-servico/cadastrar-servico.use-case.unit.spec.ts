@@ -7,6 +7,7 @@ import { CategoriaMother } from "../../../../test-helpers/categoria.mother";
 import { RecursoNaoEncontradoError } from "../../../errors/recurso-nao-encontrado.error";
 import { FormatoInvalidoError } from "../../../errors/formato-invalido.error";
 import { ValorLimiteError } from "../../../errors/valor-limite.error";
+import { CampoObrigatorioVazioError } from "../../../errors/campo-obrigatorio-vazio.error";
 
 describe('Testes unitários do Use-Case: Cadastrar Serviço', () => {
     let cadastrarServicoUseCase: CadastrarServicoUseCase
@@ -46,6 +47,40 @@ describe('Testes unitários do Use-Case: Cadastrar Serviço', () => {
             cadastrarServicoUseCase.execute(dtoMock)
         ).rejects.toThrow(RecursoNaoEncontradoError)
         expect(servicoRepositoryMock.inserir).not.toHaveBeenCalled()
+    })
+
+    it('deve cadastrar sem descricao, já que ela é opcional', async () => {
+        // Arrange
+        const dtoMock = ServicoMother.criarDTO()
+        delete dtoMock.descricao
+        categoriaRepositoryMock.buscarPorId.mockResolvedValue(CategoriaMother.criarValido())
+        servicoRepositoryMock.inserir.mockImplementation(async servico => servico)
+        // Act
+        const servicoCadastrado = await cadastrarServicoUseCase.execute(dtoMock)
+        // Assert
+        expect(servicoCadastrado.titulo).toBe(dtoMock.titulo)
+        expect(servicoCadastrado.descricao).toBeUndefined()
+    })
+
+    it.each([
+        ['ausente', undefined, CampoObrigatorioVazioError],
+        ['com menos de 3 caracteres', 'ab', ValorLimiteError],
+        ['com mais de 80 caracteres', 'a'.repeat(81), ValorLimiteError]
+    ])('deve lançar erro de domínio quando titulo estiver %s', async (_, tituloInvalido, erroEsperado) => {
+        // Arrange
+        const dtoMock = { ...ServicoMother.criarDTO(), titulo: tituloInvalido as any }
+        categoriaRepositoryMock.buscarPorId.mockResolvedValue(CategoriaMother.criarValido())
+        // Act & Assert
+        await expect(cadastrarServicoUseCase.execute(dtoMock)).rejects.toThrow(erroEsperado)
+        expect(servicoRepositoryMock.inserir).not.toHaveBeenCalled()
+    })
+
+    it('deve lançar ValorLimiteError quando descricao enviada tiver menos de 5 caracteres', async () => {
+        // Arrange
+        const dtoMock = ServicoMother.criarDTO({ descricao: 'abc' })
+        categoriaRepositoryMock.buscarPorId.mockResolvedValue(CategoriaMother.criarValido())
+        // Act & Assert
+        await expect(cadastrarServicoUseCase.execute(dtoMock)).rejects.toThrow(ValorLimiteError)
     })
 
     it('deve cadastrar com prazoMedioHoras inteiro', async () => {
