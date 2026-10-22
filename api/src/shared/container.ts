@@ -25,6 +25,8 @@ import { BuscarServicoPorIdUseCase } from "../domain/use-cases/servico/buscar-se
 import { AtualizarServicoUseCase } from "../domain/use-cases/servico/atualizar-servico/atualizar-servico.use-case";
 import { DeletarServicoUseCase } from "../domain/use-cases/servico/deletar-servico/deletar-servico.use-case";
 import { BuscarServicosDoPrestadorUseCase } from "../domain/use-cases/servico/buscar-servicos-do-prestador/buscar-servicos-do-prestador.use-case";
+import { AtivarServicoUseCase } from "../domain/use-cases/servico/ativar-servico/ativar-servico.use-case";
+import { DesativarServicoUseCase } from "../domain/use-cases/servico/desativar-servico/desativar-servico.use-case";
 import { ServicoController } from "../http/controllers/servico/servico.controller";
 import { ClienteController } from "../http/controllers/usuario/cliente/cliente.controller";
 import { CategoriaMongodbRepositoryImpl } from "../infra/repositories/categoria/categoria-mongodb.repository.impl";
@@ -128,13 +130,17 @@ const buscarServicoPorIdUseCase = new BuscarServicoPorIdUseCase(servicoRepositor
 const atualizarServicoUseCase = new AtualizarServicoUseCase(servicoRepository, categoriaRepository)
 const deletarServicoUseCase = new DeletarServicoUseCase(servicoRepository)
 const buscarServicosDoPrestadorUseCase = new BuscarServicosDoPrestadorUseCase(servicoRepository, prestadorRepository)
+const ativarServicoUseCase = new AtivarServicoUseCase(servicoRepository)
+const desativarServicoUseCase = new DesativarServicoUseCase(servicoRepository)
 export const servicoController = new ServicoController(
     cadastrarServicoUseCase,
     buscarServicosPrestadorLogadoUseCase,
     buscarServicoPorIdUseCase,
     atualizarServicoUseCase,
     deletarServicoUseCase,
-    buscarServicosDoPrestadorUseCase
+    buscarServicosDoPrestadorUseCase,
+    ativarServicoUseCase,
+    desativarServicoUseCase
 )
 //#endregion
 

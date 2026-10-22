@@ -156,6 +156,69 @@ servicoRouter.get('/servicos/:id', exigeAutenticacao, exigePerfilPrestador, (req
 servicoRouter.patch('/servicos/:id', exigeAutenticacao, exigePerfilPrestador, (req, res) => servicoController.atualizar(req, res))
 //#endregion
 
+//#region Documentação - PATCH /servicos/{id}/ativar
+/**
+ * @openapi
+ * /servicos/{id}/ativar:
+ *   patch:
+ *     tags: [Serviços]
+ *     summary: Reativa um serviço pausado
+ *     description: O prestador dono volta a ofertar o serviço (reaparece na vitrine e volta a contar para a elegibilidade de categoria). Idempotente.
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID do serviço.
+ *     responses:
+ *       204:
+ *         description: Serviço ativado (sem conteúdo).
+ *       403:
+ *         $ref: '#/components/responses/Erro403Prestador'
+ *       404:
+ *         $ref: '#/components/responses/Erro404Servico'
+ *       500:
+ *         $ref: '#/components/responses/Erro500'
+ */
+servicoRouter.patch('/servicos/:id/ativar', exigeAutenticacao, exigePerfilPrestador, (req, res) => servicoController.ativar(req, res))
+//#endregion
+
+//#region Documentação - PATCH /servicos/{id}/desativar
+/**
+ * @openapi
+ * /servicos/{id}/desativar:
+ *   patch:
+ *     tags: [Serviços]
+ *     summary: Pausa um serviço
+ *     description: |
+ *       O prestador dono pausa o serviço sem apagá-lo. O serviço some da vitrine e das buscas e deixa de
+ *       contar para a elegibilidade de categoria (orçamentos novos e solicitações disponíveis).
+ *       Orçamentos pendentes e contratos já existentes seguem normalmente. Idempotente.
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID do serviço.
+ *     responses:
+ *       204:
+ *         description: Serviço desativado (sem conteúdo).
+ *       403:
+ *         $ref: '#/components/responses/Erro403Prestador'
+ *       404:
+ *         $ref: '#/components/responses/Erro404Servico'
+ *       500:
+ *         $ref: '#/components/responses/Erro500'
+ */
+servicoRouter.patch('/servicos/:id/desativar', exigeAutenticacao, exigePerfilPrestador, (req, res) => servicoController.desativar(req, res))
+//#endregion
+
 //#region Documentação - DELETE /servicos/{id}
 /**
  * @openapi
