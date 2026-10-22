@@ -146,10 +146,11 @@ export const servicoController = new ServicoController(
 
 //#region solicitacao.routes.ts
 const solicitacaoRepository = new SolicitacaoMongodbRepositoryImpl()
+const orcamentoRepository = new OrcamentoMongodbRepositoryImpl()  // declarado aqui: também usado por buscarSolicitacaoPorIdUseCase
 const cadastrarSolicitacaoUseCase = new CadastrarSolicitacaoUseCase(solicitacaoRepository, categoriaRepository, prestadorRepository)
 const buscarSolicitacoesClienteLogadoUseCase = new BuscarSolicitacoesClienteLogadoUseCase(solicitacaoRepository)
 const buscarSolicitacoesDisponiveisPrestadorUseCase = new BuscarSolicitacoesDisponiveisPrestadorUseCase(solicitacaoRepository, servicoRepository)
-const buscarSolicitacaoPorIdUseCase = new BuscarSolicitacaoPorIdUseCase(solicitacaoRepository, servicoRepository)
+const buscarSolicitacaoPorIdUseCase = new BuscarSolicitacaoPorIdUseCase(solicitacaoRepository, servicoRepository, orcamentoRepository)
 const atualizarSolicitacaoUseCase = new AtualizarSolicitacaoUseCase(solicitacaoRepository)
 export const solicitacaoController = new SolicitacaoController(
     cadastrarSolicitacaoUseCase,
@@ -161,7 +162,6 @@ export const solicitacaoController = new SolicitacaoController(
 //#endregion
 
 //#region orcamento.routes.ts
-const orcamentoRepository = new OrcamentoMongodbRepositoryImpl()
 const cadastrarOrcamentoUseCase = new CadastrarOrcamentoUseCase(orcamentoRepository, solicitacaoRepository, servicoRepository)
 const buscarOrcamentosPrestadorLogadoUseCase = new BuscarOrcamentosPrestadorLogadoUseCase(orcamentoRepository)
 const buscarOrcamentoPorIdUseCase = new BuscarOrcamentoPorIdUseCase(orcamentoRepository, solicitacaoRepository)

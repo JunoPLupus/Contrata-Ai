@@ -58,7 +58,8 @@ export class PrestadorMongodbRepositoryImpl implements IPrestadorRepository {
 
         if (filtros.idCategoria) {
             pipeline.push({ $lookup: { from: 'servicos', localField: '_id', foreignField: 'id_prestador', as: 'servicos' } })
-            pipeline.push({ $match: { 'servicos.id_categoria': new Types.ObjectId(filtros.idCategoria) } })
+            // Só serviços ofertados contam (espelha Servico.estaOfertado(): serviço pausado some das buscas)
+            pipeline.push({ $match: { servicos: { $elemMatch: { id_categoria: new Types.ObjectId(filtros.idCategoria), ativo: true } } } })
         }
 
         pipeline.push({

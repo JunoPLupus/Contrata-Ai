@@ -57,4 +57,18 @@ describe('BuscarServicosDoPrestadorUseCase', () => {
         await expect(useCase.execute(idPrestador)).rejects.toThrow(RecursoNaoEncontradoError)
         expect(servicoRepoMock.buscarPorIdPrestador).not.toHaveBeenCalled()
     })
+
+    it('não deve retornar serviços pausados na vitrine pública', async () => {
+        // Arrange
+        prestadorRepoMock.buscarPorId.mockResolvedValue(PrestadorMother.criarValido({ id: idPrestador }))
+        servicoRepoMock.buscarPorIdPrestador.mockResolvedValue([
+            ServicoMother.criarValido({ idPrestador }),
+            ServicoMother.criarValido({ idPrestador, ativo: false })
+        ])
+        // Act
+        const resultado = await useCase.execute(idPrestador)
+        // Assert
+        expect(resultado).toHaveLength(1)
+        expect(resultado.every(s => s.estaOfertado())).toBe(true)
+    })
 })
