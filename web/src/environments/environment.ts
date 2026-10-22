@@ -1,4 +1,4 @@
 export const environment = {
   production: false,
-  apiUrl: 'https://contrata-ai-production.up.railway.app/contrataai-api'
+  apiUrl: 'http://localhost:3000/contrataai-api'
 };
