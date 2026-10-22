@@ -72,6 +72,37 @@ describe('Login UseCase', () => {
         expect(jwt.sign).not.toHaveBeenCalled()
     })
 
+    it('deve lançar erro OperacaoNaoPermitidaError caso a conta esteja desativada', async () => {
+        // Arrange
+        const usuarioInativoMock = UsuarioMother.criarUsuarioValido({ ativo: false })
+        usuarioRepositoryMock.buscarPorEmail.mockResolvedValue(usuarioInativoMock)
+        jest.spyOn(bcrypt, 'compare').mockResolvedValue(true as never)
+        // Act & Assert
+        await expect(loginUseCase.execute(usuarioDTOMock))
+            .rejects.toThrow(
+                expect.objectContaining({
+                    name : 'OperacaoNaoPermitidaError',
+                    message : 'Esta conta está desativada.'
+                })
+            )
+        expect(jwt.sign).not.toHaveBeenCalled()
+    })
+
+    it('deve lançar erro CredenciaisInvalidasError, e não o de conta desativada, caso a senha esteja incorreta em conta inativa', async () => {
+        // Arrange
+        const usuarioInativoMock = UsuarioMother.criarUsuarioValido({ ativo: false })
+        usuarioRepositoryMock.buscarPorEmail.mockResolvedValue(usuarioInativoMock)
+        jest.spyOn(bcrypt, 'compare').mockResolvedValue(false as never)
+        // Act & Assert
+        await expect(loginUseCase.execute(usuarioDTOMock))
+            .rejects.toThrow(
+                expect.objectContaining({
+                    message : "Credenciais inválidas! Verifique suas credenciais e tente novamente."
+                })
+            )
+        expect(jwt.sign).not.toHaveBeenCalled()
+    })
+
     it('deve incluir idPrestador no payload quando o usuario for prestador', async () => {
         // Arrange
         const idPrestadorMock = 'id-prestador-mock'
