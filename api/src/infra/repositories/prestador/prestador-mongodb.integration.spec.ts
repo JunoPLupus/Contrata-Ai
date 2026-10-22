@@ -188,6 +188,23 @@ describe('Testes de Integração do Repository: Prestador MongoDB', () => {
             expect(resultado).toHaveLength(0)
         })
 
+        it('deve tratar caracteres especiais de regex no nome como texto literal', async () => {
+            // Arrange
+            await criarFixture('Ana Lima', 'São Paulo')
+            await criarFixture('Carlos Souza', 'Curitiba')
+            // Act
+            const resultado = await repository.buscar({ nomePrestador: '.*' })
+            // Assert
+            expect(resultado).toHaveLength(0)
+        })
+
+        it('não deve lançar erro quando o nome contiver um padrão de regex inválido', async () => {
+            // Arrange
+            await criarFixture('Ana Lima', 'São Paulo')
+            // Act & Assert
+            await expect(repository.buscar({ nomePrestador: '(' })).resolves.toHaveLength(0)
+        })
+
         it('não deve incluir prestadores inativos', async () => {
             // Arrange
             const idCliente = new Types.ObjectId()
