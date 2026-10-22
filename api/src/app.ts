@@ -1,4 +1,4 @@
-import express from 'express';
+import express, {Express} from 'express';
 import cors from 'cors';
 import swaggerUi from 'swagger-ui-express';
 
@@ -16,7 +16,7 @@ import avaliacaoRouter from "./http/routes/avaliacao/avaliacao.routes";
 import { errorHandler } from "./http/middlewares/error-handler/error-handler.middleware";
 
 const rotaRaiz = '/contrataai-api'
-const app = express()
+const app: Express = express()
 
 const allowedOrigins = process.env.CORS_ORIGIN
     ? process.env.CORS_ORIGIN.split(',')
