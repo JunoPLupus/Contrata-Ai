@@ -273,6 +273,7 @@ const schemas = {
             precoMin: { type: 'number', minimum: 1, description: 'Opcional.', example: 80 },
             precoMax: { type: 'number', minimum: 1, description: 'Opcional.', example: 250 },
             prazoMedioHoras: { type: 'integer', minimum: 1, description: 'Opcional. Prazo médio em horas (a API fala só horas; 1 dia = 24h).', example: 48 },
+            atendimentoDomiciliar: { type: 'boolean', default: false, description: 'Opcional. true = o prestador vai até o cliente.', example: true },
         },
     },
     ServicoAtualizacaoRequest: {
@@ -285,6 +286,7 @@ const schemas = {
             precoMin: { type: 'number', minimum: 1, description: 'Opcional.', example: 100 },
             precoMax: { type: 'number', minimum: 1, description: 'Opcional.', example: 300 },
             prazoMedioHoras: { type: 'integer', minimum: 1, description: 'Opcional. Prazo médio em horas.', example: 72 },
+            atendimentoDomiciliar: { type: 'boolean', description: 'Opcional. true = o prestador vai até o cliente.', example: false },
         },
     },
     ServicoResposta: {
@@ -297,6 +299,7 @@ const schemas = {
             precoMin: { type: 'number', nullable: true, example: 80 },
             precoMax: { type: 'number', nullable: true, example: 250 },
             prazoMedioHoras: { type: 'integer', nullable: true, description: 'Prazo médio em horas.', example: 48 },
+            atendimentoDomiciliar: { type: 'boolean', description: 'true = o prestador vai até o cliente.', example: true },
             ativo: { type: 'boolean', description: 'false = serviço pausado (some da vitrine e das buscas).', example: true },
         },
     },
