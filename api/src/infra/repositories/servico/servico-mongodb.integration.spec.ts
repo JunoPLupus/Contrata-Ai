@@ -45,6 +45,17 @@ describe('Testes de Integração do Repository: Serviço MongoDB', () => {
             expect(servico?.descricao).toBe(servicoMock.descricao)
         })
 
+        it('deve persistir e ler prazo_medio_horas', async () => {
+            // Arrange
+            const servicoComPrazo = ServicoMother.criarValido({ prazoMedioHoras: 48 })
+            const documentoInserido = await ServicoModel.create(ServicoMapper.paraDocumento(servicoComPrazo))
+            // Act
+            const servico = await repository.buscarPorId(documentoInserido.id.toString())
+            // Assert
+            expect(documentoInserido.prazo_medio_horas).toBe(48)
+            expect(servico?.prazoMedioHoras).toBe(48)
+        })
+
         it('deve retornar null quando ID nao for encontrado', async () => {
             // Arrange
             const idInexistente = new Types.ObjectId().toString()
