@@ -136,6 +136,31 @@ describe('Testes de Integração do Repository: Serviço MongoDB', () => {
         })
     })
 
+    describe('ativo', () => {
+        it('deve gravar ativo = true por padrao ao inserir', async () => {
+            // Act
+            const servicoInserido = await repository.inserir(servicoMock)
+            const documento = await ServicoModel.findById(servicoInserido.id)
+            // Assert
+            expect(servicoInserido.ativo).toBe(true)
+            expect(documento?.ativo).toBe(true)
+        })
+
+        it('deve persistir a desativacao e a reativacao via atualizar()', async () => {
+            // Arrange
+            const servicoInserido = await repository.inserir(servicoMock)
+            // Act
+            servicoInserido.desativar()
+            const desativado = await repository.atualizar(servicoInserido)
+            servicoInserido.ativar()
+            const reativado = await repository.atualizar(servicoInserido)
+            // Assert
+            expect(desativado.ativo).toBe(false)
+            expect(desativado.estaOfertado()).toBe(false)
+            expect(reativado.ativo).toBe(true)
+        })
+    })
+
     describe('deletar()', () => {
         it('deve deletar um servico existente e nao encontra-lo depois', async () => {
             // Arrange

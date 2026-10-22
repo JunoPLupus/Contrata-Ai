@@ -14,7 +14,8 @@ export class ServicoMapper {
             descricao: doc.descricao ?? undefined,
             precoMin: doc.preco_min,
             precoMax: doc.preco_max,
-            prazoMedioHoras: doc.prazo_medio_horas
+            prazoMedioHoras: doc.prazo_medio_horas,
+            ativo: doc.ativo
         })
     }
 
@@ -26,7 +27,8 @@ export class ServicoMapper {
             descricao: servico.descricao,
             preco_min: servico.precoMin,
             preco_max: servico.precoMax,
-            prazo_medio_horas: servico.prazoMedioHoras
+            prazo_medio_horas: servico.prazoMedioHoras,
+            ativo: servico.ativo
         }
     }
 }

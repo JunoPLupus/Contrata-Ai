@@ -10,5 +10,6 @@ export type ServicoProps = {
     descricao ?: StringValueObject,
     precoMin ?: NumberValueObject,
     precoMax ?: NumberValueObject,
-    prazoMedioHoras ?: IntegerValueObject
+    prazoMedioHoras ?: IntegerValueObject,
+    ativo : boolean
 }

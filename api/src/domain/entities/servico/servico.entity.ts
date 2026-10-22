@@ -62,4 +62,27 @@ export class Servico {
     set prazoMedioHoras(prazoMedioHoras: number) {
         this.props.prazoMedioHoras = new IntegerValueObject('prazoMedioHoras', prazoMedioHoras, 1)
     }
+
+    get ativo(): boolean {
+        return this.props.ativo
+    }
+
+    /** Volta a ofertar o serviço pausado. */
+    public ativar(): void {
+        this.props.ativo = true
+    }
+
+    /** Pausa o serviço sem apagá-lo: ele some da vitrine e deixa de liberar pedidos novos. */
+    public desativar(): void {
+        this.props.ativo = false
+    }
+
+    /**
+     * Indica se o serviço está sendo ofertado (aparece na vitrine e conta para a
+     * elegibilidade de categoria). Hoje depende só de `ativo`; ponto único para
+     * combinar com a disponibilidade do prestador no futuro.
+     */
+    public estaOfertado(): boolean {
+        return this.props.ativo
+    }
 }
