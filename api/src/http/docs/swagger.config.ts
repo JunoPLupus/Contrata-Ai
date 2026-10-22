@@ -271,7 +271,7 @@ const schemas = {
             descricao: { type: 'string', minLength: 5, maxLength: 500, example: 'Instalação completa de tomadas e interruptores.' },
             precoMin: { type: 'number', minimum: 1, description: 'Opcional.', example: 80 },
             precoMax: { type: 'number', minimum: 1, description: 'Opcional.', example: 250 },
-            prazoMedioDias: { type: 'integer', minimum: 1, description: 'Opcional.', example: 2 },
+            prazoMedioHoras: { type: 'integer', minimum: 1, description: 'Opcional. Prazo médio em horas (a API fala só horas; 1 dia = 24h).', example: 48 },
         },
     },
     ServicoAtualizacaoRequest: {
@@ -282,7 +282,7 @@ const schemas = {
             descricao: { type: 'string', minLength: 5, maxLength: 500, description: 'Opcional.', example: 'Instalação de tomadas, interruptores e disjuntores.' },
             precoMin: { type: 'number', minimum: 1, description: 'Opcional.', example: 100 },
             precoMax: { type: 'number', minimum: 1, description: 'Opcional.', example: 300 },
-            prazoMedioDias: { type: 'integer', minimum: 1, description: 'Opcional.', example: 3 },
+            prazoMedioHoras: { type: 'integer', minimum: 1, description: 'Opcional. Prazo médio em horas.', example: 72 },
         },
     },
     ServicoResposta: {
@@ -293,7 +293,7 @@ const schemas = {
             descricao: { type: 'string', example: 'Instalação completa de tomadas e interruptores.' },
             precoMin: { type: 'number', nullable: true, example: 80 },
             precoMax: { type: 'number', nullable: true, example: 250 },
-            prazoMedioDias: { type: 'integer', nullable: true, example: 2 },
+            prazoMedioHoras: { type: 'integer', nullable: true, description: 'Prazo médio em horas.', example: 48 },
         },
     },
 
