@@ -6,6 +6,13 @@ import { IPrestadorDocument, PrestadorModel } from "../../models/prestador/prest
 import { PrestadorMapper } from "./prestador.mapper";
 import { PrestadorBuscaResultado } from "../../../domain/dto/prestador/prestador-busca-resultado.dto";
 
+/**
+ * Escapa os caracteres especiais de regex para que o texto do usuário seja buscado literalmente.
+ */
+function escaparRegex(texto: string): string {
+    return texto.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+}
+
 export class PrestadorMongodbRepositoryImpl implements IPrestadorRepository {
     public async inserir(prestador: Prestador): Promise<Prestador> {
         const prestadorDocumento : IPrestadorDocument = PrestadorMapper.paraDocumento(prestador)
@@ -46,7 +53,7 @@ export class PrestadorMongodbRepositoryImpl implements IPrestadorRepository {
         pipeline.push({ $unwind: '$usuario' })
 
         if (filtros.nomePrestador) {
-            pipeline.push({ $match: { 'usuario.nome': { $regex: filtros.nomePrestador, $options: 'i' } } })
+            pipeline.push({ $match: { 'usuario.nome': { $regex: escaparRegex(filtros.nomePrestador), $options: 'i' } } })
         }
 
         if (filtros.idCategoria) {
@@ -68,7 +75,7 @@ export class PrestadorMongodbRepositoryImpl implements IPrestadorRepository {
     }
 
     public async buscarPorCidade(cidade: string): Promise<PrestadorBuscaResultado[]> {
-        const cidadeEscapada = cidade.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+        const cidadeEscapada = escaparRegex(cidade)
 
         const pipeline: PipelineStage[] = [
             { $match: { ativo: true } },

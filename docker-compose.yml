@@ -1,0 +1,21 @@
+# Ambiente de desenvolvimento local: sobe apenas o MongoDB.
+# A API (npm run dev) e o front (ng serve) rodam direto na máquina.
+#
+# Subir:  docker compose up -d
+# Parar:  docker compose down        (mantém os dados)
+# Zerar:  docker compose down -v     (apaga o volume com os dados)
+#
+# No api/.env: MONGODB_URI=mongodb://localhost:27017/contrataai-dev
+
+services:
+  mongo:
+    image: mongo:8.0
+    container_name: contrataai-mongo
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+
+volumes:
+  mongo-data:
