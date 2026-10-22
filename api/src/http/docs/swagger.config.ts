@@ -265,10 +265,11 @@ const schemas = {
     // ---------------------------------------------------------------- Serviços
     ServicoCadastroRequest: {
         type: 'object',
-        required: ['idCategoria', 'descricao'],
+        required: ['idCategoria', 'titulo'],
         properties: {
             idCategoria: { type: 'string', description: 'ID da categoria do serviço.', example: '665f1b2c9a1e4a0012abc002' },
-            descricao: { type: 'string', minLength: 5, maxLength: 500, example: 'Instalação completa de tomadas e interruptores.' },
+            titulo: { type: 'string', minLength: 3, maxLength: 80, example: 'Eletricista residencial' },
+            descricao: { type: 'string', minLength: 5, maxLength: 500, description: 'Opcional.', example: 'Instalação completa de tomadas e interruptores.' },
             precoMin: { type: 'number', minimum: 1, description: 'Opcional.', example: 80 },
             precoMax: { type: 'number', minimum: 1, description: 'Opcional.', example: 250 },
             prazoMedioHoras: { type: 'integer', minimum: 1, description: 'Opcional. Prazo médio em horas (a API fala só horas; 1 dia = 24h).', example: 48 },
@@ -279,6 +280,7 @@ const schemas = {
         description: 'Todos os campos são opcionais; apenas os enviados são atualizados.',
         properties: {
             idCategoria: { type: 'string', description: 'Opcional. ID da categoria do serviço.', example: '665f1b2c9a1e4a0012abc002' },
+            titulo: { type: 'string', minLength: 3, maxLength: 80, description: 'Opcional.', example: 'Eletricista residencial e predial' },
             descricao: { type: 'string', minLength: 5, maxLength: 500, description: 'Opcional.', example: 'Instalação de tomadas, interruptores e disjuntores.' },
             precoMin: { type: 'number', minimum: 1, description: 'Opcional.', example: 100 },
             precoMax: { type: 'number', minimum: 1, description: 'Opcional.', example: 300 },
@@ -290,7 +292,8 @@ const schemas = {
         properties: {
             id: { type: 'string', example: '665f1b2c9a1e4a0012abc010' },
             idCategoria: { type: 'string', example: '665f1b2c9a1e4a0012abc002' },
-            descricao: { type: 'string', example: 'Instalação completa de tomadas e interruptores.' },
+            titulo: { type: 'string', example: 'Eletricista residencial' },
+            descricao: { type: 'string', nullable: true, example: 'Instalação completa de tomadas e interruptores.' },
             precoMin: { type: 'number', nullable: true, example: 80 },
             precoMax: { type: 'number', nullable: true, example: 250 },
             prazoMedioHoras: { type: 'integer', nullable: true, description: 'Prazo médio em horas.', example: 48 },

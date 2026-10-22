@@ -40,7 +40,7 @@ const servicoRouter = Router()
  *             schema:
  *               $ref: '#/components/schemas/ErroResposta'
  *             example:
- *               message: "O campo 'descricao' é obrigatório."
+ *               message: "O campo 'titulo' é obrigatório."
  *       500:
  *         $ref: '#/components/responses/Erro500'
  */
