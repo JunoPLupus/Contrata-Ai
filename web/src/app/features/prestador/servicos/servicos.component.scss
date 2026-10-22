@@ -124,6 +124,12 @@ form {
   color: #ef4444;
 }
 
+.field__hint {
+  font-size: 0.75rem;
+  font-weight: 400;
+  color: var(--color-text-secondary);
+}
+
 .field__wrapper {
   display: flex;
   align-items: center;
