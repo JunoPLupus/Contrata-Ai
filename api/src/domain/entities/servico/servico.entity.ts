@@ -1,6 +1,7 @@
 import { ServicoProps } from "./servico.props";
 import { StringValueObject } from "../../value-objects/shared/string/string.vo";
 import { NumberValueObject } from "../../value-objects/shared/number/number.vo";
+import { IntegerValueObject } from "../../value-objects/shared/integer/integer.vo";
 
 export class Servico {
     private constructor(private readonly props: ServicoProps) {}
@@ -48,10 +49,10 @@ export class Servico {
         this.props.precoMax = new NumberValueObject('precoMax', precoMax, 1)
     }
 
-    get prazoMedioDias(): number | undefined {
-        return this.props.prazoMedioDias?.valor
+    get prazoMedioHoras(): number | undefined {
+        return this.props.prazoMedioHoras?.valor
     }
-    set prazoMedioDias(prazoMedioDias: number) {
-        this.props.prazoMedioDias = new NumberValueObject('prazoMedio', prazoMedioDias, 1)
+    set prazoMedioHoras(prazoMedioHoras: number) {
+        this.props.prazoMedioHoras = new IntegerValueObject('prazoMedioHoras', prazoMedioHoras, 1)
     }
 }

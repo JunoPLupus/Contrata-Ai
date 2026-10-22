@@ -9,7 +9,7 @@ export class ServicoMapper {
             descricao: servico.descricao,
             precoMin: servico.precoMin,
             precoMax: servico.precoMax,
-            prazoMedioDias: servico.prazoMedioDias
+            prazoMedioHoras: servico.prazoMedioHoras
         };
     }
 

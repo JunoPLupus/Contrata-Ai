@@ -1,6 +1,7 @@
 import { Servico } from "../entities/servico/servico.entity";
 import { StringValueObject } from "../value-objects/shared/string/string.vo";
 import { NumberValueObject } from "../value-objects/shared/number/number.vo";
+import { IntegerValueObject } from "../value-objects/shared/integer/integer.vo";
 
 export class ServicoFactory {
     public static criar(dados: {
@@ -10,7 +11,7 @@ export class ServicoFactory {
         descricao: string,
         precoMin?: number,
         precoMax?: number,
-        prazoMedioDias?: number
+        prazoMedioHoras?: number
     }): Servico {
         return Servico.criarServico({
             id: dados.id,
@@ -19,7 +20,7 @@ export class ServicoFactory {
             descricao: new StringValueObject('descricao', dados.descricao, 5, 500),
             precoMin: dados.precoMin !== undefined ? new NumberValueObject('precoMin', dados.precoMin, 1) : undefined,
             precoMax: dados.precoMax !== undefined ? new NumberValueObject('precoMax', dados.precoMax, 1) : undefined,
-            prazoMedioDias: dados.prazoMedioDias !== undefined ? new NumberValueObject('prazoMedio', dados.prazoMedioDias, 1) : undefined,
+            prazoMedioHoras: dados.prazoMedioHoras !== undefined ? new IntegerValueObject('prazoMedioHoras', dados.prazoMedioHoras, 1) : undefined,
        })
     }
 }

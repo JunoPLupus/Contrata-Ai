@@ -12,7 +12,7 @@ export class ServicoMother {
         descricao: string,
         precoMin: number,
         precoMax: number,
-        prazoMedioDias: number
+        prazoMedioHoras: number
     }>): Servico {
         return ServicoFactory.criar({
             idPrestador: dados?.idPrestador ?? new Types.ObjectId().toString(),
@@ -20,7 +20,7 @@ export class ServicoMother {
             descricao: dados?.descricao ?? 'Instalacao eletrica residencial',
             precoMin: dados?.precoMin,
             precoMax: dados?.precoMax,
-            prazoMedioDias: dados?.prazoMedioDias
+            prazoMedioHoras: dados?.prazoMedioHoras
         })
     }
 
@@ -31,7 +31,7 @@ export class ServicoMother {
             descricao: dados?.descricao ?? 'Instalacao eletrica residencial',
             precoMin: dados?.precoMin,
             precoMax: dados?.precoMax,
-            prazoMedioDias: dados?.prazoMedioDias
+            prazoMedioHoras: dados?.prazoMedioHoras
         }
     }
 
