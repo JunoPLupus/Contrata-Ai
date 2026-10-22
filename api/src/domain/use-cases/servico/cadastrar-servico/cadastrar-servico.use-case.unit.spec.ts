@@ -105,4 +105,35 @@ describe('Testes unitários do Use-Case: Cadastrar Serviço', () => {
         await expect(cadastrarServicoUseCase.execute(dtoMock)).rejects.toThrow(erroEsperado)
         expect(servicoRepositoryMock.inserir).not.toHaveBeenCalled()
     })
+
+    it('deve cadastrar com atendimentoDomiciliar = false quando não for enviado', async () => {
+        // Arrange
+        const dtoMock = ServicoMother.criarDTO()
+        categoriaRepositoryMock.buscarPorId.mockResolvedValue(CategoriaMother.criarValido())
+        servicoRepositoryMock.inserir.mockImplementation(async servico => servico)
+        // Act
+        const servicoCadastrado = await cadastrarServicoUseCase.execute(dtoMock)
+        // Assert
+        expect(servicoCadastrado.atendimentoDomiciliar).toBe(false)
+    })
+
+    it('deve cadastrar com atendimentoDomiciliar = true quando enviado', async () => {
+        // Arrange
+        const dtoMock = { ...ServicoMother.criarDTO(), atendimentoDomiciliar: true }
+        categoriaRepositoryMock.buscarPorId.mockResolvedValue(CategoriaMother.criarValido())
+        servicoRepositoryMock.inserir.mockImplementation(async servico => servico)
+        // Act
+        const servicoCadastrado = await cadastrarServicoUseCase.execute(dtoMock)
+        // Assert
+        expect(servicoCadastrado.atendimentoDomiciliar).toBe(true)
+    })
+
+    it('deve lançar FormatoInvalidoError quando atendimentoDomiciliar não for boolean', async () => {
+        // Arrange
+        const dtoMock = { ...ServicoMother.criarDTO(), atendimentoDomiciliar: 'sim' as any }
+        categoriaRepositoryMock.buscarPorId.mockResolvedValue(CategoriaMother.criarValido())
+        // Act & Assert
+        await expect(cadastrarServicoUseCase.execute(dtoMock)).rejects.toThrow(FormatoInvalidoError)
+        expect(servicoRepositoryMock.inserir).not.toHaveBeenCalled()
+    })
 })

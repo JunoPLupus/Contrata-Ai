@@ -136,6 +136,19 @@ describe('Testes de Integração do Repository: Serviço MongoDB', () => {
         })
     })
 
+    describe('atendimento_domiciliar', () => {
+        it('deve gravar false por padrao e persistir true quando informado', async () => {
+            // Act
+            const padrao = await repository.inserir(servicoMock)
+            const domiciliar = await repository.inserir(ServicoMother.criarValido({ atendimentoDomiciliar: true }))
+            const documento = await ServicoModel.findById(domiciliar.id)
+            // Assert
+            expect(padrao.atendimentoDomiciliar).toBe(false)
+            expect(domiciliar.atendimentoDomiciliar).toBe(true)
+            expect(documento?.atendimento_domiciliar).toBe(true)
+        })
+    })
+
     describe('ativo', () => {
         it('deve gravar ativo = true por padrao ao inserir', async () => {
             // Act

@@ -10,6 +10,7 @@ import { CategoriaMother } from "../../../../test-helpers/categoria.mother";
 import { RecursoNaoEncontradoError } from "../../../errors/recurso-nao-encontrado.error";
 import { AcessoProibidoError } from "../../../errors/acesso-proibido.error";
 import { ValorLimiteError } from "../../../errors/valor-limite.error";
+import { FormatoInvalidoError } from "../../../errors/formato-invalido.error";
 
 describe('Testes unitários do Use-Case: Atualizar Serviço', () => {
     let atualizarServicoUseCase: AtualizarServicoUseCase
@@ -115,6 +116,28 @@ describe('Testes unitários do Use-Case: Atualizar Serviço', () => {
         await expect(
             atualizarServicoUseCase.execute('qualquer-id', idOutroPrestador, { descricao: 'Tentativa indevida' })
         ).rejects.toThrow(AcessoProibidoError)
+        expect(servicoRepositoryMock.atualizar).not.toHaveBeenCalled()
+    })
+
+    it('deve atualizar atendimentoDomiciliar quando fornecido', async () => {
+        // Arrange
+        const idPrestador = new Types.ObjectId().toString()
+        servicoRepositoryMock.buscarPorId.mockResolvedValue(ServicoMother.criarValido({ idPrestador }))
+        servicoRepositoryMock.atualizar.mockImplementation(async servico => servico)
+        // Act
+        const resultado = await atualizarServicoUseCase.execute('qualquer-id', idPrestador, { atendimentoDomiciliar: true })
+        // Assert
+        expect(resultado.atendimentoDomiciliar).toBe(true)
+    })
+
+    it('deve lançar FormatoInvalidoError quando atendimentoDomiciliar não for boolean', async () => {
+        // Arrange
+        const idPrestador = new Types.ObjectId().toString()
+        servicoRepositoryMock.buscarPorId.mockResolvedValue(ServicoMother.criarValido({ idPrestador }))
+        // Act & Assert
+        await expect(
+            atualizarServicoUseCase.execute('qualquer-id', idPrestador, { atendimentoDomiciliar: 'true' as any })
+        ).rejects.toThrow(FormatoInvalidoError)
         expect(servicoRepositoryMock.atualizar).not.toHaveBeenCalled()
     })
 })

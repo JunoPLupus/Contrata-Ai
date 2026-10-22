@@ -68,7 +68,8 @@ describe('ServicoController', () => {
                     descricao: dtoMock.descricao,
                     precoMin: dtoMock.precoMin,
                     precoMax: dtoMock.precoMax,
-                    prazoMedioHoras: dtoMock.prazoMedioHoras
+                    prazoMedioHoras: dtoMock.prazoMedioHoras,
+                    atendimentoDomiciliar: true
                 }
             }
             cadastrarServicoUseCaseMock.execute.mockResolvedValue(servicoMock)
