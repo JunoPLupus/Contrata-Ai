@@ -297,6 +297,7 @@ const schemas = {
             precoMin: { type: 'number', nullable: true, example: 80 },
             precoMax: { type: 'number', nullable: true, example: 250 },
             prazoMedioHoras: { type: 'integer', nullable: true, description: 'Prazo médio em horas.', example: 48 },
+            ativo: { type: 'boolean', description: 'false = serviço pausado (some da vitrine e das buscas).', example: true },
         },
     },
 
