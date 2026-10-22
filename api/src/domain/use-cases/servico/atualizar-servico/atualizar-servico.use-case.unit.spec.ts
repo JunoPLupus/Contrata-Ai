@@ -27,8 +27,9 @@ describe('Testes unitários do Use-Case: Atualizar Serviço', () => {
         // Arrange
         const idPrestador = new Types.ObjectId().toString()
         const servicoMock: Servico = ServicoMother.criarValido({ idPrestador })
-        const dtoAtualizacao: ServicoAtualizacaoDTO = { descricao: 'Nova descricao do servico atualizado' }
-        const servicoAtualizado: Servico = ServicoMother.criarValido({ idPrestador, descricao: dtoAtualizacao.descricao })
+        const novaDescricao = 'Nova descricao do servico atualizado'
+        const dtoAtualizacao: ServicoAtualizacaoDTO = { descricao: novaDescricao }
+        const servicoAtualizado: Servico = ServicoMother.criarValido({ idPrestador, descricao: novaDescricao })
         servicoRepositoryMock.buscarPorId.mockResolvedValue(servicoMock)
         servicoRepositoryMock.atualizar.mockResolvedValue(servicoAtualizado)
         // Act
@@ -139,5 +140,28 @@ describe('Testes unitários do Use-Case: Atualizar Serviço', () => {
             atualizarServicoUseCase.execute('qualquer-id', idPrestador, { atendimentoDomiciliar: 'true' as any })
         ).rejects.toThrow(FormatoInvalidoError)
         expect(servicoRepositoryMock.atualizar).not.toHaveBeenCalled()
+    })
+
+    it('deve remover a descricao quando receber null', async () => {
+        // Arrange
+        const idPrestador = new Types.ObjectId().toString()
+        servicoRepositoryMock.buscarPorId.mockResolvedValue(ServicoMother.criarValido({ idPrestador, descricao: 'Descricao que sera removida' }))
+        servicoRepositoryMock.atualizar.mockImplementation(async servico => servico)
+        // Act
+        const resultado = await atualizarServicoUseCase.execute('qualquer-id', idPrestador, { descricao: null })
+        // Assert
+        expect(resultado.descricao).toBeUndefined()
+        expect(resultado.titulo).toBeDefined()
+    })
+
+    it('deve manter a descricao quando ela não for enviada', async () => {
+        // Arrange
+        const idPrestador = new Types.ObjectId().toString()
+        servicoRepositoryMock.buscarPorId.mockResolvedValue(ServicoMother.criarValido({ idPrestador, descricao: 'Descricao que deve ficar' }))
+        servicoRepositoryMock.atualizar.mockImplementation(async servico => servico)
+        // Act
+        const resultado = await atualizarServicoUseCase.execute('qualquer-id', idPrestador, { titulo: 'Outro titulo' })
+        // Assert
+        expect(resultado.descricao).toBe('Descricao que deve ficar')
     })
 })

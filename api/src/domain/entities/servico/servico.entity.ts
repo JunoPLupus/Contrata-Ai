@@ -43,6 +43,11 @@ export class Servico {
         this.props.descricao = new StringValueObject('descricao', descricao, 5, 500)
     }
 
+    /** Remove a descrição (campo opcional). */
+    public removerDescricao(): void {
+        this.props.descricao = undefined
+    }
+
     get precoMin(): number | undefined {
         return this.props.precoMin?.valor
     }

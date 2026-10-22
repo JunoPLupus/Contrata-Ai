@@ -174,6 +174,21 @@ describe('Testes de Integração do Repository: Serviço MongoDB', () => {
         })
     })
 
+    describe('atualizar() removendo campo opcional', () => {
+        it('deve remover a descricao do documento quando ela for removida na entidade', async () => {
+            // Arrange
+            const servicoInserido = await repository.inserir(ServicoMother.criarValido({ descricao: 'Descricao que sera removida' }))
+            // Act
+            servicoInserido.removerDescricao()
+            const servicoAtualizado = await repository.atualizar(servicoInserido)
+            const documento = await ServicoModel.findById(servicoInserido.id).lean()
+            // Assert
+            expect(servicoAtualizado.descricao).toBeUndefined()
+            expect(documento).not.toHaveProperty('descricao')
+            expect(documento?.titulo).toBe(servicoInserido.titulo)
+        })
+    })
+
     describe('deletar()', () => {
         it('deve deletar um servico existente e nao encontra-lo depois', async () => {
             // Arrange

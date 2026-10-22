@@ -1,3 +1,6 @@
 import { Servico } from "../../entities/servico/servico.entity";
 
-export type ServicoAtualizacaoDTO = Partial<Pick<Servico, 'idCategoria' | 'titulo' | 'descricao' | 'precoMin' | 'precoMax' | 'prazoMedioHoras' | 'atendimentoDomiciliar'>>
+/** `descricao: null` remove a descrição; ausente mantém o valor atual. */
+export type ServicoAtualizacaoDTO = Partial<Pick<Servico, 'idCategoria' | 'titulo' | 'precoMin' | 'precoMax' | 'prazoMedioHoras' | 'atendimentoDomiciliar'>> & {
+    descricao?: string | null
+}

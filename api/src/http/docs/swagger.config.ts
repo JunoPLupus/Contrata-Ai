@@ -282,7 +282,7 @@ const schemas = {
         properties: {
             idCategoria: { type: 'string', description: 'Opcional. ID da categoria do serviço.', example: '665f1b2c9a1e4a0012abc002' },
             titulo: { type: 'string', minLength: 3, maxLength: 80, description: 'Opcional.', example: 'Eletricista residencial e predial' },
-            descricao: { type: 'string', minLength: 5, maxLength: 500, description: 'Opcional.', example: 'Instalação de tomadas, interruptores e disjuntores.' },
+            descricao: { type: 'string', nullable: true, minLength: 5, maxLength: 500, description: 'Opcional. Envie null para remover a descrição.', example: 'Instalação de tomadas, interruptores e disjuntores.' },
             precoMin: { type: 'number', minimum: 1, description: 'Opcional.', example: 100 },
             precoMax: { type: 'number', minimum: 1, description: 'Opcional.', example: 300 },
             prazoMedioHoras: { type: 'integer', minimum: 1, description: 'Opcional. Prazo médio em horas.', example: 72 },
