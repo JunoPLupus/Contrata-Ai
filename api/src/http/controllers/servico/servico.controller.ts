@@ -24,6 +24,7 @@ export class ServicoController {
         const servicoCadastroDTO: ServicoCadastroDTO = {
             idPrestador: request.user!.idPrestador!,
             idCategoria: request.body.idCategoria,
+            titulo: request.body.titulo,
             descricao: request.body.descricao,
             precoMin: request.body.precoMin,
             precoMax: request.body.precoMax,
@@ -49,6 +50,7 @@ export class ServicoController {
     public async atualizar(request: Request, response: Response): Promise<void> {
         const servicoAtualizacaoDTO: ServicoAtualizacaoDTO = {
             idCategoria: request.body.idCategoria,
+            titulo: request.body.titulo,
             descricao: request.body.descricao,
             precoMin: request.body.precoMin,
             precoMax: request.body.precoMax,

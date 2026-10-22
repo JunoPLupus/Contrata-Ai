@@ -3,7 +3,8 @@ import { Schema, model, Types } from "mongoose";
 export interface IServicoDocument {
     id_prestador: Types.ObjectId,
     id_categoria: Types.ObjectId,
-    descricao: string,
+    titulo: string,
+    descricao?: string,
     preco_min?: number,
     preco_max?: number,
     prazo_medio_horas?: number
@@ -12,7 +13,8 @@ export interface IServicoDocument {
 const ServicoSchema = new Schema<IServicoDocument>({
     id_prestador: { type: Types.ObjectId, ref: 'Prestador', required: true },
     id_categoria: { type: Types.ObjectId, ref: 'Categoria', required: true },
-    descricao: { type: String, required: true },
+    titulo: { type: String, required: true },
+    descricao: String,
     preco_min: Number,
     preco_max: Number,
     prazo_medio_horas: Number

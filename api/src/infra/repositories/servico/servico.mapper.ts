@@ -10,7 +10,8 @@ export class ServicoMapper {
             id: doc.id.toString(),
             idPrestador: doc.id_prestador.toString(),
             idCategoria: doc.id_categoria.toString(),
-            descricao: doc.descricao,
+            titulo: doc.titulo,
+            descricao: doc.descricao ?? undefined,
             precoMin: doc.preco_min,
             precoMax: doc.preco_max,
             prazoMedioHoras: doc.prazo_medio_horas
@@ -21,6 +22,7 @@ export class ServicoMapper {
         return {
             id_prestador: new Types.ObjectId(servico.idPrestador),
             id_categoria: new Types.ObjectId(servico.idCategoria),
+            titulo: servico.titulo,
             descricao: servico.descricao,
             preco_min: servico.precoMin,
             preco_max: servico.precoMax,

@@ -27,6 +27,7 @@ export class CadastrarServicoUseCase {
         const servico: Servico = ServicoFactory.criar({
             idPrestador: servicoDTO.idPrestador,
             idCategoria: servicoDTO.idCategoria,
+            titulo: servicoDTO.titulo,
             descricao: servicoDTO.descricao,
             precoMin: servicoDTO.precoMin,
             precoMax: servicoDTO.precoMax,

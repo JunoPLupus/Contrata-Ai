@@ -9,6 +9,7 @@ export class ServicoMother {
     public static criarValido(dados?: Partial<{
         idPrestador: string,
         idCategoria: string,
+        titulo: string,
         descricao: string,
         precoMin: number,
         precoMax: number,
@@ -17,6 +18,7 @@ export class ServicoMother {
         return ServicoFactory.criar({
             idPrestador: dados?.idPrestador ?? new Types.ObjectId().toString(),
             idCategoria: dados?.idCategoria ?? new Types.ObjectId().toString(),
+            titulo: dados?.titulo ?? 'Eletricista residencial',
             descricao: dados?.descricao ?? 'Instalacao eletrica residencial',
             precoMin: dados?.precoMin,
             precoMax: dados?.precoMax,
@@ -28,6 +30,7 @@ export class ServicoMother {
         return {
             idPrestador: dados?.idPrestador ?? new Types.ObjectId().toString(),
             idCategoria: dados?.idCategoria ?? new Types.ObjectId().toString(),
+            titulo: dados?.titulo ?? 'Eletricista residencial',
             descricao: dados?.descricao ?? 'Instalacao eletrica residencial',
             precoMin: dados?.precoMin,
             precoMax: dados?.precoMax,

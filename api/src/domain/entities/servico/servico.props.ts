@@ -6,7 +6,8 @@ export type ServicoProps = {
     id ?: string,
     idPrestador : StringValueObject,
     idCategoria : StringValueObject,
-    descricao : StringValueObject,
+    titulo : StringValueObject,
+    descricao ?: StringValueObject,
     precoMin ?: NumberValueObject,
     precoMax ?: NumberValueObject,
     prazoMedioHoras ?: IntegerValueObject

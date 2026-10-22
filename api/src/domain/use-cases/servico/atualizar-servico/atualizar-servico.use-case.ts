@@ -31,6 +31,7 @@ export class AtualizarServicoUseCase {
             if (!categoria) throw new RecursoNaoEncontradoError('Categoria')
             servico.idCategoria = dados.idCategoria
         }
+        if (dados.titulo !== undefined) servico.titulo = dados.titulo
         if (dados.descricao !== undefined) servico.descricao = dados.descricao
         if (dados.precoMin !== undefined) servico.precoMin = dados.precoMin
         if (dados.precoMax !== undefined) servico.precoMax = dados.precoMax

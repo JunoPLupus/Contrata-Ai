@@ -6,6 +6,7 @@ export class ServicoMapper {
         return {
             id: servico.id,
             idCategoria: servico.idCategoria,
+            titulo: servico.titulo,
             descricao: servico.descricao,
             precoMin: servico.precoMin,
             precoMax: servico.precoMax,

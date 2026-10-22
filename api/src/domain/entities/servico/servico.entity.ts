@@ -28,8 +28,15 @@ export class Servico {
         this.props.idCategoria = new StringValueObject('idCategoria', idCategoria)
     }
 
-    get descricao(): string {
-        return this.props.descricao.valor
+    get titulo(): string {
+        return this.props.titulo.valor
+    }
+    set titulo(titulo: string) {
+        this.props.titulo = new StringValueObject('titulo', titulo, 3, 80)
+    }
+
+    get descricao(): string | undefined {
+        return this.props.descricao?.valor
     }
     set descricao(descricao: string) {
         this.props.descricao = new StringValueObject('descricao', descricao, 5, 500)

@@ -126,7 +126,7 @@ describe('Testes de Integração do Repository: Prestador MongoDB', () => {
                 await ServicoModel.create({
                     id_prestador: prestador._id,
                     id_categoria: idCategoria,
-                    descricao: 'Serviço de teste'
+                    titulo: 'Serviço de teste'
                 })
             }
             return prestador
