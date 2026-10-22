@@ -17,7 +17,7 @@ describe('NumberValueObject', () => {
         // Arrange
         const valorValido: number = 0
         // Act
-        const valorCriado = new NumberValueObject('prazoMedio', valorValido)
+        const valorCriado = new NumberValueObject('precoMin', valorValido)
         // Assert
         expect(valorCriado.valor).toBe(valorValido)
     })
