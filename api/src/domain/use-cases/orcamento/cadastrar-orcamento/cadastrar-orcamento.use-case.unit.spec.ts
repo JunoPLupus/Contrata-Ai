@@ -8,6 +8,7 @@ import { AcessoProibidoError } from "../../../errors/acesso-proibido.error";
 import { OperacaoNaoPermitidaError } from "../../../errors/operacao-nao-permitida.error";
 import { CampoObrigatorioVazioError } from "../../../errors/campo-obrigatorio-vazio.error";
 import { ValorLimiteError } from "../../../errors/valor-limite.error";
+import { FormatoInvalidoError } from "../../../errors/formato-invalido.error";
 import { StatusSolicitacao } from "../../../value-objects/solicitacao/status/status.vo";
 
 describe('CadastrarOrcamentoUseCase', () => {
@@ -89,6 +90,36 @@ describe('CadastrarOrcamentoUseCase', () => {
         // Act & Assert
         await expect(useCase.execute(dto)).rejects.toThrow(ValorLimiteError)
         expect(orcamentoRepoMock.inserir).not.toHaveBeenCalled()
+    })
+
+    it('deve cadastrar com o prazoEstimadoHoras enviado', async () => {
+        // Arrange
+        const idPrestador = new Types.ObjectId().toString()
+        solicitacaoRepoMock.buscarPorId.mockResolvedValue(SolicitacaoMother.criarValido({ idPrestadorDireto: idPrestador }))
+        orcamentoRepoMock.inserir.mockImplementation(async orcamento => orcamento)
+        // Act
+        const resultado = await useCase.execute(OrcamentoMother.criarDTO({ idPrestador, prazoEstimadoHoras: 72 }))
+        // Assert
+        expect(resultado.prazoEstimadoHoras).toBe(72)
+    })
+
+    it.each([
+        ['ausente', undefined],
+        ['fracionado', 1.5],
+        ['string', '72']
+    ])('deve lançar FormatoInvalidoError quando prazoEstimadoHoras for %s', async (_, prazoInvalido) => {
+        // Arrange — sem default: o prazo é obrigatório
+        const dto = { ...OrcamentoMother.criarDTO(), prazoEstimadoHoras: prazoInvalido as any }
+        // Act & Assert
+        await expect(useCase.execute(dto)).rejects.toThrow(FormatoInvalidoError)
+        expect(orcamentoRepoMock.inserir).not.toHaveBeenCalled()
+    })
+
+    it('deve lançar ValorLimiteError quando prazoEstimadoHoras for menor que 1', async () => {
+        // Arrange
+        const dto = OrcamentoMother.criarDTO({ prazoEstimadoHoras: 0 })
+        // Act & Assert
+        await expect(useCase.execute(dto)).rejects.toThrow(ValorLimiteError)
     })
 
     it('deve lançar CampoObrigatorioVazioError se idSolicitacao não for informado', async () => {

@@ -4,6 +4,7 @@ import { OrcamentoMother } from "../../../../test-helpers/orcamento.mother";
 import { RecursoNaoEncontradoError } from "../../../errors/recurso-nao-encontrado.error";
 import { AcessoProibidoError } from "../../../errors/acesso-proibido.error";
 import { OperacaoNaoPermitidaError } from "../../../errors/operacao-nao-permitida.error";
+import { FormatoInvalidoError } from "../../../errors/formato-invalido.error";
 import { StatusOrcamento } from "../../../value-objects/orcamento/status/status.vo";
 
 describe('AtualizarOrcamentoUseCase', () => {
@@ -19,14 +20,34 @@ describe('AtualizarOrcamentoUseCase', () => {
         // Arrange
         const idPrestador = new Types.ObjectId().toString()
         const orcamento = OrcamentoMother.criarValido({ idPrestador })
-        const orcamentoAtualizado = OrcamentoMother.criarValido({ idPrestador, valor: 500, prazoDias: 30 })
         orcamentoRepoMock.buscarPorId.mockResolvedValue(orcamento)
-        orcamentoRepoMock.atualizar.mockResolvedValue(orcamentoAtualizado)
+        orcamentoRepoMock.atualizar.mockImplementation(async orcamento => orcamento)
         // Act
-        const resultado = await useCase.execute('algum-id', idPrestador, { valor: 500, prazoDias: 30 })
+        const resultado = await useCase.execute('algum-id', idPrestador, { valor: 500, prazoEstimadoHoras: 720 })
         // Assert
-        expect(resultado).toBe(orcamentoAtualizado)
+        expect(resultado.valor).toBe(500)
+        expect(resultado.prazoEstimadoHoras).toBe(720)
         expect(orcamentoRepoMock.atualizar).toHaveBeenCalledTimes(1)
+    })
+
+    it('deve lançar FormatoInvalidoError se prazoEstimadoHoras for fracionado', async () => {
+        // Arrange
+        const idPrestador = new Types.ObjectId().toString()
+        orcamentoRepoMock.buscarPorId.mockResolvedValue(OrcamentoMother.criarValido({ idPrestador }))
+        // Act & Assert
+        await expect(useCase.execute('algum-id', idPrestador, { prazoEstimadoHoras: 1.5 }))
+            .rejects.toThrow(FormatoInvalidoError)
+        expect(orcamentoRepoMock.atualizar).not.toHaveBeenCalled()
+    })
+
+    it('deve lançar OperacaoNaoPermitidaError se tentar editar o prazo com status ≠ pendente', async () => {
+        // Arrange
+        const idPrestador = new Types.ObjectId().toString()
+        orcamentoRepoMock.buscarPorId.mockResolvedValue(OrcamentoMother.criarValido({ idPrestador, status: StatusOrcamento.ACEITO }))
+        // Act & Assert
+        await expect(useCase.execute('algum-id', idPrestador, { prazoEstimadoHoras: 48 }))
+            .rejects.toThrow(OperacaoNaoPermitidaError)
+        expect(orcamentoRepoMock.atualizar).not.toHaveBeenCalled()
     })
 
     it('deve atualizar a descricao enquanto pendente', async () => {

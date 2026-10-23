@@ -56,6 +56,23 @@ describe('Testes de Integração do Repository: Orçamento MongoDB', () => {
             expect(encontrado?.descricao).toBe(descricao)
         })
 
+        it('deve persistir prazo_estimado_horas no documento', async () => {
+            // Act
+            const inserido = await repository.inserir(OrcamentoMother.criarValido({ prazoEstimadoHoras: 72 }))
+            const documento = await OrcamentoModel.findById(inserido.id).lean()
+            // Assert
+            expect(inserido.prazoEstimadoHoras).toBe(72)
+            expect(documento?.prazo_estimado_horas).toBe(72)
+            expect(documento).not.toHaveProperty('prazo_dias')
+        })
+
+        it('deve recusar documento sem prazo_estimado_horas, já que não há default no banco', async () => {
+            // Arrange
+            const { prazo_estimado_horas, ...documentoSemPrazo } = OrcamentoMapper.paraDocumento(orcamentoMock)
+            // Act & Assert
+            await expect(OrcamentoModel.create(documentoSemPrazo)).rejects.toThrow(/prazo_estimado_horas/)
+        })
+
         it('deve aceitar orçamento sem descricao', async () => {
             // Act
             const inserido = await repository.inserir(orcamentoMock)

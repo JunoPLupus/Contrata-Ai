@@ -55,14 +55,14 @@ describe('OrcamentoController', () => {
             const orcamentoMock = OrcamentoMother.criarValido({ idPrestador })
             req = {
                 user: { idCliente, idPrestador },
-                body: { idSolicitacao: orcamentoMock.idSolicitacao, valor: orcamentoMock.valor, descricao: 'Inclui material.' }
+                body: { idSolicitacao: orcamentoMock.idSolicitacao, valor: orcamentoMock.valor, descricao: 'Inclui material.', prazoEstimadoHoras: 72 }
             }
             cadastrarUseCaseMock.execute.mockResolvedValue(orcamentoMock)
             // Act
             await controller.cadastrar(req as any, res as any)
             // Assert
             expect(cadastrarUseCaseMock.execute).toHaveBeenCalledWith(
-                expect.objectContaining({ idClienteDoPrestador: idCliente, descricao: 'Inclui material.' })
+                expect.objectContaining({ idClienteDoPrestador: idCliente, descricao: 'Inclui material.', prazoEstimadoHoras: 72 })
             )
             expect(res.status).toHaveBeenCalledWith(201)
             expect(res.json).toHaveBeenCalledWith(OrcamentoMapper.paraRespostaDTO(orcamentoMock))
@@ -112,7 +112,7 @@ describe('OrcamentoController', () => {
             req = {
                 user: { idCliente, idPrestador },
                 params: { id: idOrcamento },
-                body: { status: StatusOrcamento.CANCELADO, descricao: null }
+                body: { status: StatusOrcamento.CANCELADO, descricao: null, prazoEstimadoHoras: 48 }
             }
             atualizarUseCaseMock.execute.mockResolvedValue(orcamentoAtualizado)
             // Act
@@ -121,7 +121,7 @@ describe('OrcamentoController', () => {
             expect(atualizarUseCaseMock.execute).toHaveBeenCalledWith(
                 idOrcamento,
                 idPrestador,
-                expect.objectContaining({ status: StatusOrcamento.CANCELADO, descricao: null })
+                expect.objectContaining({ status: StatusOrcamento.CANCELADO, descricao: null, prazoEstimadoHoras: 48 })
             )
             expect(res.status).toHaveBeenCalledWith(200)
             expect(res.json).toHaveBeenCalledWith(OrcamentoMapper.paraRespostaDTO(orcamentoAtualizado))
