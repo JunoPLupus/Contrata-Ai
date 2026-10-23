@@ -117,4 +117,18 @@ describe('CadastrarOrcamentoUseCase', () => {
         // Act & Assert
         await expect(useCase.execute(dto)).rejects.toThrow(AcessoProibidoError)
     })
+
+    it('deve lançar AcessoProibidoError se o único serviço da categoria estiver pausado', async () => {
+        // Arrange
+        const idCategoria = new Types.ObjectId().toString()
+        const idPrestador = new Types.ObjectId().toString()
+        const solicitacao = SolicitacaoMother.criarValido({ idCategoria })
+        const servicoPausado = ServicoMother.criarValido({ idPrestador, idCategoria, ativo: false })
+        solicitacaoRepoMock.buscarPorId.mockResolvedValue(solicitacao)
+        servicoRepoMock.buscarPorIdPrestador.mockResolvedValue([servicoPausado])
+        const dto = OrcamentoMother.criarDTO({ idPrestador })
+        // Act & Assert
+        await expect(useCase.execute(dto)).rejects.toThrow(AcessoProibidoError)
+        expect(orcamentoRepoMock.inserir).not.toHaveBeenCalled()
+    })
 })

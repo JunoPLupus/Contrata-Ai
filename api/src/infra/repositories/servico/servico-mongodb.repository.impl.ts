@@ -25,9 +25,14 @@ export class ServicoMongodbRepositoryImpl implements IServicoRepository {
     }
 
     public async atualizar(servico: Servico): Promise<Servico> {
+        const servicoDocumento: IServicoDocument = ServicoMapper.paraDocumento(servico)
+        // O Mongoose ignora chaves `undefined` no update; campos opcionais removidos na entidade viram $unset
+        const camposRemovidos = Object.keys(servicoDocumento)
+            .filter(campo => servicoDocumento[campo as keyof IServicoDocument] === undefined)
+
         const documento = await ServicoModel.findByIdAndUpdate(
             servico.id,
-            ServicoMapper.paraDocumento(servico),
+            { ...servicoDocumento, $unset: Object.fromEntries(camposRemovidos.map(campo => [campo, 1])) },
             { new: true }
         )
 

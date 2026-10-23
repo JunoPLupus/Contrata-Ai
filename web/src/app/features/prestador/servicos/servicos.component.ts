@@ -24,13 +24,13 @@ export class ServicosComponent implements OnInit {
   protected readonly sucesso = signal(false);
 
   protected readonly form = this.fb.group({
-    nome: ['', Validators.required],
+    titulo: ['', [Validators.required, Validators.minLength(3), Validators.maxLength(80)]],
     idCategoria: ['', Validators.required],
-    descricao: ['', [Validators.required, Validators.minLength(10)]],
+    descricao: ['', [Validators.minLength(5), Validators.maxLength(500)]],
     preco: [null as number | null, [Validators.required, Validators.min(0.01)]],
   });
 
-  protected get nomeControl() { return this.form.controls.nome; }
+  protected get tituloControl() { return this.form.controls.titulo; }
   protected get categoriaControl() { return this.form.controls.idCategoria; }
   protected get descricaoControl() { return this.form.controls.descricao; }
   protected get precoControl() { return this.form.controls.preco; }
@@ -54,9 +54,9 @@ export class ServicosComponent implements OnInit {
     this.sucesso.set(false);
 
     this.servicosService.cadastrar({
-      nome: v.nome!,
+      titulo: v.titulo!.trim(),
       idCategoria: v.idCategoria!,
-      descricao: v.descricao!,
+      descricao: v.descricao?.trim() || undefined,
       preco: v.preco!,
     }).subscribe({
       next: () => {

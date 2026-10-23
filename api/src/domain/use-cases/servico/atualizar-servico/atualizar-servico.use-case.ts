@@ -15,7 +15,7 @@ export class AtualizarServicoUseCase {
      * Atualiza parcialmente um servico existente, verificando a propriedade do prestador logado.
      * @param id - ID do servico a ser atualizado.
      * @param idPrestador - ID do prestador autenticado extraido do token JWT.
-     * @param dados - Campos a serem atualizados (todos opcionais).
+     * @param dados - Campos a serem atualizados (todos opcionais). `descricao: null` remove a descrição.
      * @returns O servico atualizado.
      * @throws {RecursoNaoEncontradoError} Se nenhum servico for encontrado com esse ID.
      * @throws {RecursoNaoEncontradoError} Se nenhuma categoria for encontrada com o idCategoria informado.
@@ -31,10 +31,13 @@ export class AtualizarServicoUseCase {
             if (!categoria) throw new RecursoNaoEncontradoError('Categoria')
             servico.idCategoria = dados.idCategoria
         }
-        if (dados.descricao !== undefined) servico.descricao = dados.descricao
+        if (dados.titulo !== undefined) servico.titulo = dados.titulo
+        if (dados.descricao === null) servico.removerDescricao()
+        else if (dados.descricao !== undefined) servico.descricao = dados.descricao
         if (dados.precoMin !== undefined) servico.precoMin = dados.precoMin
         if (dados.precoMax !== undefined) servico.precoMax = dados.precoMax
-        if (dados.prazoMedioDias !== undefined) servico.prazoMedioDias = dados.prazoMedioDias
+        if (dados.prazoMedioHoras !== undefined) servico.prazoMedioHoras = dados.prazoMedioHoras
+        if (dados.atendimentoDomiciliar !== undefined) servico.atendimentoDomiciliar = dados.atendimentoDomiciliar
 
         return this.servicoRepository.atualizar(servico)
     }

@@ -25,6 +25,8 @@ import { BuscarServicoPorIdUseCase } from "../domain/use-cases/servico/buscar-se
 import { AtualizarServicoUseCase } from "../domain/use-cases/servico/atualizar-servico/atualizar-servico.use-case";
 import { DeletarServicoUseCase } from "../domain/use-cases/servico/deletar-servico/deletar-servico.use-case";
 import { BuscarServicosDoPrestadorUseCase } from "../domain/use-cases/servico/buscar-servicos-do-prestador/buscar-servicos-do-prestador.use-case";
+import { AtivarServicoUseCase } from "../domain/use-cases/servico/ativar-servico/ativar-servico.use-case";
+import { DesativarServicoUseCase } from "../domain/use-cases/servico/desativar-servico/desativar-servico.use-case";
 import { ServicoController } from "../http/controllers/servico/servico.controller";
 import { ClienteController } from "../http/controllers/usuario/cliente/cliente.controller";
 import { CategoriaMongodbRepositoryImpl } from "../infra/repositories/categoria/categoria-mongodb.repository.impl";
@@ -128,22 +130,27 @@ const buscarServicoPorIdUseCase = new BuscarServicoPorIdUseCase(servicoRepositor
 const atualizarServicoUseCase = new AtualizarServicoUseCase(servicoRepository, categoriaRepository)
 const deletarServicoUseCase = new DeletarServicoUseCase(servicoRepository)
 const buscarServicosDoPrestadorUseCase = new BuscarServicosDoPrestadorUseCase(servicoRepository, prestadorRepository)
+const ativarServicoUseCase = new AtivarServicoUseCase(servicoRepository)
+const desativarServicoUseCase = new DesativarServicoUseCase(servicoRepository)
 export const servicoController = new ServicoController(
     cadastrarServicoUseCase,
     buscarServicosPrestadorLogadoUseCase,
     buscarServicoPorIdUseCase,
     atualizarServicoUseCase,
     deletarServicoUseCase,
-    buscarServicosDoPrestadorUseCase
+    buscarServicosDoPrestadorUseCase,
+    ativarServicoUseCase,
+    desativarServicoUseCase
 )
 //#endregion
 
 //#region solicitacao.routes.ts
 const solicitacaoRepository = new SolicitacaoMongodbRepositoryImpl()
+const orcamentoRepository = new OrcamentoMongodbRepositoryImpl()  // declarado aqui: também usado por buscarSolicitacaoPorIdUseCase
 const cadastrarSolicitacaoUseCase = new CadastrarSolicitacaoUseCase(solicitacaoRepository, categoriaRepository, prestadorRepository)
 const buscarSolicitacoesClienteLogadoUseCase = new BuscarSolicitacoesClienteLogadoUseCase(solicitacaoRepository)
 const buscarSolicitacoesDisponiveisPrestadorUseCase = new BuscarSolicitacoesDisponiveisPrestadorUseCase(solicitacaoRepository, servicoRepository)
-const buscarSolicitacaoPorIdUseCase = new BuscarSolicitacaoPorIdUseCase(solicitacaoRepository, servicoRepository)
+const buscarSolicitacaoPorIdUseCase = new BuscarSolicitacaoPorIdUseCase(solicitacaoRepository, servicoRepository, orcamentoRepository)
 const atualizarSolicitacaoUseCase = new AtualizarSolicitacaoUseCase(solicitacaoRepository)
 export const solicitacaoController = new SolicitacaoController(
     cadastrarSolicitacaoUseCase,
@@ -155,7 +162,6 @@ export const solicitacaoController = new SolicitacaoController(
 //#endregion
 
 //#region orcamento.routes.ts
-const orcamentoRepository = new OrcamentoMongodbRepositoryImpl()
 const cadastrarOrcamentoUseCase = new CadastrarOrcamentoUseCase(orcamentoRepository, solicitacaoRepository, servicoRepository)
 const buscarOrcamentosPrestadorLogadoUseCase = new BuscarOrcamentosPrestadorLogadoUseCase(orcamentoRepository)
 const buscarOrcamentoPorIdUseCase = new BuscarOrcamentoPorIdUseCase(orcamentoRepository, solicitacaoRepository)

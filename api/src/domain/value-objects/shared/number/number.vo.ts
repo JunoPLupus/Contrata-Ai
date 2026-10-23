@@ -4,7 +4,7 @@ import { ValueObjectBase } from "../../value-object.base";
  * Value Object genérico para campos `number`.
  * Centraliza a validação de campos numéricos que não possuem regras
  * específicas além de limites de valor, evitando a criação de uma classe
- * dedicada para cada campo (ex: `precoMin`, `precoMax`, `prazoMedioDias`).
+ * dedicada para cada campo (ex: `precoMin`, `precoMax`).
  */
 export class NumberValueObject extends ValueObjectBase {
     readonly valor: number

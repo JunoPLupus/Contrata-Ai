@@ -23,7 +23,8 @@ export class CadastrarOrcamentoUseCase {
      * @returns O orçamento persistido com o `id` preenchido pelo banco.
      * @throws {RecursoNaoEncontradoError} Se a solicitação não existir.
      * @throws {OperacaoNaoPermitidaError} Se a solicitação não estiver com status `'aberta'`.
-     * @throws {AcessoProibidoError} Se o prestador não tiver visibilidade sobre a solicitação.
+     * @throws {AcessoProibidoError} Se o prestador não tiver visibilidade sobre a solicitação
+     * (solicitação geral só é visível pela categoria de um serviço ofertado — serviço pausado não conta).
      */
     async execute(dto: OrcamentoCadastroDTO): Promise<Orcamento> {
         const orcamento = OrcamentoFactory.criar({
@@ -52,7 +53,7 @@ export class CadastrarOrcamentoUseCase {
             }
         } else {
             const servicos = await this.servicoRepository.buscarPorIdPrestador(dto.idPrestador)
-            const categoriasDoPrestador = servicos.map(s => s.idCategoria)
+            const categoriasDoPrestador = servicos.filter(s => s.estaOfertado()).map(s => s.idCategoria)
             if (!categoriasDoPrestador.includes(solicitacao.idCategoria)) {
                 throw new AcessoProibidoError()
             }

@@ -12,9 +12,10 @@ export class BuscarServicosDoPrestadorUseCase {
     /**
      * Retorna os serviços públicos de um prestador (RF08/UC08).
      * Valida que o prestador existe antes de buscar os serviços.
+     * Serviços pausados não aparecem na vitrine pública.
      *
      * @param idPrestador - ID do prestador cujos serviços serão retornados.
-     * @returns Lista de serviços do prestador.
+     * @returns Lista de serviços ofertados pelo prestador.
      * @throws {RecursoNaoEncontradoError} se o prestador não existir.
      */
     async execute(idPrestador: string): Promise<Servico[]> {
@@ -23,6 +24,7 @@ export class BuscarServicosDoPrestadorUseCase {
             throw new RecursoNaoEncontradoError('Prestador')
         }
 
-        return this.servicoRepository.buscarPorIdPrestador(idPrestador)
+        const servicos = await this.servicoRepository.buscarPorIdPrestador(idPrestador)
+        return servicos.filter(s => s.estaOfertado())
     }
 }

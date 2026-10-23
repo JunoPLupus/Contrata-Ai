@@ -4,9 +4,9 @@ import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 
 export interface CriarServico {
-  nome: string;
+  titulo: string;
   idCategoria: string;
-  descricao: string;
+  descricao?: string;
   preco: number;
 }
 

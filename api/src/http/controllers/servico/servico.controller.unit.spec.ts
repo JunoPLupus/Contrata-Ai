@@ -8,6 +8,8 @@ import { BuscarServicoPorIdUseCase } from "../../../domain/use-cases/servico/bus
 import { AtualizarServicoUseCase } from "../../../domain/use-cases/servico/atualizar-servico/atualizar-servico.use-case";
 import { DeletarServicoUseCase } from "../../../domain/use-cases/servico/deletar-servico/deletar-servico.use-case";
 import { BuscarServicosDoPrestadorUseCase } from "../../../domain/use-cases/servico/buscar-servicos-do-prestador/buscar-servicos-do-prestador.use-case";
+import { AtivarServicoUseCase } from "../../../domain/use-cases/servico/ativar-servico/ativar-servico.use-case";
+import { DesativarServicoUseCase } from "../../../domain/use-cases/servico/desativar-servico/desativar-servico.use-case";
 import { ServicoMother } from "../../../test-helpers/servico.mother";
 import { ServicoMapper } from "../../mappers/servico/servico.mapper";
 
@@ -19,6 +21,8 @@ describe('ServicoController', () => {
     let atualizarServicoUseCaseMock: jest.Mocked<AtualizarServicoUseCase>
     let deletarServicoUseCaseMock: jest.Mocked<DeletarServicoUseCase>
     let buscarServicosDoPrestadorUseCaseMock: jest.Mocked<BuscarServicosDoPrestadorUseCase>
+    let ativarServicoUseCaseMock: jest.Mocked<AtivarServicoUseCase>
+    let desativarServicoUseCaseMock: jest.Mocked<DesativarServicoUseCase>
     let req: Partial<Request>
     let res: Partial<Response>
 
@@ -31,6 +35,8 @@ describe('ServicoController', () => {
         atualizarServicoUseCaseMock = { execute: jest.fn() } as any
         deletarServicoUseCaseMock = { execute: jest.fn() } as any
         buscarServicosDoPrestadorUseCaseMock = { execute: jest.fn() } as any
+        ativarServicoUseCaseMock = { execute: jest.fn() } as any
+        desativarServicoUseCaseMock = { execute: jest.fn() } as any
 
         controller = new ServicoController(
             cadastrarServicoUseCaseMock,
@@ -38,7 +44,9 @@ describe('ServicoController', () => {
             buscarServicoPorIdUseCaseMock,
             atualizarServicoUseCaseMock,
             deletarServicoUseCaseMock,
-            buscarServicosDoPrestadorUseCaseMock
+            buscarServicosDoPrestadorUseCaseMock,
+            ativarServicoUseCaseMock,
+            desativarServicoUseCaseMock
         )
 
         res = {
@@ -56,10 +64,12 @@ describe('ServicoController', () => {
                 user: { idCliente: new Types.ObjectId().toString(), idPrestador },
                 body: {
                     idCategoria: dtoMock.idCategoria,
+                    titulo: dtoMock.titulo,
                     descricao: dtoMock.descricao,
                     precoMin: dtoMock.precoMin,
                     precoMax: dtoMock.precoMax,
-                    prazoMedioDias: dtoMock.prazoMedioDias
+                    prazoMedioHoras: dtoMock.prazoMedioHoras,
+                    atendimentoDomiciliar: true
                 }
             }
             cadastrarServicoUseCaseMock.execute.mockResolvedValue(servicoMock)
@@ -131,6 +141,24 @@ describe('ServicoController', () => {
             deletarServicoUseCaseMock.execute.mockResolvedValue(undefined)
             await controller.deletar(req as any, res as any)
             expect(deletarServicoUseCaseMock.execute).toHaveBeenCalledWith(idServico, idPrestador)
+            expect(res.status).toHaveBeenCalledWith(204)
+            expect(res.send).toHaveBeenCalled()
+        })
+    })
+
+    describe.each([
+        ['ativar', () => ativarServicoUseCaseMock],
+        ['desativar', () => desativarServicoUseCaseMock]
+    ] as const)('%s', (metodo, useCaseMock) => {
+        it('deve retornar 204 sem corpo', async () => {
+            const idServico = new Types.ObjectId().toString()
+            req = {
+                user: { idCliente: new Types.ObjectId().toString(), idPrestador },
+                params: { id: idServico }
+            }
+            useCaseMock().execute.mockResolvedValue(undefined)
+            await controller[metodo](req as any, res as any)
+            expect(useCaseMock().execute).toHaveBeenCalledWith(idServico, idPrestador)
             expect(res.status).toHaveBeenCalledWith(204)
             expect(res.send).toHaveBeenCalled()
         })

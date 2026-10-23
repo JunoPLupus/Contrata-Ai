@@ -1,25 +1,33 @@
 import { Servico } from "../entities/servico/servico.entity";
 import { StringValueObject } from "../value-objects/shared/string/string.vo";
 import { NumberValueObject } from "../value-objects/shared/number/number.vo";
+import { IntegerValueObject } from "../value-objects/shared/integer/integer.vo";
+import { BooleanValueObject } from "../value-objects/shared/boolean/boolean.vo";
 
 export class ServicoFactory {
     public static criar(dados: {
         id?: string,
         idPrestador: string,
         idCategoria: string,
-        descricao: string,
+        titulo: string,
+        descricao?: string,
         precoMin?: number,
         precoMax?: number,
-        prazoMedioDias?: number
+        prazoMedioHoras?: number,
+        ativo?: boolean,
+        atendimentoDomiciliar?: boolean
     }): Servico {
         return Servico.criarServico({
             id: dados.id,
             idPrestador: new StringValueObject('idPrestador', dados.idPrestador),
             idCategoria: new StringValueObject('idCategoria', dados.idCategoria),
-            descricao: new StringValueObject('descricao', dados.descricao, 5, 500),
+            titulo: new StringValueObject('titulo', dados.titulo, 3, 80),
+            descricao: dados.descricao !== undefined ? new StringValueObject('descricao', dados.descricao, 5, 500) : undefined,
             precoMin: dados.precoMin !== undefined ? new NumberValueObject('precoMin', dados.precoMin, 1) : undefined,
             precoMax: dados.precoMax !== undefined ? new NumberValueObject('precoMax', dados.precoMax, 1) : undefined,
-            prazoMedioDias: dados.prazoMedioDias !== undefined ? new NumberValueObject('prazoMedio', dados.prazoMedioDias, 1) : undefined,
+            prazoMedioHoras: dados.prazoMedioHoras !== undefined ? new IntegerValueObject('prazoMedioHoras', dados.prazoMedioHoras, 1) : undefined,
+            ativo: dados.ativo ?? true,
+            atendimentoDomiciliar: new BooleanValueObject('atendimentoDomiciliar', dados.atendimentoDomiciliar ?? false),
        })
     }
 }

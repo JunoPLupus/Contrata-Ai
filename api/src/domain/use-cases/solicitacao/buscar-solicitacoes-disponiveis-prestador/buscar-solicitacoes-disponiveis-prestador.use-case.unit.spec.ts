@@ -101,4 +101,21 @@ describe('Testes unitários do Use-Case: Buscar Solicitações Disponíveis para
         const chamada = solicitacaoRepositoryMock.buscarDisponiveisParaPrestador.mock.calls[0]
         expect(chamada[2]).toBe(idCliente)
     })
+
+    it('deve ignorar categorias de serviços pausados', async () => {
+        // Arrange
+        const categoriaPausada = new Types.ObjectId().toString()
+        const servicoPausado = ServicoMother.criarValido({ idPrestador, idCategoria: categoriaPausada, ativo: false })
+        servicoRepositoryMock.buscarPorIdPrestador.mockResolvedValue([servico, servicoPausado])
+        solicitacaoRepositoryMock.buscarDisponiveisParaPrestador.mockResolvedValue([])
+        // Act
+        await useCase.execute(idPrestador, idCliente)
+        // Assert
+        expect(solicitacaoRepositoryMock.buscarDisponiveisParaPrestador).toHaveBeenCalledWith(
+            idPrestador,
+            [idCategoria],
+            idCliente,
+            undefined
+        )
+    })
 })

@@ -3,9 +3,11 @@ import { Types } from "mongoose";
 import { BuscarSolicitacaoPorIdUseCase } from "./buscar-solicitacao-por-id.use-case";
 import { ISolicitacaoRepository } from "../../../repositories/solicitacao.repository";
 import { IServicoRepository } from "../../../repositories/servico.repository";
+import { IOrcamentoRepository } from "../../../repositories/orcamento.repository";
 import { Solicitacao } from "../../../entities/solicitacao/solicitacao.entity";
 import { SolicitacaoMother } from "../../../../test-helpers/solicitacao.mother";
 import { ServicoMother } from "../../../../test-helpers/servico.mother";
+import { OrcamentoMother } from "../../../../test-helpers/orcamento.mother";
 import { RecursoNaoEncontradoError } from "../../../errors/recurso-nao-encontrado.error";
 import { AcessoProibidoError } from "../../../errors/acesso-proibido.error";
 
@@ -13,6 +15,7 @@ describe('Testes unitários do Use-Case: Buscar Solicitação por ID', () => {
     let useCase: BuscarSolicitacaoPorIdUseCase
     let solicitacaoRepositoryMock: jest.Mocked<ISolicitacaoRepository>
     let servicoRepositoryMock: jest.Mocked<IServicoRepository>
+    let orcamentoRepositoryMock: jest.Mocked<IOrcamentoRepository>
 
     const idCliente = new Types.ObjectId().toString()
     const idPrestador = new Types.ObjectId().toString()
@@ -22,7 +25,9 @@ describe('Testes unitários do Use-Case: Buscar Solicitação por ID', () => {
     beforeEach(() => {
         solicitacaoRepositoryMock = SolicitacaoMother.criarRepositoryMock()
         servicoRepositoryMock = ServicoMother.criarRepositoryMock()
-        useCase = new BuscarSolicitacaoPorIdUseCase(solicitacaoRepositoryMock, servicoRepositoryMock)
+        orcamentoRepositoryMock = OrcamentoMother.criarRepositoryMock()
+        orcamentoRepositoryMock.buscarPorIdSolicitacao.mockResolvedValue([])
+        useCase = new BuscarSolicitacaoPorIdUseCase(solicitacaoRepositoryMock, servicoRepositoryMock, orcamentoRepositoryMock)
     })
 
     it('deve retornar solicitação para o cliente dono', async () => {
@@ -89,5 +94,46 @@ describe('Testes unitários do Use-Case: Buscar Solicitação por ID', () => {
         await expect(
             useCase.execute(idSolicitacao, new Types.ObjectId().toString(), idPrestador)
         ).rejects.toThrow(AcessoProibidoError)
+    })
+
+    it('deve lançar AcessoProibidoError quando o serviço da categoria estiver pausado e não houver orçamento do prestador', async () => {
+        // Arrange
+        const solicitacaoMock = SolicitacaoMother.criarValido({ idCategoria })
+        const servicoPausado = ServicoMother.criarValido({ idPrestador, idCategoria, ativo: false })
+        solicitacaoRepositoryMock.buscarPorId.mockResolvedValue(solicitacaoMock)
+        servicoRepositoryMock.buscarPorIdPrestador.mockResolvedValue([servicoPausado])
+        orcamentoRepositoryMock.buscarPorIdSolicitacao.mockResolvedValue([
+            OrcamentoMother.criarValido({ idSolicitacao })
+        ])
+        // Act & Assert
+        await expect(
+            useCase.execute(idSolicitacao, new Types.ObjectId().toString(), idPrestador)
+        ).rejects.toThrow(AcessoProibidoError)
+    })
+
+    it('deve retornar solicitação ao prestador que já enviou orçamento, mesmo com o serviço pausado', async () => {
+        // Arrange
+        const solicitacaoMock = SolicitacaoMother.criarValido({ idCategoria })
+        const servicoPausado = ServicoMother.criarValido({ idPrestador, idCategoria, ativo: false })
+        solicitacaoRepositoryMock.buscarPorId.mockResolvedValue(solicitacaoMock)
+        servicoRepositoryMock.buscarPorIdPrestador.mockResolvedValue([servicoPausado])
+        orcamentoRepositoryMock.buscarPorIdSolicitacao.mockResolvedValue([
+            OrcamentoMother.criarValido({ idSolicitacao, idPrestador })
+        ])
+        // Act
+        const resultado = await useCase.execute(idSolicitacao, new Types.ObjectId().toString(), idPrestador)
+        // Assert
+        expect(resultado).toBeInstanceOf(Solicitacao)
+        expect(orcamentoRepositoryMock.buscarPorIdSolicitacao).toHaveBeenCalledWith(idSolicitacao)
+    })
+
+    it('não deve consultar orçamentos quando a categoria de um serviço ativo já libera o acesso', async () => {
+        // Arrange
+        solicitacaoRepositoryMock.buscarPorId.mockResolvedValue(SolicitacaoMother.criarValido({ idCategoria }))
+        servicoRepositoryMock.buscarPorIdPrestador.mockResolvedValue([ServicoMother.criarValido({ idPrestador, idCategoria })])
+        // Act
+        await useCase.execute(idSolicitacao, new Types.ObjectId().toString(), idPrestador)
+        // Assert
+        expect(orcamentoRepositoryMock.buscarPorIdSolicitacao).not.toHaveBeenCalled()
     })
 })

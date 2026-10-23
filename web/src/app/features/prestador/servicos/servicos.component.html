@@ -37,28 +37,31 @@
 
     <form [formGroup]="form" (ngSubmit)="onSubmit()" novalidate>
 
-      <!-- NOME DO SERVIÇO -->
+      <!-- TÍTULO DO SERVIÇO -->
       <div class="field">
-        <label class="field__label" for="nome">
-          Nome do serviço
+        <label class="field__label" for="titulo">
+          Título do serviço
           <span class="field__required" aria-hidden="true">*</span>
         </label>
         <div class="field__wrapper"
-             [class.field__wrapper--error]="nomeControl.invalid && (nomeControl.dirty || submitted)">
+             [class.field__wrapper--error]="tituloControl.invalid && (tituloControl.dirty || submitted)">
           <span class="field__icon" aria-hidden="true">🛠️</span>
           <input
             class="field__input"
-            id="nome"
+            id="titulo"
             type="text"
-            formControlName="nome"
+            formControlName="titulo"
+            maxlength="80"
             placeholder="Ex.: Instalação Elétrica Residencial"
-            aria-describedby="nome-error"
+            aria-describedby="titulo-error"
             autocomplete="off"
           />
         </div>
-        @if (nomeControl.invalid && (nomeControl.dirty || submitted)) {
-          <p class="field__error" id="nome-error" role="alert">
-            Nome do serviço é obrigatório.
+        @if (tituloControl.invalid && (tituloControl.dirty || submitted)) {
+          <p class="field__error" id="titulo-error" role="alert">
+            @if (tituloControl.errors?.['required']) { Título do serviço é obrigatório. }
+            @else if (tituloControl.errors?.['minlength']) { O título deve ter pelo menos 3 caracteres. }
+            @else if (tituloControl.errors?.['maxlength']) { O título deve ter no máximo 80 caracteres. }
           </p>
         }
       </div>
@@ -95,8 +98,7 @@
       <!-- DESCRIÇÃO -->
       <div class="field">
         <label class="field__label" for="descricao">
-          Descrição
-          <span class="field__required" aria-hidden="true">*</span>
+          Descrição <span class="field__hint">(opcional, recomendado)</span>
         </label>
         <div class="field__wrapper field__wrapper--textarea"
              [class.field__wrapper--error]="descricaoControl.invalid && (descricaoControl.dirty || submitted)">
@@ -105,14 +107,15 @@
             id="descricao"
             rows="4"
             formControlName="descricao"
-            placeholder="Descreva detalhadamente o serviço oferecido, materiais incluídos, garantias, etc."
+            maxlength="500"
+            placeholder="Conte o que está incluso: materiais, garantia, diferenciais… Uma boa descrição ajuda o cliente a escolher você."
             aria-describedby="descricao-error"
           ></textarea>
         </div>
         @if (descricaoControl.invalid && (descricaoControl.dirty || submitted)) {
           <p class="field__error" id="descricao-error" role="alert">
-            @if (descricaoControl.errors?.['required']) { Descrição é obrigatória. }
-            @else if (descricaoControl.errors?.['minlength']) { A descrição deve ter pelo menos 10 caracteres. }
+            @if (descricaoControl.errors?.['minlength']) { A descrição deve ter pelo menos 5 caracteres. }
+            @else if (descricaoControl.errors?.['maxlength']) { A descrição deve ter no máximo 500 caracteres. }
           </p>
         }
       </div>

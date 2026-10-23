@@ -109,7 +109,7 @@ describe('Testes de Integração do Repository: Prestador MongoDB', () => {
     })
 
     describe('buscar()', () => {
-        const criarFixture = async (nomeUsuario: string, cidade?: string, idCategoria?: Types.ObjectId) => {
+        const criarFixture = async (nomeUsuario: string, cidade?: string, idCategoria?: Types.ObjectId, servicoAtivo: boolean = true) => {
             const idCliente = new Types.ObjectId()
             await UsuarioModel.create({
                 _id: idCliente,
@@ -126,7 +126,8 @@ describe('Testes de Integração do Repository: Prestador MongoDB', () => {
                 await ServicoModel.create({
                     id_prestador: prestador._id,
                     id_categoria: idCategoria,
-                    descricao: 'Serviço de teste'
+                    titulo: 'Serviço de teste',
+                    ativo: servicoAtivo
                 })
             }
             return prestador
@@ -159,6 +160,18 @@ describe('Testes de Integração do Repository: Prestador MongoDB', () => {
             const idCategoria = new Types.ObjectId()
             await criarFixture('Ana Lima', 'São Paulo', idCategoria)
             await criarFixture('Carlos Souza', 'Curitiba')
+            // Act
+            const resultado = await repository.buscar({ idCategoria: idCategoria.toString() })
+            // Assert
+            expect(resultado).toHaveLength(1)
+            expect(resultado[0].nome).toBe('Ana Lima')
+        })
+
+        it('não deve retornar prestador cujo serviço da categoria está pausado', async () => {
+            // Arrange
+            const idCategoria = new Types.ObjectId()
+            await criarFixture('Ana Lima', 'São Paulo', idCategoria)
+            await criarFixture('Carlos Souza', 'Curitiba', idCategoria, false)
             // Act
             const resultado = await repository.buscar({ idCategoria: idCategoria.toString() })
             // Assert

@@ -3,7 +3,8 @@ import {
     isStringAcimaLimite,
     isString,
     isStringVazia,
-    isNumber, isNumberAbaixoLimite, isNumberAcimaLimite
+    isNumber, isNumberAbaixoLimite, isNumberAcimaLimite,
+    isBoolean
 } from "../utils/value-objects.utils";
 import { CampoObrigatorioVazioError } from "../errors/campo-obrigatorio-vazio.error";
 import { FormatoInvalidoError } from "../errors/formato-invalido.error";
@@ -25,6 +26,10 @@ export abstract class ValueObjectBase {
         else if (!isString(value)) throw new FormatoInvalidoError(this._campo)
         else if (this._limiteMinimo > 0 && isStringAbaixoLimite(value, this._limiteMinimo)) throw new ValorLimiteError(this._campo, this._limiteMinimo, 'mínimo')
         else if (this._limiteMaximo > 0 && isStringAcimaLimite(value, this._limiteMaximo)) throw new ValorLimiteError(this._campo, this._limiteMaximo, 'máximo')
+    }
+
+    protected validarBoolean(value : any) : void {
+        if (!isBoolean(value)) throw new FormatoInvalidoError(this._campo)
     }
 
     protected validarNumber(value : any) : void {

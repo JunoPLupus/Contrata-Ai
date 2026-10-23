@@ -6,10 +6,13 @@ export class ServicoMapper {
         return {
             id: servico.id,
             idCategoria: servico.idCategoria,
+            titulo: servico.titulo,
             descricao: servico.descricao,
             precoMin: servico.precoMin,
             precoMax: servico.precoMax,
-            prazoMedioDias: servico.prazoMedioDias
+            prazoMedioHoras: servico.prazoMedioHoras,
+            atendimentoDomiciliar: servico.atendimentoDomiciliar,
+            ativo: servico.ativo
         };
     }
 

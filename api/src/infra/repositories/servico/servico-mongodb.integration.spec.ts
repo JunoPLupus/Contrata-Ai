@@ -6,6 +6,7 @@ import { ServicoModel } from "../../models/servico/servico.model";
 import { ServicoMongodbRepositoryImpl } from "./servico-mongodb.repository.impl";
 import { ServicoMapper } from "./servico.mapper";
 import { ServicoMother } from "../../../test-helpers/servico.mother";
+import { ServicoFactory } from "../../../domain/factories/servico.factory";
 
 describe('Testes de Integração do Repository: Serviço MongoDB', () => {
 
@@ -43,6 +44,33 @@ describe('Testes de Integração do Repository: Serviço MongoDB', () => {
             expect(servico).not.toBeNull()
             expect(servico).toBeInstanceOf(Servico)
             expect(servico?.descricao).toBe(servicoMock.descricao)
+        })
+
+        it('deve persistir titulo e aceitar servico sem descricao', async () => {
+            // Arrange
+            const servicoSemDescricao = ServicoFactory.criar({
+                idPrestador: new Types.ObjectId().toString(),
+                idCategoria: new Types.ObjectId().toString(),
+                titulo: 'Eletricista residencial'
+            })
+            const documentoInserido = await ServicoModel.create(ServicoMapper.paraDocumento(servicoSemDescricao))
+            // Act
+            const servico = await repository.buscarPorId(documentoInserido.id.toString())
+            // Assert
+            expect(documentoInserido.titulo).toBe('Eletricista residencial')
+            expect(servico?.titulo).toBe('Eletricista residencial')
+            expect(servico?.descricao).toBeUndefined()
+        })
+
+        it('deve persistir e ler prazo_medio_horas', async () => {
+            // Arrange
+            const servicoComPrazo = ServicoMother.criarValido({ prazoMedioHoras: 48 })
+            const documentoInserido = await ServicoModel.create(ServicoMapper.paraDocumento(servicoComPrazo))
+            // Act
+            const servico = await repository.buscarPorId(documentoInserido.id.toString())
+            // Assert
+            expect(documentoInserido.prazo_medio_horas).toBe(48)
+            expect(servico?.prazoMedioHoras).toBe(48)
         })
 
         it('deve retornar null quando ID nao for encontrado', async () => {
@@ -105,6 +133,59 @@ describe('Testes de Integração do Repository: Serviço MongoDB', () => {
             expect(servicoAtualizado).toBeInstanceOf(Servico)
             expect(servicoAtualizado.descricao).toBe('Descricao atualizada para o teste')
             expect(servicoAtualizado.id).toBe(servicoInserido.id)
+        })
+    })
+
+    describe('atendimento_domiciliar', () => {
+        it('deve gravar false por padrao e persistir true quando informado', async () => {
+            // Act
+            const padrao = await repository.inserir(servicoMock)
+            const domiciliar = await repository.inserir(ServicoMother.criarValido({ atendimentoDomiciliar: true }))
+            const documento = await ServicoModel.findById(domiciliar.id)
+            // Assert
+            expect(padrao.atendimentoDomiciliar).toBe(false)
+            expect(domiciliar.atendimentoDomiciliar).toBe(true)
+            expect(documento?.atendimento_domiciliar).toBe(true)
+        })
+    })
+
+    describe('ativo', () => {
+        it('deve gravar ativo = true por padrao ao inserir', async () => {
+            // Act
+            const servicoInserido = await repository.inserir(servicoMock)
+            const documento = await ServicoModel.findById(servicoInserido.id)
+            // Assert
+            expect(servicoInserido.ativo).toBe(true)
+            expect(documento?.ativo).toBe(true)
+        })
+
+        it('deve persistir a desativacao e a reativacao via atualizar()', async () => {
+            // Arrange
+            const servicoInserido = await repository.inserir(servicoMock)
+            // Act
+            servicoInserido.desativar()
+            const desativado = await repository.atualizar(servicoInserido)
+            servicoInserido.ativar()
+            const reativado = await repository.atualizar(servicoInserido)
+            // Assert
+            expect(desativado.ativo).toBe(false)
+            expect(desativado.estaOfertado()).toBe(false)
+            expect(reativado.ativo).toBe(true)
+        })
+    })
+
+    describe('atualizar() removendo campo opcional', () => {
+        it('deve remover a descricao do documento quando ela for removida na entidade', async () => {
+            // Arrange
+            const servicoInserido = await repository.inserir(ServicoMother.criarValido({ descricao: 'Descricao que sera removida' }))
+            // Act
+            servicoInserido.removerDescricao()
+            const servicoAtualizado = await repository.atualizar(servicoInserido)
+            const documento = await ServicoModel.findById(servicoInserido.id).lean()
+            // Assert
+            expect(servicoAtualizado.descricao).toBeUndefined()
+            expect(documento).not.toHaveProperty('descricao')
+            expect(documento?.titulo).toBe(servicoInserido.titulo)
         })
     })
 
