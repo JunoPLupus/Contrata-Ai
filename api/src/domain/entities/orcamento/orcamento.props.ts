@@ -7,7 +7,7 @@ export type OrcamentoProps = {
     id?: string
     idSolicitacao: StringValueObject
     idPrestador: StringValueObject
-    valor: NumberValueObject
+    valorEstimado: NumberValueObject
     descricao?: StringValueObject
     prazoEstimadoHoras: IntegerValueObject
     status: StatusOrcamentoValueObject

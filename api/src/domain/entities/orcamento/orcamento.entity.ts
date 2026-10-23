@@ -23,11 +23,11 @@ export class Orcamento {
         return this.props.idPrestador.valor
     }
 
-    get valor(): number {
-        return this.props.valor.valor
+    get valorEstimado(): number {
+        return this.props.valorEstimado.valor
     }
-    set valor(valor: number) {
-        this.props.valor = new NumberValueObject('valor', valor, 1)
+    set valorEstimado(valorEstimado: number) {
+        this.props.valorEstimado = new NumberValueObject('valorEstimado', valorEstimado, 1)
     }
 
     /** O que está incluso no orçamento (material, deslocamento, garantia...). */

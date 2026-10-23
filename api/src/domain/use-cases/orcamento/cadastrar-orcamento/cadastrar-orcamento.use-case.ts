@@ -19,7 +19,7 @@ export class CadastrarOrcamentoUseCase {
     /**
      * Cadastra um novo orçamento para uma solicitação existente e aberta.
      * O status é sempre `'pendente'` e dataCriacao é gerada automaticamente.
-     * @param dto - Dados do orçamento a ser criado (`idSolicitacao`, `idPrestador`, `valor`, `descricao?`, `prazoEstimadoHoras`).
+     * @param dto - Dados do orçamento a ser criado (`idSolicitacao`, `idPrestador`, `valorEstimado`, `descricao?`, `prazoEstimadoHoras`).
      * @returns O orçamento persistido com o `id` preenchido pelo banco.
      * @throws {RecursoNaoEncontradoError} Se a solicitação não existir.
      * @throws {OperacaoNaoPermitidaError} Se a solicitação não estiver com status `'aberta'`.
@@ -30,7 +30,7 @@ export class CadastrarOrcamentoUseCase {
         const orcamento = OrcamentoFactory.criar({
             idSolicitacao: dto.idSolicitacao,
             idPrestador: dto.idPrestador,
-            valor: dto.valor,
+            valorEstimado: dto.valorEstimado,
             descricao: dto.descricao,
             prazoEstimadoHoras: dto.prazoEstimadoHoras
         })

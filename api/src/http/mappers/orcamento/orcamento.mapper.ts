@@ -7,7 +7,7 @@ export class OrcamentoMapper {
             id: orcamento.id,
             idSolicitacao: orcamento.idSolicitacao,
             idPrestador: orcamento.idPrestador,
-            valor: orcamento.valor,
+            valorEstimado: orcamento.valorEstimado,
             descricao: orcamento.descricao,
             prazoEstimadoHoras: orcamento.prazoEstimadoHoras,
             status: orcamento.status,

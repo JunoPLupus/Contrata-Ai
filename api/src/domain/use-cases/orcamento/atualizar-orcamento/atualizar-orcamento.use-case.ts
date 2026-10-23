@@ -18,7 +18,7 @@ export class AtualizarOrcamentoUseCase {
 
     /**
      * Atualiza parcialmente um orçamento pelo prestador dono.
-     * - `valor`, `descricao` e `prazoEstimadoHoras` só podem ser alterados enquanto o status for `'pendente'`.
+     * - `valorEstimado`, `descricao` e `prazoEstimadoHoras` só podem ser alterados enquanto o status for `'pendente'`.
      * - A única transição de status permitida ao prestador é `pendente → cancelado`.
      * @param id - ID do orçamento a ser atualizado.
      * @param idPrestador - ID do prestador autenticado extraído do token JWT.
@@ -40,7 +40,7 @@ export class AtualizarOrcamentoUseCase {
             )
         }
 
-        if (dados.valor !== undefined) orcamento.valor = dados.valor
+        if (dados.valorEstimado !== undefined) orcamento.valorEstimado = dados.valorEstimado
 
         if (dados.descricao === null) orcamento.removerDescricao()
         else if (dados.descricao !== undefined) orcamento.descricao = dados.descricao
