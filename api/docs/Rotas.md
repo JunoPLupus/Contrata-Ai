@@ -74,7 +74,7 @@
   [X] GET '/orcamentos/{id}' # retorna um orçamento (apenas cliente/dono da solicitação e prestador/dono do orçamento podem ver)
 
   [X] POST '/orcamentos' # cadastra um orçamento (apenas prestador)
-  [X] PATCH '/orcamentos/{id}' # atualiza os dados de um orçamento (apenas prestador/dono, podendo alterar valor, prazo_dias ou status (apenas se o status está 'pendente', o prestador pode apenas mudar para 'cancelado')
+  [X] PATCH '/orcamentos/{id}' # atualiza os dados de um orçamento (apenas prestador/dono, podendo alterar valor, descricao, prazo_estimado_horas ou status (apenas se o status está 'pendente', o prestador pode apenas mudar para 'cancelado')
   [X] PATCH '/orcamentos/{id}/aceitar' # atualiza o status do orçamento para 'aceito' (apenas prestador/dono e apenas se o status está 'pendente')
 ```
 

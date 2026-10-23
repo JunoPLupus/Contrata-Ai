@@ -40,7 +40,7 @@ orcamentoRouter.get('/orcamentos', exigeAutenticacao, exigePerfilPrestador, (req
  *   post:
  *     tags: [Orçamentos]
  *     summary: Cadastra um orçamento
- *     description: O prestador envia um orçamento para uma solicitação informando `valor` e, opcionalmente, `descricao` e `prazoDias`.
+ *     description: O prestador envia um orçamento para uma solicitação informando `valor`, `prazoEstimadoHoras` e, opcionalmente, `descricao`.
  *     security:
  *       - bearerAuth: []
  *     requestBody:
@@ -157,7 +157,7 @@ orcamentoRouter.get('/orcamentos/:id', exigeAutenticacao, (req, res) => orcament
  *   patch:
  *     tags: [Orçamentos]
  *     summary: Atualiza um orçamento
- *     description: O prestador autor atualiza `valor`, `descricao`, `prazoDias` e/ou `status` de um orçamento pendente.
+ *     description: O prestador autor atualiza `valor`, `descricao`, `prazoEstimadoHoras` e/ou `status` de um orçamento pendente.
  *     security:
  *       - bearerAuth: []
  *     parameters:
