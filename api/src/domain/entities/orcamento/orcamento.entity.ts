@@ -1,5 +1,7 @@
 import { OrcamentoProps } from "./orcamento.props";
 import { NumberValueObject } from "../../value-objects/shared/number/number.vo";
+import { StringValueObject } from "../../value-objects/shared/string/string.vo";
+import { IntegerValueObject } from "../../value-objects/shared/integer/integer.vo";
 import { StatusOrcamentoValueObject, StatusOrcamento, StatusOrcamentoTipo } from "../../value-objects/orcamento/status/status.vo";
 
 export class Orcamento {
@@ -21,18 +23,32 @@ export class Orcamento {
         return this.props.idPrestador.valor
     }
 
-    get valor(): number {
-        return this.props.valor.valor
+    get valorEstimado(): number {
+        return this.props.valorEstimado.valor
     }
-    set valor(valor: number) {
-        this.props.valor = new NumberValueObject('valor', valor, 1)
+    set valorEstimado(valorEstimado: number) {
+        this.props.valorEstimado = new NumberValueObject('valorEstimado', valorEstimado, 1)
     }
 
-    get prazoDias(): number {
-        return this.props.prazoDias.valor
+    /** O que está incluso no orçamento (material, deslocamento, garantia...). */
+    get descricao(): string | undefined {
+        return this.props.descricao?.valor
     }
-    set prazoDias(prazoDias: number) {
-        this.props.prazoDias = new NumberValueObject('prazoDias', prazoDias, 1)
+    set descricao(descricao: string) {
+        this.props.descricao = new StringValueObject('descricao', descricao, 5, 500)
+    }
+
+    /** Remove a descrição (campo opcional). */
+    public removerDescricao(): void {
+        this.props.descricao = undefined
+    }
+
+    /** Duração estimada do serviço, em horas; as datas ficam no contrato, calculadas no aceite. */
+    get prazoEstimadoHoras(): number {
+        return this.props.prazoEstimadoHoras.valor
+    }
+    set prazoEstimadoHoras(prazoEstimadoHoras: number) {
+        this.props.prazoEstimadoHoras = new IntegerValueObject('prazoEstimadoHoras', prazoEstimadoHoras, 1)
     }
 
     get status(): StatusOrcamentoTipo {

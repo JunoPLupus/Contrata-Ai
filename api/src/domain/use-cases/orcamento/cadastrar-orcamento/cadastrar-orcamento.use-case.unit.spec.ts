@@ -7,6 +7,8 @@ import { RecursoNaoEncontradoError } from "../../../errors/recurso-nao-encontrad
 import { AcessoProibidoError } from "../../../errors/acesso-proibido.error";
 import { OperacaoNaoPermitidaError } from "../../../errors/operacao-nao-permitida.error";
 import { CampoObrigatorioVazioError } from "../../../errors/campo-obrigatorio-vazio.error";
+import { ValorLimiteError } from "../../../errors/valor-limite.error";
+import { FormatoInvalidoError } from "../../../errors/formato-invalido.error";
 import { StatusSolicitacao } from "../../../value-objects/solicitacao/status/status.vo";
 
 describe('CadastrarOrcamentoUseCase', () => {
@@ -59,6 +61,75 @@ describe('CadastrarOrcamentoUseCase', () => {
         expect(servicoRepoMock.buscarPorIdPrestador).not.toHaveBeenCalled()
     })
 
+    it('deve cadastrar com a descricao enviada', async () => {
+        // Arrange
+        const idPrestador = new Types.ObjectId().toString()
+        const descricao = 'Inclui material, deslocamento e 90 dias de garantia.'
+        solicitacaoRepoMock.buscarPorId.mockResolvedValue(SolicitacaoMother.criarValido({ idPrestadorDireto: idPrestador }))
+        orcamentoRepoMock.inserir.mockImplementation(async orcamento => orcamento)
+        // Act
+        const resultado = await useCase.execute(OrcamentoMother.criarDTO({ idPrestador, descricao }))
+        // Assert
+        expect(resultado.descricao).toBe(descricao)
+    })
+
+    it('deve cadastrar sem descricao, já que ela é opcional', async () => {
+        // Arrange
+        const idPrestador = new Types.ObjectId().toString()
+        solicitacaoRepoMock.buscarPorId.mockResolvedValue(SolicitacaoMother.criarValido({ idPrestadorDireto: idPrestador }))
+        orcamentoRepoMock.inserir.mockImplementation(async orcamento => orcamento)
+        // Act
+        const resultado = await useCase.execute(OrcamentoMother.criarDTO({ idPrestador }))
+        // Assert
+        expect(resultado.descricao).toBeUndefined()
+    })
+
+    it('deve lançar ValorLimiteError quando descricao enviada tiver menos de 5 caracteres', async () => {
+        // Arrange
+        const dto = OrcamentoMother.criarDTO({ descricao: 'abc' })
+        // Act & Assert
+        await expect(useCase.execute(dto)).rejects.toThrow(ValorLimiteError)
+        expect(orcamentoRepoMock.inserir).not.toHaveBeenCalled()
+    })
+
+    it('deve cadastrar com o prazoEstimadoHoras enviado', async () => {
+        // Arrange
+        const idPrestador = new Types.ObjectId().toString()
+        solicitacaoRepoMock.buscarPorId.mockResolvedValue(SolicitacaoMother.criarValido({ idPrestadorDireto: idPrestador }))
+        orcamentoRepoMock.inserir.mockImplementation(async orcamento => orcamento)
+        // Act
+        const resultado = await useCase.execute(OrcamentoMother.criarDTO({ idPrestador, prazoEstimadoHoras: 72 }))
+        // Assert
+        expect(resultado.prazoEstimadoHoras).toBe(72)
+    })
+
+    it.each([
+        ['ausente', undefined],
+        ['fracionado', 1.5],
+        ['string', '72']
+    ])('deve lançar FormatoInvalidoError quando prazoEstimadoHoras for %s', async (_, prazoInvalido) => {
+        // Arrange — sem default: o prazo é obrigatório
+        const dto = { ...OrcamentoMother.criarDTO(), prazoEstimadoHoras: prazoInvalido as any }
+        // Act & Assert
+        await expect(useCase.execute(dto)).rejects.toThrow(FormatoInvalidoError)
+        expect(orcamentoRepoMock.inserir).not.toHaveBeenCalled()
+    })
+
+    it('deve lançar ValorLimiteError quando valorEstimado for menor que 1', async () => {
+        // Arrange
+        const dto = OrcamentoMother.criarDTO({ valorEstimado: 0 })
+        // Act & Assert
+        await expect(useCase.execute(dto)).rejects.toThrow(ValorLimiteError)
+        expect(orcamentoRepoMock.inserir).not.toHaveBeenCalled()
+    })
+
+    it('deve lançar ValorLimiteError quando prazoEstimadoHoras for menor que 1', async () => {
+        // Arrange
+        const dto = OrcamentoMother.criarDTO({ prazoEstimadoHoras: 0 })
+        // Act & Assert
+        await expect(useCase.execute(dto)).rejects.toThrow(ValorLimiteError)
+    })
+
     it('deve lançar CampoObrigatorioVazioError se idSolicitacao não for informado', async () => {
         // Arrange — spread após criarDTO para sobrescrever o idSolicitacao já gerado pelo ??
         const dto = { ...OrcamentoMother.criarDTO(), idSolicitacao: undefined as any }
@@ -77,10 +148,10 @@ describe('CadastrarOrcamentoUseCase', () => {
 
     it('deve lançar OperacaoNaoPermitidaError se prestador tentar orçar solicitação própria', async () => {
         // Arrange
-        const idClienteDoPrestador = new Types.ObjectId().toString()
-        const solicitacao = SolicitacaoMother.criarValido({ idCliente: idClienteDoPrestador })
+        const idClienteLogado = new Types.ObjectId().toString()
+        const solicitacao = SolicitacaoMother.criarValido({ idCliente: idClienteLogado })
         solicitacaoRepoMock.buscarPorId.mockResolvedValue(solicitacao)
-        const dto = OrcamentoMother.criarDTO({ idClienteDoPrestador })
+        const dto = OrcamentoMother.criarDTO({ idClienteLogado })
         // Act & Assert
         await expect(useCase.execute(dto)).rejects.toThrow(OperacaoNaoPermitidaError)
         expect(orcamentoRepoMock.inserir).not.toHaveBeenCalled()

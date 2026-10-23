@@ -134,6 +134,31 @@ describe('AceitarOrcamentoUseCase', () => {
         )
     })
 
+    it('deve calcular o prazoEstimado do contrato somando as horas do orçamento à data de aceite', async () => {
+        // Arrange
+        const idCliente = new Types.ObjectId().toString()
+        const idSolicitacao = new Types.ObjectId().toString()
+        const dataAceite = new Date('2026-10-22T10:00:00.000Z')
+        const orcamento = OrcamentoMother.criarValido({ idSolicitacao })
+        const solicitacao = SolicitacaoMother.criarValido({ idCliente })
+        const orcamentoAceito = OrcamentoMother.criarValido({ idSolicitacao, status: StatusOrcamento.ACEITO, dataAceite, prazoEstimadoHoras: 30 })
+
+        orcamentoRepoMock.buscarPorId.mockResolvedValue(orcamento)
+        solicitacaoRepoMock.buscarPorId.mockResolvedValue(solicitacao)
+        orcamentoRepoMock.buscarPorIdSolicitacao.mockResolvedValue([orcamento])
+        orcamentoRepoMock.atualizar.mockResolvedValue(orcamentoAceito)
+        atualizarSolicitacaoUseCaseMock.execute.mockResolvedValue(solicitacao as any)
+        criarContratoUseCaseMock.execute.mockResolvedValue(ContratоMother.criarValido())
+
+        // Act
+        await useCase.execute('algum-id', idCliente)
+
+        // Assert — 30h depois do aceite (não arredonda para dias)
+        expect(criarContratoUseCaseMock.execute).toHaveBeenCalledWith(
+            expect.objectContaining({ dataAceite, prazoEstimado: new Date('2026-10-23T16:00:00.000Z') })
+        )
+    })
+
     it('deve lançar RecursoNaoEncontradoError se orçamento não existir', async () => {
         // Arrange
         orcamentoRepoMock.buscarPorId.mockResolvedValue(null)

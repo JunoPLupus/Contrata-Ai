@@ -352,19 +352,21 @@ const schemas = {
     // --------------------------------------------------------------- Orçamentos
     OrcamentoCadastroRequest: {
         type: 'object',
-        required: ['idSolicitacao', 'valor'],
+        required: ['idSolicitacao', 'valorEstimado', 'prazoEstimadoHoras'],
         properties: {
             idSolicitacao: { type: 'string', description: 'ID da solicitação.', example: '665f1b2c9a1e4a0012abc020' },
-            valor: { type: 'number', minimum: 1, example: 180.5 },
-            prazoDias: { type: 'integer', minimum: 1, nullable: true, description: 'Opcional. Valor mínimo: 1 (dias). Padrão: 15.', example: 3 },
+            valorEstimado: { type: 'number', minimum: 1, description: 'Valor estimado do serviço (mínimo 1).', example: 180.5 },
+            descricao: { type: 'string', minLength: 5, maxLength: 500, description: 'Opcional. O que está incluso (material, deslocamento, garantia...). Entre 5 e 500 caracteres.', example: 'Inclui material, deslocamento e 90 dias de garantia.' },
+            prazoEstimadoHoras: { type: 'integer', minimum: 1, description: 'Obrigatório. Duração estimada em horas (inteiro, mínimo 1). Sem valor padrão: o front converte dias em horas (1 dia = 24h).', example: 72 },
         },
     },
     OrcamentoAtualizacaoRequest: {
         type: 'object',
         description: 'Todos os campos são opcionais; apenas os enviados são atualizados.',
         properties: {
-            valor: { type: 'number', minimum: 1, description: 'Opcional.', example: 200 },
-            prazoDias: { type: 'integer', minimum: 1, description: 'Opcional.', example: 4 },
+            valorEstimado: { type: 'number', minimum: 1, description: 'Opcional.', example: 200 },
+            descricao: { type: 'string', nullable: true, minLength: 5, maxLength: 500, description: 'Opcional. Envie null para remover a descrição.', example: 'Inclui material e deslocamento; sem garantia.' },
+            prazoEstimadoHoras: { type: 'integer', minimum: 1, description: 'Opcional. Duração estimada em horas (inteiro, mínimo 1).', example: 96 },
             status: {
                 type: 'string',
                 enum: ['pendente', 'aceito', 'encerrado', 'cancelado'],
@@ -379,8 +381,9 @@ const schemas = {
             id: { type: 'string', example: '665f1b2c9a1e4a0012abc030' },
             idSolicitacao: { type: 'string', example: '665f1b2c9a1e4a0012abc020' },
             idPrestador: { type: 'string', example: '665f1b2c9a1e4a0012abcd99' },
-            valor: { type: 'number', example: 180.5 },
-            prazoDias: { type: 'integer', example: 3 },
+            valorEstimado: { type: 'number', example: 180.5 },
+            descricao: { type: 'string', nullable: true, example: 'Inclui material, deslocamento e 90 dias de garantia.' },
+            prazoEstimadoHoras: { type: 'integer', example: 72 },
             status: {
                 type: 'string',
                 enum: ['pendente', 'aceito', 'encerrado', 'cancelado'],

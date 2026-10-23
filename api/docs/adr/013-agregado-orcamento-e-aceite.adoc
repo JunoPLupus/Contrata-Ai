@@ -107,7 +107,7 @@ traduzido pelo `error-handler` para `422`.
 
 * O agregado Orçamento possui um endpoint de aceite explícito e dedicado, com autorização
   e efeitos colaterais isolados em seu próprio use case.
-* O `AtualizarOrcamentoUseCase` (prestador) permanece simples: edita `valor`/`prazo_dias`/
+* O `AtualizarOrcamentoUseCase` (prestador) permanece simples: edita `valor_estimado`/`descricao`/`prazo_estimado_horas`/
   `status` apenas enquanto `pendente`, com a única transição de status `pendente → cancelado`.
 * A reutilização do `AtualizarSolicitacaoUseCase` mantém as regras de transição de status
   da solicitação em um único lugar (DRY).

@@ -11,8 +11,9 @@ export class OrcamentoMother {
         id: string
         idSolicitacao: string
         idPrestador: string
-        valor: number
-        prazoDias: number
+        valorEstimado: number
+        descricao: string
+        prazoEstimadoHoras: number
         status: StatusOrcamentoTipo
         dataCriacao: Date
         dataAceite: Date
@@ -21,8 +22,9 @@ export class OrcamentoMother {
             id: dados?.id ?? new Types.ObjectId().toString(),
             idSolicitacao: dados?.idSolicitacao ?? new Types.ObjectId().toString(),
             idPrestador: dados?.idPrestador ?? new Types.ObjectId().toString(),
-            valor: dados?.valor ?? 250,
-            prazoDias: dados?.prazoDias,
+            valorEstimado: dados?.valorEstimado ?? 250,
+            descricao: dados?.descricao,
+            prazoEstimadoHoras: dados?.prazoEstimadoHoras ?? 360,
             status: dados?.status ?? StatusOrcamento.PENDENTE,
             dataCriacao: dados?.dataCriacao ?? new Date(),
             dataAceite: dados?.dataAceite
@@ -33,9 +35,10 @@ export class OrcamentoMother {
         return {
             idSolicitacao: dados?.idSolicitacao ?? new Types.ObjectId().toString(),
             idPrestador: dados?.idPrestador ?? new Types.ObjectId().toString(),
-            idClienteDoPrestador: dados?.idClienteDoPrestador,
-            valor: dados?.valor ?? 250,
-            prazoDias: dados?.prazoDias
+            idClienteLogado: dados?.idClienteLogado,
+            valorEstimado: dados?.valorEstimado ?? 250,
+            descricao: dados?.descricao,
+            prazoEstimadoHoras: dados?.prazoEstimadoHoras ?? 360
         }
     }
 

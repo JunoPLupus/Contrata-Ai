@@ -4,8 +4,9 @@ import { StatusOrcamento } from "../../../domain/value-objects/orcamento/status/
 export interface IOrcamentoDocument {
     id_solicitacao: Types.ObjectId
     id_prestador: Types.ObjectId
-    valor: number
-    prazo_dias: number
+    valor_estimado: number
+    descricao?: string
+    prazo_estimado_horas: number
     status: string
     data_criacao: Date
     data_aceite?: Date
@@ -14,8 +15,9 @@ export interface IOrcamentoDocument {
 const OrcamentoSchema = new Schema<IOrcamentoDocument>({
     id_solicitacao: { type: Types.ObjectId, ref: 'Solicitacao', required: true },
     id_prestador: { type: Types.ObjectId, ref: 'Prestador', required: true },
-    valor: { type: Number, required: true },
-    prazo_dias: { type: Number, required: true, default: 15 },
+    valor_estimado: { type: Number, required: true },
+    descricao: String,
+    prazo_estimado_horas: { type: Number, required: true },
     status: {
         type: String,
         enum: Object.values(StatusOrcamento),

@@ -24,9 +24,10 @@ export class OrcamentoController {
         const dto: OrcamentoCadastroDTO = {
             idSolicitacao: request.body.idSolicitacao,
             idPrestador: request.user!.idPrestador!,
-            idClienteDoPrestador: request.user!.idCliente,
-            valor: request.body.valor,
-            prazoDias: request.body.prazoDias
+            idClienteLogado: request.user!.idCliente,
+            valorEstimado: request.body.valorEstimado,
+            descricao: request.body.descricao,
+            prazoEstimadoHoras: request.body.prazoEstimadoHoras
         }
         const orcamento = await this.cadastrarOrcamentoUseCase.execute(dto)
         response.status(201).json(OrcamentoMapper.paraRespostaDTO(orcamento))
@@ -48,8 +49,9 @@ export class OrcamentoController {
 
     public async atualizar(request: Request, response: Response): Promise<void> {
         const dto: OrcamentoAtualizacaoDTO = {
-            valor: request.body.valor,
-            prazoDias: request.body.prazoDias,
+            valorEstimado: request.body.valorEstimado,
+            descricao: request.body.descricao,
+            prazoEstimadoHoras: request.body.prazoEstimadoHoras,
             status: request.body.status
         }
         const orcamento = await this.atualizarOrcamentoUseCase.execute(

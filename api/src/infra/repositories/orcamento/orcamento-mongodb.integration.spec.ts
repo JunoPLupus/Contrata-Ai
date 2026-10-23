@@ -42,20 +42,57 @@ describe('Testes de Integração do Repository: Orçamento MongoDB', () => {
             // Assert
             expect(inserido).toBeInstanceOf(Orcamento)
             expect(inserido.id).toBeDefined()
-            expect(inserido.valor).toBe(orcamentoMock.valor)
+            expect(inserido.valorEstimado).toBe(orcamentoMock.valorEstimado)
             expect(inserido.status).toBe(StatusOrcamento.PENDENTE)
+        })
+
+        it('deve persistir a descricao quando enviada', async () => {
+            // Arrange
+            const descricao = 'Inclui material, deslocamento e 90 dias de garantia.'
+            // Act
+            const inserido = await repository.inserir(OrcamentoMother.criarValido({ descricao }))
+            const encontrado = await repository.buscarPorId(inserido.id!)
+            // Assert
+            expect(encontrado?.descricao).toBe(descricao)
+        })
+
+        it('deve persistir prazo_estimado_horas no documento', async () => {
+            // Act
+            const inserido = await repository.inserir(OrcamentoMother.criarValido({ prazoEstimadoHoras: 72 }))
+            const documento = await OrcamentoModel.findById(inserido.id).lean()
+            // Assert
+            expect(inserido.prazoEstimadoHoras).toBe(72)
+            expect(documento?.prazo_estimado_horas).toBe(72)
+            expect(documento).not.toHaveProperty('prazo_dias')
+        })
+
+        it('deve recusar documento sem prazo_estimado_horas, já que não há default no banco', async () => {
+            // Arrange
+            const { prazo_estimado_horas, ...documentoSemPrazo } = OrcamentoMapper.paraDocumento(orcamentoMock)
+            // Act & Assert
+            await expect(OrcamentoModel.create(documentoSemPrazo)).rejects.toThrow(/prazo_estimado_horas/)
+        })
+
+        it('deve aceitar orçamento sem descricao', async () => {
+            // Act
+            const inserido = await repository.inserir(orcamentoMock)
+            const documento = await OrcamentoModel.findById(inserido.id).lean()
+            // Assert
+            expect(inserido.descricao).toBeUndefined()
+            expect(documento).not.toHaveProperty('descricao')
         })
     })
 
     describe('buscarPorId()', () => {
         it('deve buscar orçamento por ID e retornar entidade', async () => {
-            // Arrange
-            const documentoInserido = await OrcamentoModel.create(OrcamentoMapper.paraDocumento(orcamentoMock))
+            // Arrange — valor diferente do default do mother, para o teste não passar por coincidência
+            const documentoInserido = await OrcamentoModel.create(OrcamentoMapper.paraDocumento(OrcamentoMother.criarValido({ valorEstimado: 480.75 })))
             // Act
             const encontrado = await repository.buscarPorId(documentoInserido.id.toString())
             // Assert
             expect(encontrado).toBeInstanceOf(Orcamento)
-            expect(encontrado?.valor).toBe(orcamentoMock.valor)
+            expect(documentoInserido.valor_estimado).toBe(480.75)
+            expect(encontrado?.valorEstimado).toBe(480.75)
         })
 
         it('deve retornar null quando ID não for encontrado', async () => {
@@ -135,6 +172,19 @@ describe('Testes de Integração do Repository: Orçamento MongoDB', () => {
             expect(atualizado).toBeInstanceOf(Orcamento)
             expect(atualizado.status).toBe(StatusOrcamento.CANCELADO)
             expect(atualizado.id).toBe(orcamentoInserido.id)
+        })
+
+        it('deve remover a descricao do documento quando ela for removida na entidade', async () => {
+            // Arrange
+            const orcamentoInserido = await repository.inserir(OrcamentoMother.criarValido({ descricao: 'Descricao que sera removida' }))
+            // Act
+            orcamentoInserido.removerDescricao()
+            const atualizado = await repository.atualizar(orcamentoInserido)
+            const documento = await OrcamentoModel.findById(orcamentoInserido.id).lean()
+            // Assert
+            expect(atualizado.descricao).toBeUndefined()
+            expect(documento).not.toHaveProperty('descricao')
+            expect(documento?.valor_estimado).toBe(orcamentoInserido.valorEstimado)
         })
     })
 })

@@ -18,11 +18,11 @@ export class AtualizarOrcamentoUseCase {
 
     /**
      * Atualiza parcialmente um orçamento pelo prestador dono.
-     * - `valor` e `prazoDias` só podem ser alterados enquanto o status for `'pendente'`.
+     * - `valorEstimado`, `descricao` e `prazoEstimadoHoras` só podem ser alterados enquanto o status for `'pendente'`.
      * - A única transição de status permitida ao prestador é `pendente → cancelado`.
      * @param id - ID do orçamento a ser atualizado.
      * @param idPrestador - ID do prestador autenticado extraído do token JWT.
-     * @param dados - Campos a serem atualizados (todos opcionais).
+     * @param dados - Campos a serem atualizados (todos opcionais). `descricao: null` remove a descrição.
      * @returns O orçamento atualizado.
      * @throws {RecursoNaoEncontradoError} Se o orçamento não existir.
      * @throws {AcessoProibidoError} Se o orçamento pertencer a outro prestador.
@@ -40,9 +40,12 @@ export class AtualizarOrcamentoUseCase {
             )
         }
 
-        if (dados.valor !== undefined) orcamento.valor = dados.valor
+        if (dados.valorEstimado !== undefined) orcamento.valorEstimado = dados.valorEstimado
 
-        if (dados.prazoDias !== undefined) orcamento.prazoDias = dados.prazoDias
+        if (dados.descricao === null) orcamento.removerDescricao()
+        else if (dados.descricao !== undefined) orcamento.descricao = dados.descricao
+
+        if (dados.prazoEstimadoHoras !== undefined) orcamento.prazoEstimadoHoras = dados.prazoEstimadoHoras
 
         if (dados.status !== undefined) {
             const transicoesValidas = transicoesPermitidas[orcamento.status] ?? []
