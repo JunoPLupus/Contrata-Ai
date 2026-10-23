@@ -29,6 +29,50 @@ describe('AtualizarOrcamentoUseCase', () => {
         expect(orcamentoRepoMock.atualizar).toHaveBeenCalledTimes(1)
     })
 
+    it('deve atualizar a descricao enquanto pendente', async () => {
+        // Arrange
+        const idPrestador = new Types.ObjectId().toString()
+        const novaDescricao = 'Inclui material e deslocamento; sem garantia.'
+        orcamentoRepoMock.buscarPorId.mockResolvedValue(OrcamentoMother.criarValido({ idPrestador }))
+        orcamentoRepoMock.atualizar.mockImplementation(async orcamento => orcamento)
+        // Act
+        const resultado = await useCase.execute('algum-id', idPrestador, { descricao: novaDescricao })
+        // Assert
+        expect(resultado.descricao).toBe(novaDescricao)
+    })
+
+    it('deve remover a descricao quando receber null', async () => {
+        // Arrange
+        const idPrestador = new Types.ObjectId().toString()
+        orcamentoRepoMock.buscarPorId.mockResolvedValue(OrcamentoMother.criarValido({ idPrestador, descricao: 'Descricao que sera removida' }))
+        orcamentoRepoMock.atualizar.mockImplementation(async orcamento => orcamento)
+        // Act
+        const resultado = await useCase.execute('algum-id', idPrestador, { descricao: null })
+        // Assert
+        expect(resultado.descricao).toBeUndefined()
+    })
+
+    it('deve manter a descricao quando ela não for enviada', async () => {
+        // Arrange
+        const idPrestador = new Types.ObjectId().toString()
+        orcamentoRepoMock.buscarPorId.mockResolvedValue(OrcamentoMother.criarValido({ idPrestador, descricao: 'Descricao que deve ficar' }))
+        orcamentoRepoMock.atualizar.mockImplementation(async orcamento => orcamento)
+        // Act
+        const resultado = await useCase.execute('algum-id', idPrestador, { valor: 300 })
+        // Assert
+        expect(resultado.descricao).toBe('Descricao que deve ficar')
+    })
+
+    it('deve lançar OperacaoNaoPermitidaError se tentar editar a descricao com status ≠ pendente', async () => {
+        // Arrange
+        const idPrestador = new Types.ObjectId().toString()
+        orcamentoRepoMock.buscarPorId.mockResolvedValue(OrcamentoMother.criarValido({ idPrestador, status: StatusOrcamento.ACEITO }))
+        // Act & Assert
+        await expect(useCase.execute('algum-id', idPrestador, { descricao: 'Descricao fora do prazo' }))
+            .rejects.toThrow(OperacaoNaoPermitidaError)
+        expect(orcamentoRepoMock.atualizar).not.toHaveBeenCalled()
+    })
+
     it('deve transicionar pendente → cancelado com sucesso', async () => {
         // Arrange
         const idPrestador = new Types.ObjectId().toString()

@@ -55,14 +55,14 @@ describe('OrcamentoController', () => {
             const orcamentoMock = OrcamentoMother.criarValido({ idPrestador })
             req = {
                 user: { idCliente, idPrestador },
-                body: { idSolicitacao: orcamentoMock.idSolicitacao, valor: orcamentoMock.valor }
+                body: { idSolicitacao: orcamentoMock.idSolicitacao, valor: orcamentoMock.valor, descricao: 'Inclui material.' }
             }
             cadastrarUseCaseMock.execute.mockResolvedValue(orcamentoMock)
             // Act
             await controller.cadastrar(req as any, res as any)
             // Assert
             expect(cadastrarUseCaseMock.execute).toHaveBeenCalledWith(
-                expect.objectContaining({ idClienteDoPrestador: idCliente })
+                expect.objectContaining({ idClienteDoPrestador: idCliente, descricao: 'Inclui material.' })
             )
             expect(res.status).toHaveBeenCalledWith(201)
             expect(res.json).toHaveBeenCalledWith(OrcamentoMapper.paraRespostaDTO(orcamentoMock))
@@ -112,7 +112,7 @@ describe('OrcamentoController', () => {
             req = {
                 user: { idCliente, idPrestador },
                 params: { id: idOrcamento },
-                body: { status: StatusOrcamento.CANCELADO }
+                body: { status: StatusOrcamento.CANCELADO, descricao: null }
             }
             atualizarUseCaseMock.execute.mockResolvedValue(orcamentoAtualizado)
             // Act
@@ -121,7 +121,7 @@ describe('OrcamentoController', () => {
             expect(atualizarUseCaseMock.execute).toHaveBeenCalledWith(
                 idOrcamento,
                 idPrestador,
-                expect.objectContaining({ status: StatusOrcamento.CANCELADO })
+                expect.objectContaining({ status: StatusOrcamento.CANCELADO, descricao: null })
             )
             expect(res.status).toHaveBeenCalledWith(200)
             expect(res.json).toHaveBeenCalledWith(OrcamentoMapper.paraRespostaDTO(orcamentoAtualizado))

@@ -45,6 +45,25 @@ describe('Testes de Integração do Repository: Orçamento MongoDB', () => {
             expect(inserido.valor).toBe(orcamentoMock.valor)
             expect(inserido.status).toBe(StatusOrcamento.PENDENTE)
         })
+
+        it('deve persistir a descricao quando enviada', async () => {
+            // Arrange
+            const descricao = 'Inclui material, deslocamento e 90 dias de garantia.'
+            // Act
+            const inserido = await repository.inserir(OrcamentoMother.criarValido({ descricao }))
+            const encontrado = await repository.buscarPorId(inserido.id!)
+            // Assert
+            expect(encontrado?.descricao).toBe(descricao)
+        })
+
+        it('deve aceitar orçamento sem descricao', async () => {
+            // Act
+            const inserido = await repository.inserir(orcamentoMock)
+            const documento = await OrcamentoModel.findById(inserido.id).lean()
+            // Assert
+            expect(inserido.descricao).toBeUndefined()
+            expect(documento).not.toHaveProperty('descricao')
+        })
     })
 
     describe('buscarPorId()', () => {
@@ -135,6 +154,19 @@ describe('Testes de Integração do Repository: Orçamento MongoDB', () => {
             expect(atualizado).toBeInstanceOf(Orcamento)
             expect(atualizado.status).toBe(StatusOrcamento.CANCELADO)
             expect(atualizado.id).toBe(orcamentoInserido.id)
+        })
+
+        it('deve remover a descricao do documento quando ela for removida na entidade', async () => {
+            // Arrange
+            const orcamentoInserido = await repository.inserir(OrcamentoMother.criarValido({ descricao: 'Descricao que sera removida' }))
+            // Act
+            orcamentoInserido.removerDescricao()
+            const atualizado = await repository.atualizar(orcamentoInserido)
+            const documento = await OrcamentoModel.findById(orcamentoInserido.id).lean()
+            // Assert
+            expect(atualizado.descricao).toBeUndefined()
+            expect(documento).not.toHaveProperty('descricao')
+            expect(documento?.valor).toBe(orcamentoInserido.valor)
         })
     })
 })
