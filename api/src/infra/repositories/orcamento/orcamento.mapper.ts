@@ -13,7 +13,7 @@ export class OrcamentoMapper {
             idPrestador: doc.id_prestador.toString(),
             valor: doc.valor,
             descricao: doc.descricao ?? undefined,
-            prazoDias: doc.prazo_dias,
+            prazoEstimadoHoras: doc.prazo_estimado_horas,
             status: doc.status as StatusOrcamentoTipo,
             dataCriacao: doc.data_criacao,
             dataAceite: doc.data_aceite
@@ -26,7 +26,7 @@ export class OrcamentoMapper {
             id_prestador: new Types.ObjectId(orcamento.idPrestador),
             valor: orcamento.valor,
             descricao: orcamento.descricao,
-            prazo_dias: orcamento.prazoDias,
+            prazo_estimado_horas: orcamento.prazoEstimadoHoras,
             status: orcamento.status,
             data_criacao: orcamento.dataCriacao,
             data_aceite: orcamento.dataAceite

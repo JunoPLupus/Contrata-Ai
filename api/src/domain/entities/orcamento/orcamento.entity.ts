@@ -1,6 +1,7 @@
 import { OrcamentoProps } from "./orcamento.props";
 import { NumberValueObject } from "../../value-objects/shared/number/number.vo";
 import { StringValueObject } from "../../value-objects/shared/string/string.vo";
+import { IntegerValueObject } from "../../value-objects/shared/integer/integer.vo";
 import { StatusOrcamentoValueObject, StatusOrcamento, StatusOrcamentoTipo } from "../../value-objects/orcamento/status/status.vo";
 
 export class Orcamento {
@@ -42,11 +43,12 @@ export class Orcamento {
         this.props.descricao = undefined
     }
 
-    get prazoDias(): number {
-        return this.props.prazoDias.valor
+    /** Duração estimada do serviço, em horas; as datas ficam no contrato, calculadas no aceite. */
+    get prazoEstimadoHoras(): number {
+        return this.props.prazoEstimadoHoras.valor
     }
-    set prazoDias(prazoDias: number) {
-        this.props.prazoDias = new NumberValueObject('prazoDias', prazoDias, 1)
+    set prazoEstimadoHoras(prazoEstimadoHoras: number) {
+        this.props.prazoEstimadoHoras = new IntegerValueObject('prazoEstimadoHoras', prazoEstimadoHoras, 1)
     }
 
     get status(): StatusOrcamentoTipo {

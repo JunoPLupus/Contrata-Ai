@@ -27,7 +27,7 @@ export class OrcamentoController {
             idClienteDoPrestador: request.user!.idCliente,
             valor: request.body.valor,
             descricao: request.body.descricao,
-            prazoDias: request.body.prazoDias
+            prazoEstimadoHoras: request.body.prazoEstimadoHoras
         }
         const orcamento = await this.cadastrarOrcamentoUseCase.execute(dto)
         response.status(201).json(OrcamentoMapper.paraRespostaDTO(orcamento))
@@ -51,7 +51,7 @@ export class OrcamentoController {
         const dto: OrcamentoAtualizacaoDTO = {
             valor: request.body.valor,
             descricao: request.body.descricao,
-            prazoDias: request.body.prazoDias,
+            prazoEstimadoHoras: request.body.prazoEstimadoHoras,
             status: request.body.status
         }
         const orcamento = await this.atualizarOrcamentoUseCase.execute(

@@ -13,7 +13,7 @@ export class OrcamentoMother {
         idPrestador: string
         valor: number
         descricao: string
-        prazoDias: number
+        prazoEstimadoHoras: number
         status: StatusOrcamentoTipo
         dataCriacao: Date
         dataAceite: Date
@@ -24,7 +24,7 @@ export class OrcamentoMother {
             idPrestador: dados?.idPrestador ?? new Types.ObjectId().toString(),
             valor: dados?.valor ?? 250,
             descricao: dados?.descricao,
-            prazoDias: dados?.prazoDias,
+            prazoEstimadoHoras: dados?.prazoEstimadoHoras ?? 360,
             status: dados?.status ?? StatusOrcamento.PENDENTE,
             dataCriacao: dados?.dataCriacao ?? new Date(),
             dataAceite: dados?.dataAceite
@@ -38,7 +38,7 @@ export class OrcamentoMother {
             idClienteDoPrestador: dados?.idClienteDoPrestador,
             valor: dados?.valor ?? 250,
             descricao: dados?.descricao,
-            prazoDias: dados?.prazoDias
+            prazoEstimadoHoras: dados?.prazoEstimadoHoras ?? 360
         }
     }
 

@@ -1,6 +1,7 @@
 import { Orcamento } from "../entities/orcamento/orcamento.entity";
 import { StringValueObject } from "../value-objects/shared/string/string.vo";
 import { NumberValueObject } from "../value-objects/shared/number/number.vo";
+import { IntegerValueObject } from "../value-objects/shared/integer/integer.vo";
 import { StatusOrcamentoValueObject, StatusOrcamento, StatusOrcamentoTipo } from "../value-objects/orcamento/status/status.vo";
 
 export class OrcamentoFactory {
@@ -10,7 +11,7 @@ export class OrcamentoFactory {
         idPrestador: string
         valor: number
         descricao?: string
-        prazoDias?: number
+        prazoEstimadoHoras: number
         status?: StatusOrcamentoTipo
         dataCriacao?: Date
         dataAceite?: Date
@@ -21,7 +22,7 @@ export class OrcamentoFactory {
             idPrestador: new StringValueObject('idPrestador', dados.idPrestador),
             valor: new NumberValueObject('valor', dados.valor, 1),
             descricao: dados.descricao !== undefined ? new StringValueObject('descricao', dados.descricao, 5, 500) : undefined,
-            prazoDias: new NumberValueObject('prazoDias', dados.prazoDias ?? 15, 1),
+            prazoEstimadoHoras: new IntegerValueObject('prazoEstimadoHoras', dados.prazoEstimadoHoras, 1),
             status: new StatusOrcamentoValueObject(dados.status ?? StatusOrcamento.PENDENTE),
             dataCriacao: dados.dataCriacao ?? new Date(),
             dataAceite: dados.dataAceite

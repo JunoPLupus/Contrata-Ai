@@ -9,6 +9,8 @@ import { OperacaoNaoPermitidaError } from "../../../errors/operacao-nao-permitid
 import { StatusOrcamento } from "../../../value-objects/orcamento/status/status.vo";
 import { StatusSolicitacao } from "../../../value-objects/solicitacao/status/status.vo";
 
+const MILISSEGUNDOS_POR_HORA = 60 * 60 * 1000
+
 export class AceitarOrcamentoUseCase {
     constructor(
         private readonly orcamentoRepository: IOrcamentoRepository,
@@ -22,7 +24,8 @@ export class AceitarOrcamentoUseCase {
      * 1. O orçamento aceito → `aceito` + `dataAceite` preenchida.
      * 2. Todos os demais orçamentos `pendente` da solicitação → `encerrado`.
      * 3. A solicitação → `encerrada` (via `AtualizarSolicitacaoUseCase`).
-     * 4. O contrato é criado com `cienciaPagamento` e `whatsappLiberado` = true (via `CriarContratoUseCase`).
+     * 4. O contrato é criado com `cienciaPagamento` e `whatsappLiberado` = true (via `CriarContratoUseCase`),
+     *    com `prazoEstimado` = `dataAceite` + `prazoEstimadoHoras` do orçamento.
      *
      * @remarks Os passos 1–4 não são atômicos (sem transação Mongo).
      *   Em caso de falha parcial, pode haver inconsistência — candidato a melhoria
@@ -69,7 +72,7 @@ export class AceitarOrcamentoUseCase {
         )
 
         const prazoEstimado = orcamentoAceito.dataAceite
-            ? new Date(orcamentoAceito.dataAceite.getTime() + orcamentoAceito.prazoDias * 24 * 60 * 60 * 1000)
+            ? new Date(orcamentoAceito.dataAceite.getTime() + orcamentoAceito.prazoEstimadoHoras * MILISSEGUNDOS_POR_HORA)
             : undefined
 
         await this.criarContratoUseCase.execute({

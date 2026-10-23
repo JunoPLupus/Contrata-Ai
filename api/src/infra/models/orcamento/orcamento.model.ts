@@ -6,7 +6,7 @@ export interface IOrcamentoDocument {
     id_prestador: Types.ObjectId
     valor: number
     descricao?: string
-    prazo_dias: number
+    prazo_estimado_horas: number
     status: string
     data_criacao: Date
     data_aceite?: Date
@@ -17,7 +17,7 @@ const OrcamentoSchema = new Schema<IOrcamentoDocument>({
     id_prestador: { type: Types.ObjectId, ref: 'Prestador', required: true },
     valor: { type: Number, required: true },
     descricao: String,
-    prazo_dias: { type: Number, required: true, default: 15 },
+    prazo_estimado_horas: { type: Number, required: true },
     status: {
         type: String,
         enum: Object.values(StatusOrcamento),
