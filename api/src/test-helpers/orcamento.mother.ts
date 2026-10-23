@@ -35,7 +35,7 @@ export class OrcamentoMother {
         return {
             idSolicitacao: dados?.idSolicitacao ?? new Types.ObjectId().toString(),
             idPrestador: dados?.idPrestador ?? new Types.ObjectId().toString(),
-            idClienteDoPrestador: dados?.idClienteDoPrestador,
+            idClienteLogado: dados?.idClienteLogado,
             valor: dados?.valor ?? 250,
             descricao: dados?.descricao,
             prazoEstimadoHoras: dados?.prazoEstimadoHoras ?? 360

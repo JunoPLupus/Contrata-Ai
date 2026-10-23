@@ -24,7 +24,7 @@ export class OrcamentoController {
         const dto: OrcamentoCadastroDTO = {
             idSolicitacao: request.body.idSolicitacao,
             idPrestador: request.user!.idPrestador!,
-            idClienteDoPrestador: request.user!.idCliente,
+            idClienteLogado: request.user!.idCliente,
             valor: request.body.valor,
             descricao: request.body.descricao,
             prazoEstimadoHoras: request.body.prazoEstimadoHoras

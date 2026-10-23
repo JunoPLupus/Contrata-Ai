@@ -140,10 +140,10 @@ describe('CadastrarOrcamentoUseCase', () => {
 
     it('deve lançar OperacaoNaoPermitidaError se prestador tentar orçar solicitação própria', async () => {
         // Arrange
-        const idClienteDoPrestador = new Types.ObjectId().toString()
-        const solicitacao = SolicitacaoMother.criarValido({ idCliente: idClienteDoPrestador })
+        const idClienteLogado = new Types.ObjectId().toString()
+        const solicitacao = SolicitacaoMother.criarValido({ idCliente: idClienteLogado })
         solicitacaoRepoMock.buscarPorId.mockResolvedValue(solicitacao)
-        const dto = OrcamentoMother.criarDTO({ idClienteDoPrestador })
+        const dto = OrcamentoMother.criarDTO({ idClienteLogado })
         // Act & Assert
         await expect(useCase.execute(dto)).rejects.toThrow(OperacaoNaoPermitidaError)
         expect(orcamentoRepoMock.inserir).not.toHaveBeenCalled()
