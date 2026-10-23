@@ -31,9 +31,14 @@ export class OrcamentoMongodbRepositoryImpl implements IOrcamentoRepository {
     }
 
     public async atualizar(orcamento: Orcamento): Promise<Orcamento> {
+        const orcamentoDocumento: IOrcamentoDocument = OrcamentoMapper.paraDocumento(orcamento)
+        // O Mongoose ignora chaves `undefined` no update; campos opcionais removidos na entidade viram $unset
+        const camposRemovidos = Object.keys(orcamentoDocumento)
+            .filter(campo => orcamentoDocumento[campo as keyof IOrcamentoDocument] === undefined)
+
         const documento = await OrcamentoModel.findByIdAndUpdate(
             orcamento.id,
-            OrcamentoMapper.paraDocumento(orcamento),
+            { ...orcamentoDocumento, $unset: Object.fromEntries(camposRemovidos.map(campo => [campo, 1])) },
             { new: true }
         )
 

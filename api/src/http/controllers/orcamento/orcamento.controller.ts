@@ -26,6 +26,7 @@ export class OrcamentoController {
             idPrestador: request.user!.idPrestador!,
             idClienteDoPrestador: request.user!.idCliente,
             valor: request.body.valor,
+            descricao: request.body.descricao,
             prazoDias: request.body.prazoDias
         }
         const orcamento = await this.cadastrarOrcamentoUseCase.execute(dto)
@@ -49,6 +50,7 @@ export class OrcamentoController {
     public async atualizar(request: Request, response: Response): Promise<void> {
         const dto: OrcamentoAtualizacaoDTO = {
             valor: request.body.valor,
+            descricao: request.body.descricao,
             prazoDias: request.body.prazoDias,
             status: request.body.status
         }

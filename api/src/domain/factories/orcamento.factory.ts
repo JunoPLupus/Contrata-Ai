@@ -9,6 +9,7 @@ export class OrcamentoFactory {
         idSolicitacao: string
         idPrestador: string
         valor: number
+        descricao?: string
         prazoDias?: number
         status?: StatusOrcamentoTipo
         dataCriacao?: Date
@@ -19,6 +20,7 @@ export class OrcamentoFactory {
             idSolicitacao: new StringValueObject('idSolicitação', dados.idSolicitacao),
             idPrestador: new StringValueObject('idPrestador', dados.idPrestador),
             valor: new NumberValueObject('valor', dados.valor, 1),
+            descricao: dados.descricao !== undefined ? new StringValueObject('descricao', dados.descricao, 5, 500) : undefined,
             prazoDias: new NumberValueObject('prazoDias', dados.prazoDias ?? 15, 1),
             status: new StatusOrcamentoValueObject(dados.status ?? StatusOrcamento.PENDENTE),
             dataCriacao: dados.dataCriacao ?? new Date(),

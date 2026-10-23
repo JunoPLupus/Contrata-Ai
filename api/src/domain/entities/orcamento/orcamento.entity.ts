@@ -1,5 +1,6 @@
 import { OrcamentoProps } from "./orcamento.props";
 import { NumberValueObject } from "../../value-objects/shared/number/number.vo";
+import { StringValueObject } from "../../value-objects/shared/string/string.vo";
 import { StatusOrcamentoValueObject, StatusOrcamento, StatusOrcamentoTipo } from "../../value-objects/orcamento/status/status.vo";
 
 export class Orcamento {
@@ -26,6 +27,19 @@ export class Orcamento {
     }
     set valor(valor: number) {
         this.props.valor = new NumberValueObject('valor', valor, 1)
+    }
+
+    /** O que está incluso no orçamento (material, deslocamento, garantia...). */
+    get descricao(): string | undefined {
+        return this.props.descricao?.valor
+    }
+    set descricao(descricao: string) {
+        this.props.descricao = new StringValueObject('descricao', descricao, 5, 500)
+    }
+
+    /** Remove a descrição (campo opcional). */
+    public removerDescricao(): void {
+        this.props.descricao = undefined
     }
 
     get prazoDias(): number {
