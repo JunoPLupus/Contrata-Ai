@@ -356,6 +356,7 @@ const schemas = {
         properties: {
             idSolicitacao: { type: 'string', description: 'ID da solicitação.', example: '665f1b2c9a1e4a0012abc020' },
             valor: { type: 'number', minimum: 1, example: 180.5 },
+            descricao: { type: 'string', minLength: 5, maxLength: 500, description: 'Opcional. O que está incluso (material, deslocamento, garantia...). Entre 5 e 500 caracteres.', example: 'Inclui material, deslocamento e 90 dias de garantia.' },
             prazoDias: { type: 'integer', minimum: 1, nullable: true, description: 'Opcional. Valor mínimo: 1 (dias). Padrão: 15.', example: 3 },
         },
     },
@@ -364,6 +365,7 @@ const schemas = {
         description: 'Todos os campos são opcionais; apenas os enviados são atualizados.',
         properties: {
             valor: { type: 'number', minimum: 1, description: 'Opcional.', example: 200 },
+            descricao: { type: 'string', nullable: true, minLength: 5, maxLength: 500, description: 'Opcional. Envie null para remover a descrição.', example: 'Inclui material e deslocamento; sem garantia.' },
             prazoDias: { type: 'integer', minimum: 1, description: 'Opcional.', example: 4 },
             status: {
                 type: 'string',
@@ -380,6 +382,7 @@ const schemas = {
             idSolicitacao: { type: 'string', example: '665f1b2c9a1e4a0012abc020' },
             idPrestador: { type: 'string', example: '665f1b2c9a1e4a0012abcd99' },
             valor: { type: 'number', example: 180.5 },
+            descricao: { type: 'string', nullable: true, example: 'Inclui material, deslocamento e 90 dias de garantia.' },
             prazoDias: { type: 'integer', example: 3 },
             status: {
                 type: 'string',
