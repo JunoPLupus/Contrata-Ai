@@ -16,16 +16,16 @@ describe('AtualizarOrcamentoUseCase', () => {
         useCase = new AtualizarOrcamentoUseCase(orcamentoRepoMock)
     })
 
-    it('deve atualizar valor e prazo enquanto pendente', async () => {
+    it('deve atualizar valorEstimado e prazo enquanto pendente', async () => {
         // Arrange
         const idPrestador = new Types.ObjectId().toString()
         const orcamento = OrcamentoMother.criarValido({ idPrestador })
         orcamentoRepoMock.buscarPorId.mockResolvedValue(orcamento)
         orcamentoRepoMock.atualizar.mockImplementation(async orcamento => orcamento)
         // Act
-        const resultado = await useCase.execute('algum-id', idPrestador, { valor: 500, prazoEstimadoHoras: 720 })
+        const resultado = await useCase.execute('algum-id', idPrestador, { valorEstimado: 500, prazoEstimadoHoras: 720 })
         // Assert
-        expect(resultado.valor).toBe(500)
+        expect(resultado.valorEstimado).toBe(500)
         expect(resultado.prazoEstimadoHoras).toBe(720)
         expect(orcamentoRepoMock.atualizar).toHaveBeenCalledTimes(1)
     })
@@ -79,7 +79,7 @@ describe('AtualizarOrcamentoUseCase', () => {
         orcamentoRepoMock.buscarPorId.mockResolvedValue(OrcamentoMother.criarValido({ idPrestador, descricao: 'Descricao que deve ficar' }))
         orcamentoRepoMock.atualizar.mockImplementation(async orcamento => orcamento)
         // Act
-        const resultado = await useCase.execute('algum-id', idPrestador, { valor: 300 })
+        const resultado = await useCase.execute('algum-id', idPrestador, { valorEstimado: 300 })
         // Assert
         expect(resultado.descricao).toBe('Descricao que deve ficar')
     })
@@ -112,7 +112,7 @@ describe('AtualizarOrcamentoUseCase', () => {
         const orcamento = OrcamentoMother.criarValido({ idPrestador, status: StatusOrcamento.ACEITO })
         orcamentoRepoMock.buscarPorId.mockResolvedValue(orcamento)
         // Act & Assert
-        await expect(useCase.execute('algum-id', idPrestador, { valor: 200 }))
+        await expect(useCase.execute('algum-id', idPrestador, { valorEstimado: 200 }))
             .rejects.toThrow(OperacaoNaoPermitidaError)
     })
 
@@ -132,7 +132,7 @@ describe('AtualizarOrcamentoUseCase', () => {
         const orcamento = OrcamentoMother.criarValido({ idPrestador: outroPrestador })
         orcamentoRepoMock.buscarPorId.mockResolvedValue(orcamento)
         // Act & Assert
-        await expect(useCase.execute('algum-id', new Types.ObjectId().toString(), { valor: 100 }))
+        await expect(useCase.execute('algum-id', new Types.ObjectId().toString(), { valorEstimado: 100 }))
             .rejects.toThrow(AcessoProibidoError)
     })
 

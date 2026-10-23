@@ -115,6 +115,14 @@ describe('CadastrarOrcamentoUseCase', () => {
         expect(orcamentoRepoMock.inserir).not.toHaveBeenCalled()
     })
 
+    it('deve lançar ValorLimiteError quando valorEstimado for menor que 1', async () => {
+        // Arrange
+        const dto = OrcamentoMother.criarDTO({ valorEstimado: 0 })
+        // Act & Assert
+        await expect(useCase.execute(dto)).rejects.toThrow(ValorLimiteError)
+        expect(orcamentoRepoMock.inserir).not.toHaveBeenCalled()
+    })
+
     it('deve lançar ValorLimiteError quando prazoEstimadoHoras for menor que 1', async () => {
         // Arrange
         const dto = OrcamentoMother.criarDTO({ prazoEstimadoHoras: 0 })

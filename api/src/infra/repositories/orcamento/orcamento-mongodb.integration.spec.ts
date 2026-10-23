@@ -42,7 +42,7 @@ describe('Testes de Integração do Repository: Orçamento MongoDB', () => {
             // Assert
             expect(inserido).toBeInstanceOf(Orcamento)
             expect(inserido.id).toBeDefined()
-            expect(inserido.valor).toBe(orcamentoMock.valor)
+            expect(inserido.valorEstimado).toBe(orcamentoMock.valorEstimado)
             expect(inserido.status).toBe(StatusOrcamento.PENDENTE)
         })
 
@@ -85,13 +85,14 @@ describe('Testes de Integração do Repository: Orçamento MongoDB', () => {
 
     describe('buscarPorId()', () => {
         it('deve buscar orçamento por ID e retornar entidade', async () => {
-            // Arrange
-            const documentoInserido = await OrcamentoModel.create(OrcamentoMapper.paraDocumento(orcamentoMock))
+            // Arrange — valor diferente do default do mother, para o teste não passar por coincidência
+            const documentoInserido = await OrcamentoModel.create(OrcamentoMapper.paraDocumento(OrcamentoMother.criarValido({ valorEstimado: 480.75 })))
             // Act
             const encontrado = await repository.buscarPorId(documentoInserido.id.toString())
             // Assert
             expect(encontrado).toBeInstanceOf(Orcamento)
-            expect(encontrado?.valor).toBe(orcamentoMock.valor)
+            expect(documentoInserido.valor_estimado).toBe(480.75)
+            expect(encontrado?.valorEstimado).toBe(480.75)
         })
 
         it('deve retornar null quando ID não for encontrado', async () => {
@@ -183,7 +184,7 @@ describe('Testes de Integração do Repository: Orçamento MongoDB', () => {
             // Assert
             expect(atualizado.descricao).toBeUndefined()
             expect(documento).not.toHaveProperty('descricao')
-            expect(documento?.valor).toBe(orcamentoInserido.valor)
+            expect(documento?.valor_estimado).toBe(orcamentoInserido.valorEstimado)
         })
     })
 })
