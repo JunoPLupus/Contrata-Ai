@@ -12,7 +12,7 @@ const avaliacaoRouter = Router()
  *   get:
  *     tags: [Avaliações]
  *     summary: Lista as avaliações feitas pelo cliente logado
- *     description: Retorna todas as avaliações criadas pelo cliente autenticado (visão completa, sempre com `idCliente`).
+ *     description: Retorna todas as avaliações escritas pelo cliente autenticado (`autor` = `cliente`), na visão completa. As avaliações que ele recebeu de prestadores estão em `GET /clientes/{idCliente}/avaliacoes`.
  *     security:
  *       - bearerAuth: []
  *     responses:
@@ -39,7 +39,7 @@ avaliacaoRouter.get('/avaliacoes', exigeAutenticacao, (req, res) => avaliacaoCon
  *   get:
  *     tags: [Avaliações]
  *     summary: Busca uma avaliação pública por ID
- *     description: Rota pública. Retorna a avaliação na visão pública — `idCliente` é omitido quando `anonima === true` (RN08).
+ *     description: Rota pública. Retorna a avaliação na visão pública — quando `anonima === true`, o id do autor é omitido (RN08).
  *     parameters:
  *       - in: path
  *         name: id
@@ -69,7 +69,11 @@ avaliacaoRouter.get('/avaliacoes/:id', (req, res) => avaliacaoController.buscarP
  *   post:
  *     tags: [Avaliações]
  *     summary: Cadastra uma avaliação
- *     description: Cria uma avaliação do cliente logado para um contrato concluído. A `nota` deve estar entre 1 e 5.
+ *     description: >
+ *       Cria uma avaliação para um contrato concluído, em qualquer direção. O `autor` é deduzido
+ *       pela API: se o usuário logado é o cliente do contrato, avalia o prestador; se é o prestador,
+ *       avalia o cliente. Quem não é parte do contrato recebe 403. No máximo 1 avaliação por
+ *       contrato e direção. A `nota` deve estar entre 1 e 5.
  *     security:
  *       - bearerAuth: []
  *     requestBody:
@@ -95,8 +99,19 @@ avaliacaoRouter.get('/avaliacoes/:id', (req, res) => avaliacaoController.buscarP
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/ErroResposta'
- *             example:
- *               message: "O campo 'nota' deve ser no máximo 5."
+ *             examples:
+ *               notaInvalida:
+ *                 summary: Nota fora do intervalo
+ *                 value:
+ *                   message: "O campo 'nota' deve ser no máximo 5."
+ *               jaAvaliado:
+ *                 summary: Já existe avaliação deste autor para o contrato
+ *                 value:
+ *                   message: "Você já avaliou este contrato."
+ *               contratoNaoConcluido:
+ *                 summary: Contrato ainda não concluído
+ *                 value:
+ *                   message: "A avaliação só é liberada após a conclusão do serviço."
  *       500:
  *         $ref: '#/components/responses/Erro500'
  */
@@ -110,7 +125,7 @@ avaliacaoRouter.post('/avaliacoes', exigeAutenticacao, (req, res) => avaliacaoCo
  *   patch:
  *     tags: [Avaliações]
  *     summary: Atualiza uma avaliação
- *     description: Atualiza parcialmente uma avaliação do cliente logado. Editável por até 7 dias após a criação.
+ *     description: Atualiza parcialmente uma avaliação. Só o autor (cliente ou prestador) pode alterar, por até 7 dias após a criação.
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -158,7 +173,7 @@ avaliacaoRouter.patch('/avaliacoes/:id', exigeAutenticacao, (req, res) => avalia
  *   delete:
  *     tags: [Avaliações]
  *     summary: Remove uma avaliação
- *     description: Exclui uma avaliação do cliente logado. Permitido por até 7 dias após a criação.
+ *     description: Exclui uma avaliação. Só o autor (cliente ou prestador) pode excluir, por até 7 dias após a criação.
  *     security:
  *       - bearerAuth: []
  *     parameters:

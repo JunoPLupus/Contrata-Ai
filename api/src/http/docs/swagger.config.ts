@@ -525,8 +525,9 @@ const schemas = {
             idContrato: { type: 'string', description: 'ID do contrato avaliado.', example: '665f1b2c9a1e4a0012abc040' },
             nota: { type: 'integer', minimum: 1, maximum: 5, example: 5 },
             comentario: { type: 'string', nullable: true, description: 'Opcional. Texto não vazio quando informado.', example: 'Serviço impecável, recomendo!' },
-            anonima: { type: 'boolean', nullable: true, description: 'Opcional. Padrão: false.', example: false },
+            anonima: { type: 'boolean', nullable: true, description: 'Opcional. Padrão: false. Oculta o id do autor na visão pública.', example: false },
         },
+        description: 'O `autor` (cliente ou prestador) não é enviado: a API deduz pelo token comparando com as pontas do contrato.',
     },
     AvaliacaoAtualizacaoRequest: {
         type: 'object',
@@ -539,12 +540,13 @@ const schemas = {
     },
     AvaliacaoResposta: {
         type: 'object',
-        description: 'Visão completa (autor da avaliação) — sempre expõe `idCliente`.',
+        description: 'Visão completa (autor da avaliação) — sempre expõe `idCliente` e `idPrestador`.',
         properties: {
             id: { type: 'string', example: '665f1b2c9a1e4a0012abc060' },
             idContrato: { type: 'string', example: '665f1b2c9a1e4a0012abc040' },
             idCliente: { type: 'string', example: '665f1b2c9a1e4a0012abcd34' },
             idPrestador: { type: 'string', example: '665f1b2c9a1e4a0012abcd99' },
+            autor: { type: 'string', enum: ['cliente', 'prestador'], description: 'Quem escreveu. O avaliado é a outra ponta do contrato.', example: 'cliente' },
             nota: { type: 'integer', minimum: 1, maximum: 5, example: 5 },
             comentario: { type: 'string', nullable: true, example: 'Serviço impecável, recomendo!' },
             anonima: { type: 'boolean', example: false },
@@ -554,12 +556,13 @@ const schemas = {
     },
     AvaliacaoPublicaResposta: {
         type: 'object',
-        description: 'Visão pública — `idCliente` é omitido quando `anonima === true` (RN08).',
+        description: 'Visão pública — quando `anonima === true`, o id do **autor** é omitido (RN08): `idCliente` se o autor for o cliente, `idPrestador` se for o prestador.',
         properties: {
             id: { type: 'string', example: '665f1b2c9a1e4a0012abc060' },
             idContrato: { type: 'string', example: '665f1b2c9a1e4a0012abc040' },
-            idCliente: { type: 'string', nullable: true, example: '665f1b2c9a1e4a0012abcd34' },
-            idPrestador: { type: 'string', example: '665f1b2c9a1e4a0012abcd99' },
+            idCliente: { type: 'string', nullable: true, description: 'Omitido se o autor for o cliente e a avaliação for anônima.', example: '665f1b2c9a1e4a0012abcd34' },
+            idPrestador: { type: 'string', nullable: true, description: 'Omitido se o autor for o prestador e a avaliação for anônima.', example: '665f1b2c9a1e4a0012abcd99' },
+            autor: { type: 'string', enum: ['cliente', 'prestador'], example: 'cliente' },
             nota: { type: 'integer', minimum: 1, maximum: 5, example: 5 },
             comentario: { type: 'string', nullable: true, example: 'Serviço impecável, recomendo!' },
             anonima: { type: 'boolean', example: false },
@@ -612,7 +615,7 @@ const definition = {
         { name: 'Orçamentos', description: 'Orçamentos enviados pelos prestadores.' },
         { name: 'Contratos', description: 'Contratos firmados entre cliente e prestador.' },
         { name: 'Extensões de Prazo', description: 'Solicitação e resposta de extensão de prazo de contratos.' },
-        { name: 'Avaliações', description: 'Avaliações de prestadores pelos clientes.' },
+        { name: 'Avaliações', description: 'Avaliações bidirecionais: o cliente avalia o prestador e o prestador avalia o cliente.' },
     ],
     components: {
         securitySchemes,
