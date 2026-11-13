@@ -1,4 +1,5 @@
 import { Avaliacao } from "../entities/avaliacao/avaliacao.entity";
+import { PapelTipo } from "../value-objects/shared/papel/papel.vo";
 
 export abstract class IAvaliacaoRepository {
     /**
@@ -17,18 +18,20 @@ export abstract class IAvaliacaoRepository {
     abstract buscarPorIdContrato(idContrato: string): Promise<Avaliacao | null>
 
     /**
-     * Busca todas as avaliações feitas por um cliente.
-     * @param idCliente - ID do cliente autor das avaliações.
-     * @returns Lista de avaliações do cliente. Retorna array vazio se nenhuma for encontrada.
+     * Busca as avaliações de contratos de um cliente, na direção informada.
+     * @param idCliente - ID do cliente do contrato.
+     * @param autor - `'cliente'` = avaliações **feitas** pelo cliente; `'prestador'` = **recebidas** por ele.
+     * @returns Lista de avaliações. Retorna array vazio se nenhuma for encontrada.
      */
-    abstract buscarPorIdCliente(idCliente: string): Promise<Avaliacao[]>
+    abstract buscarPorIdCliente(idCliente: string, autor: PapelTipo): Promise<Avaliacao[]>
 
     /**
-     * Busca todas as avaliações recebidas por um prestador.
-     * @param idPrestador - ID do prestador avaliado.
-     * @returns Lista de avaliações do prestador. Retorna array vazio se nenhuma for encontrada.
+     * Busca as avaliações de contratos de um prestador, na direção informada.
+     * @param idPrestador - ID do prestador do contrato.
+     * @param autor - `'cliente'` = avaliações **recebidas** pelo prestador; `'prestador'` = **feitas** por ele.
+     * @returns Lista de avaliações. Retorna array vazio se nenhuma for encontrada.
      */
-    abstract buscarPorIdPrestador(idPrestador: string): Promise<Avaliacao[]>
+    abstract buscarPorIdPrestador(idPrestador: string, autor: PapelTipo): Promise<Avaliacao[]>
 
     /**
      * Persiste uma nova avaliação.

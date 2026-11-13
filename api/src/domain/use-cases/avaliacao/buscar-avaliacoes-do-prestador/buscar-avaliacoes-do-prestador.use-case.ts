@@ -1,5 +1,6 @@
 import { Avaliacao } from "../../../entities/avaliacao/avaliacao.entity";
 import { IAvaliacaoRepository } from "../../../repositories/avaliacao.repository";
+import { Papel } from "../../../value-objects/shared/papel/papel.vo";
 
 export type AvaliacoesDoPrestadorResultado = {
     avaliacoes: Avaliacao[]
@@ -11,7 +12,8 @@ export class BuscarAvaliacoesDoPrestadorUseCase {
     constructor(private readonly avaliacaoRepository: IAvaliacaoRepository) {}
 
     /**
-     * Busca todas as avaliações de um prestador com a média e total calculados (RF08).
+     * Busca as avaliações **recebidas** por um prestador (escritas pelos clientes) com a média
+     * e total calculados (RF08). As avaliações que o prestador escreveu sobre clientes não entram.
      * Rota pública — não requer autenticação.
      *
      * A média é arredondada para 1 casa decimal. Retorna `media: 0` e `total: 0`
@@ -21,7 +23,7 @@ export class BuscarAvaliacoesDoPrestadorUseCase {
      * @returns Objeto com `avaliacoes`, `media` e `total`.
      */
     async execute(idPrestador: string): Promise<AvaliacoesDoPrestadorResultado> {
-        const avaliacoes = await this.avaliacaoRepository.buscarPorIdPrestador(idPrestador)
+        const avaliacoes = await this.avaliacaoRepository.buscarPorIdPrestador(idPrestador, Papel.CLIENTE)
 
         const total = avaliacoes.length
         const media = total === 0

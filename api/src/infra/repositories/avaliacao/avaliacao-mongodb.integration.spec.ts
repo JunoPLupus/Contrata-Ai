@@ -78,46 +78,54 @@ describe('Testes de Integração do Repository: Avaliação MongoDB', () => {
     })
 
     describe('buscarPorIdCliente()', () => {
-        it('deve buscar avaliações por idCliente e retornar lista', async () => {
+        it('deve buscar só as avaliações do cliente na direção informada', async () => {
             // Arrange
             const idCliente = new Types.ObjectId().toString()
-            const a1 = AvaliacaoMother.criarValido({ idCliente })
-            const a2 = AvaliacaoMother.criarValido({ idCliente })
-            await AvaliacaoModel.create(AvaliacaoMapper.paraDocumento(a1))
-            await AvaliacaoModel.create(AvaliacaoMapper.paraDocumento(a2))
+            const feita1 = AvaliacaoMother.criarValido({ idCliente, autor: Papel.CLIENTE })
+            const feita2 = AvaliacaoMother.criarValido({ idCliente, autor: Papel.CLIENTE })
+            const recebida = AvaliacaoMother.criarValido({ idCliente, autor: Papel.PRESTADOR })
+            const deOutroCliente = AvaliacaoMother.criarValido({ autor: Papel.CLIENTE })
+            for (const a of [feita1, feita2, recebida, deOutroCliente]) {
+                await AvaliacaoModel.create(AvaliacaoMapper.paraDocumento(a))
+            }
             // Act
-            const resultado = await repository.buscarPorIdCliente(idCliente)
+            const feitas = await repository.buscarPorIdCliente(idCliente, Papel.CLIENTE)
+            const recebidas = await repository.buscarPorIdCliente(idCliente, Papel.PRESTADOR)
             // Assert
-            expect(resultado).toHaveLength(2)
-            expect(resultado.every(a => a.idCliente === idCliente)).toBe(true)
+            expect(feitas.map(a => a.idContrato).sort()).toEqual([feita1.idContrato, feita2.idContrato].sort())
+            expect(recebidas.map(a => a.idContrato)).toEqual([recebida.idContrato])
         })
 
         it('deve retornar array vazio quando cliente não tiver avaliações', async () => {
             // Act
-            const resultado = await repository.buscarPorIdCliente(new Types.ObjectId().toString())
+            const resultado = await repository.buscarPorIdCliente(new Types.ObjectId().toString(), Papel.CLIENTE)
             // Assert
             expect(resultado).toHaveLength(0)
         })
     })
 
     describe('buscarPorIdPrestador()', () => {
-        it('deve buscar avaliações por idPrestador e retornar lista', async () => {
+        it('deve buscar só as avaliações do prestador na direção informada', async () => {
             // Arrange
             const idPrestador = new Types.ObjectId().toString()
-            const a1 = AvaliacaoMother.criarValido({ idPrestador })
-            const a2 = AvaliacaoMother.criarValido({ idPrestador })
-            await AvaliacaoModel.create(AvaliacaoMapper.paraDocumento(a1))
-            await AvaliacaoModel.create(AvaliacaoMapper.paraDocumento(a2))
+            const recebida1 = AvaliacaoMother.criarValido({ idPrestador, autor: Papel.CLIENTE })
+            const recebida2 = AvaliacaoMother.criarValido({ idPrestador, autor: Papel.CLIENTE })
+            const feita = AvaliacaoMother.criarValido({ idPrestador, autor: Papel.PRESTADOR })
+            const deOutroPrestador = AvaliacaoMother.criarValido({ autor: Papel.CLIENTE })
+            for (const a of [recebida1, recebida2, feita, deOutroPrestador]) {
+                await AvaliacaoModel.create(AvaliacaoMapper.paraDocumento(a))
+            }
             // Act
-            const resultado = await repository.buscarPorIdPrestador(idPrestador)
+            const recebidas = await repository.buscarPorIdPrestador(idPrestador, Papel.CLIENTE)
+            const feitas = await repository.buscarPorIdPrestador(idPrestador, Papel.PRESTADOR)
             // Assert
-            expect(resultado).toHaveLength(2)
-            expect(resultado.every(a => a.idPrestador === idPrestador)).toBe(true)
+            expect(recebidas.map(a => a.idContrato).sort()).toEqual([recebida1.idContrato, recebida2.idContrato].sort())
+            expect(feitas.map(a => a.idContrato)).toEqual([feita.idContrato])
         })
 
         it('deve retornar array vazio quando prestador não tiver avaliações', async () => {
             // Act
-            const resultado = await repository.buscarPorIdPrestador(new Types.ObjectId().toString())
+            const resultado = await repository.buscarPorIdPrestador(new Types.ObjectId().toString(), Papel.CLIENTE)
             // Assert
             expect(resultado).toHaveLength(0)
         })

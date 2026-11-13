@@ -1,6 +1,7 @@
 import { Types } from "mongoose";
 import { BuscarAvaliacoesDoPrestadorUseCase } from "./buscar-avaliacoes-do-prestador.use-case";
 import { AvaliacaoMother } from "../../../../test-helpers/avaliacao.mother";
+import { Papel } from "../../../value-objects/shared/papel/papel.vo";
 
 describe('BuscarAvaliacoesDoPrestadorUseCase', () => {
     let useCase: BuscarAvaliacoesDoPrestadorUseCase
@@ -29,6 +30,17 @@ describe('BuscarAvaliacoesDoPrestadorUseCase', () => {
         expect(resultado.total).toBe(3)
         expect(resultado.media).toBe(4) // (4+5+3)/3 = 4.0
         expect(resultado.avaliacoes).toHaveLength(3)
+    })
+
+    it('deve buscar só as avaliações recebidas pelo prestador (autor "cliente")', async () => {
+        // Arrange
+        avaliacaoRepoMock.buscarPorIdPrestador.mockResolvedValue([])
+
+        // Act
+        await useCase.execute(idPrestador)
+
+        // Assert
+        expect(avaliacaoRepoMock.buscarPorIdPrestador).toHaveBeenCalledWith(idPrestador, Papel.CLIENTE)
     })
 
     it('deve retornar media 0 e total 0 quando prestador não tiver avaliações', async () => {
