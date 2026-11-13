@@ -1,6 +1,8 @@
 import { AvaliacaoProps } from "./avaliacao.props";
 import { NumberValueObject } from "../../value-objects/shared/number/number.vo";
 import { StringValueObject } from "../../value-objects/shared/string/string.vo";
+import { BooleanValueObject } from "../../value-objects/shared/boolean/boolean.vo";
+import { Papel, PapelTipo } from "../../value-objects/shared/papel/papel.vo";
 
 const SETE_DIAS_MS = 7 * 24 * 60 * 60 * 1000
 
@@ -27,6 +29,11 @@ export class Avaliacao {
         return this.props.idPrestador.valor
     }
 
+    /** Papel de quem escreveu a avaliação. O avaliado é sempre a outra ponta do contrato. */
+    get autor(): PapelTipo {
+        return this.props.autor.valor
+    }
+
     get nota(): number {
         return this.props.nota.valor
     }
@@ -36,7 +43,7 @@ export class Avaliacao {
     }
 
     get anonima(): boolean {
-        return this.props.anonima
+        return this.props.anonima.valor
     }
 
     get dataCriacao(): Date {
@@ -62,7 +69,7 @@ export class Avaliacao {
             this.props.comentario = new StringValueObject('comentário', dados.comentario)
         }
         if (dados.anonima !== undefined) {
-            this.props.anonima = dados.anonima
+            this.props.anonima = new BooleanValueObject('anonima', dados.anonima)
         }
         this.props.dataAtualizacao = new Date()
     }
@@ -75,5 +82,19 @@ export class Avaliacao {
      */
     public podeSerAlterada(): boolean {
         return Date.now() - this.props.dataCriacao.getTime() <= SETE_DIAS_MS
+    }
+
+    /**
+     * Verifica se a avaliação foi escrita pelo usuário logado, comparando o perfil do
+     * papel `autor` com os perfis do token. Usado por atualizar e deletar (só o autor pode).
+     *
+     * @param idCliente - ID do perfil de cliente do usuário logado.
+     * @param idPrestador - ID do perfil de prestador do usuário logado, se houver.
+     * @returns `true` se o perfil do papel `autor` pertence ao usuário logado.
+     */
+    public foiEscritaPor(idCliente: string, idPrestador?: string): boolean {
+        return this.autor === Papel.CLIENTE
+            ? this.idCliente === idCliente
+            : this.idPrestador === idPrestador
     }
 }

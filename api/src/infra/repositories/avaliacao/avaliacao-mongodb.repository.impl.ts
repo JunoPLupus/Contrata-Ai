@@ -2,6 +2,7 @@ import { IAvaliacaoRepository } from "../../../domain/repositories/avaliacao.rep
 import { Avaliacao } from "../../../domain/entities/avaliacao/avaliacao.entity";
 import { IAvaliacaoDocument, AvaliacaoModel } from "../../models/avaliacao/avaliacao.model";
 import { AvaliacaoMapper } from "./avaliacao.mapper";
+import { PapelTipo } from "../../../domain/value-objects/shared/papel/papel.vo";
 
 export class AvaliacaoMongodbRepositoryImpl implements IAvaliacaoRepository {
     public async buscarPorId(id: string): Promise<Avaliacao | null> {
@@ -11,21 +12,20 @@ export class AvaliacaoMongodbRepositoryImpl implements IAvaliacaoRepository {
         return AvaliacaoMapper.paraEntidade(documento)
     }
 
-    public async buscarPorIdContrato(idContrato: string): Promise<Avaliacao | null> {
-        const documento = await AvaliacaoModel.findOne({ id_contrato: idContrato })
-        if (!documento) return null
-
-        return AvaliacaoMapper.paraEntidade(documento)
-    }
-
-    public async buscarPorIdCliente(idCliente: string): Promise<Avaliacao[]> {
-        const documentos = await AvaliacaoModel.find({ id_cliente: idCliente })
+    public async buscarPorIdContrato(idContrato: string): Promise<Avaliacao[]> {
+        const documentos = await AvaliacaoModel.find({ id_contrato: idContrato })
 
         return documentos.map(doc => AvaliacaoMapper.paraEntidade(doc))
     }
 
-    public async buscarPorIdPrestador(idPrestador: string): Promise<Avaliacao[]> {
-        const documentos = await AvaliacaoModel.find({ id_prestador: idPrestador })
+    public async buscarPorIdCliente(idCliente: string, autor: PapelTipo): Promise<Avaliacao[]> {
+        const documentos = await AvaliacaoModel.find({ id_cliente: idCliente, autor })
+
+        return documentos.map(doc => AvaliacaoMapper.paraEntidade(doc))
+    }
+
+    public async buscarPorIdPrestador(idPrestador: string, autor: PapelTipo): Promise<Avaliacao[]> {
+        const documentos = await AvaliacaoModel.find({ id_prestador: idPrestador, autor })
 
         return documentos.map(doc => AvaliacaoMapper.paraEntidade(doc))
     }

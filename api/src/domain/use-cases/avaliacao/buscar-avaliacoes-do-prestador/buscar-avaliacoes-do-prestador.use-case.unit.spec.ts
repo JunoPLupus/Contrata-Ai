@@ -1,6 +1,7 @@
 import { Types } from "mongoose";
 import { BuscarAvaliacoesDoPrestadorUseCase } from "./buscar-avaliacoes-do-prestador.use-case";
 import { AvaliacaoMother } from "../../../../test-helpers/avaliacao.mother";
+import { Papel } from "../../../value-objects/shared/papel/papel.vo";
 
 describe('BuscarAvaliacoesDoPrestadorUseCase', () => {
     let useCase: BuscarAvaliacoesDoPrestadorUseCase
@@ -31,6 +32,17 @@ describe('BuscarAvaliacoesDoPrestadorUseCase', () => {
         expect(resultado.avaliacoes).toHaveLength(3)
     })
 
+    it('deve buscar só as avaliações recebidas pelo prestador (autor "cliente")', async () => {
+        // Arrange
+        avaliacaoRepoMock.buscarPorIdPrestador.mockResolvedValue([])
+
+        // Act
+        await useCase.execute(idPrestador)
+
+        // Assert
+        expect(avaliacaoRepoMock.buscarPorIdPrestador).toHaveBeenCalledWith(idPrestador, Papel.CLIENTE)
+    })
+
     it('deve retornar media 0 e total 0 quando prestador não tiver avaliações', async () => {
         // Arrange
         avaliacaoRepoMock.buscarPorIdPrestador.mockResolvedValue([])
@@ -48,6 +60,7 @@ describe('BuscarAvaliacoesDoPrestadorUseCase', () => {
         // Arrange
         const avaliacoes = [
             AvaliacaoMother.criarValido({ idPrestador, nota: 4 }),
+            AvaliacaoMother.criarValido({ idPrestador, nota: 4 }),
             AvaliacaoMother.criarValido({ idPrestador, nota: 5 }),
         ]
         avaliacaoRepoMock.buscarPorIdPrestador.mockResolvedValue(avaliacoes)
@@ -56,6 +69,6 @@ describe('BuscarAvaliacoesDoPrestadorUseCase', () => {
         const resultado = await useCase.execute(idPrestador)
 
         // Assert
-        expect(resultado.media).toBe(4.5) // (4+5)/2 = 4.5
+        expect(resultado.media).toBe(4.3) // (4+4+5)/3 = 4.333...
     })
 })

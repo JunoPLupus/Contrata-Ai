@@ -13,22 +13,23 @@ export class AtualizarAvaliacaoUseCase {
      *
      * Regras:
      * - A avaliação deve existir.
-     * - Só o autor (idCliente) pode atualizar.
-     * - A atualização só é permitida até 7 dias após a criação.
+     * - Só o autor pode atualizar (cliente ou prestador, conforme o campo `autor`).
+     * - A atualização só é permitida até 7 dias após a criação (mesma janela para os dois lados).
      *
      * @param id - ID da avaliação.
-     * @param idCliente - ID do cliente autenticado (do token).
      * @param dados - Campos a atualizar.
+     * @param idCliente - ID do perfil de cliente do usuário logado (do token).
+     * @param idPrestador - ID do perfil de prestador do usuário logado (do token), se houver.
      * @returns A avaliação atualizada.
      * @throws {RecursoNaoEncontradoError} Se a avaliação não existir.
-     * @throws {AcessoProibidoError} Se o cliente não for o autor.
+     * @throws {AcessoProibidoError} Se o usuário logado não for o autor.
      * @throws {OperacaoNaoPermitidaError} Se a janela de 7 dias já tiver expirado.
      */
-    async execute(id: string, idCliente: string, dados: AvaliacaoAtualizacaoDTO): Promise<Avaliacao> {
+    async execute(id: string, dados: AvaliacaoAtualizacaoDTO, idCliente: string, idPrestador?: string): Promise<Avaliacao> {
         const avaliacao = await this.avaliacaoRepository.buscarPorId(id)
         if (!avaliacao) throw new RecursoNaoEncontradoError('Avaliação')
 
-        if (avaliacao.idCliente !== idCliente) throw new AcessoProibidoError()
+        if (!avaliacao.foiEscritaPor(idCliente, idPrestador)) throw new AcessoProibidoError()
 
         if (!avaliacao.podeSerAlterada()) {
             throw new OperacaoNaoPermitidaError('A avaliação só pode ser alterada até 7 dias após o registro.')

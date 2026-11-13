@@ -1,6 +1,7 @@
 import { Types } from "mongoose";
 import { BuscarAvaliacoesDoClienteLogadoUseCase } from "./buscar-avaliacoes-do-cliente-logado.use-case";
 import { AvaliacaoMother } from "../../../../test-helpers/avaliacao.mother";
+import { Papel } from "../../../value-objects/shared/papel/papel.vo";
 
 describe('BuscarAvaliacoesDoClienteLogadoUseCase', () => {
     let useCase: BuscarAvaliacoesDoClienteLogadoUseCase
@@ -13,7 +14,7 @@ describe('BuscarAvaliacoesDoClienteLogadoUseCase', () => {
         useCase = new BuscarAvaliacoesDoClienteLogadoUseCase(avaliacaoRepoMock as any)
     })
 
-    it('deve retornar lista de avaliações do cliente', async () => {
+    it('deve retornar lista de avaliações feitas pelo cliente (autor "cliente")', async () => {
         // Arrange
         const avaliacoes = [AvaliacaoMother.criarValido({ idCliente }), AvaliacaoMother.criarValido({ idCliente })]
         avaliacaoRepoMock.buscarPorIdCliente.mockResolvedValue(avaliacoes)
@@ -23,7 +24,7 @@ describe('BuscarAvaliacoesDoClienteLogadoUseCase', () => {
 
         // Assert
         expect(resultado).toHaveLength(2)
-        expect(avaliacaoRepoMock.buscarPorIdCliente).toHaveBeenCalledWith(idCliente)
+        expect(avaliacaoRepoMock.buscarPorIdCliente).toHaveBeenCalledWith(idCliente, Papel.CLIENTE)
     })
 
     it('deve retornar array vazio quando cliente não tiver avaliações', async () => {

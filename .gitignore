@@ -48,3 +48,6 @@ Thumbs.db
 .envweb/.angular
 .vscode
 .angular
+
+# Extras
+.notes

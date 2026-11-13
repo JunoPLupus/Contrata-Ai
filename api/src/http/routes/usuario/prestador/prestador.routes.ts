@@ -270,7 +270,7 @@ prestadorRouter.get('/prestadores/:idPrestador/servicos', exigeAutenticacao, (re
  *   get:
  *     tags: [Prestadores]
  *     summary: Lista as avaliações de um prestador (RF08)
- *     description: Rota pública. Retorna as avaliações públicas do prestador acompanhadas da média e do total.
+ *     description: Rota pública. Retorna as avaliações recebidas pelo prestador (escritas pelos clientes), na visão pública, acompanhadas da média e do total. As avaliações que o prestador escreveu sobre clientes não entram.
  *     parameters:
  *       - in: path
  *         name: idPrestador
@@ -284,7 +284,7 @@ prestadorRouter.get('/prestadores/:idPrestador/servicos', exigeAutenticacao, (re
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/AvaliacoesDoPrestadorResposta'
+ *               $ref: '#/components/schemas/ResumoAvaliacoesResposta'
  *       500:
  *         $ref: '#/components/responses/Erro500'
  */

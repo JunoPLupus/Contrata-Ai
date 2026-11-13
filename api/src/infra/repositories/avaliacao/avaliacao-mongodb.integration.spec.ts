@@ -6,6 +6,8 @@ import { AvaliacaoModel } from "../../models/avaliacao/avaliacao.model";
 import { AvaliacaoMongodbRepositoryImpl } from "./avaliacao-mongodb.repository.impl";
 import { AvaliacaoMapper } from "./avaliacao.mapper";
 import { AvaliacaoMother } from "../../../test-helpers/avaliacao.mother";
+import { Papel } from "../../../domain/value-objects/shared/papel/papel.vo";
+import { errorHandler } from "../../../http/middlewares/error-handler/error-handler.middleware";
 
 describe('Testes de Integração do Repository: Avaliação MongoDB', () => {
     let repository: AvaliacaoMongodbRepositoryImpl
@@ -15,6 +17,7 @@ describe('Testes de Integração do Repository: Avaliação MongoDB', () => {
     beforeAll(async () => {
         mongod = await MongoMemoryServer.create()
         await mongoose.connect(mongod.getUri())
+        await AvaliacaoModel.syncIndexes()
     })
 
     afterAll(async () => {
@@ -56,90 +59,137 @@ describe('Testes de Integração do Repository: Avaliação MongoDB', () => {
     })
 
     describe('buscarPorIdContrato()', () => {
-        it('deve retornar a avaliação do contrato', async () => {
+        it('deve retornar as avaliações das duas direções do contrato, e só dele', async () => {
             // Arrange
-            await AvaliacaoModel.create(AvaliacaoMapper.paraDocumento(avaliacaoMock))
+            const idContrato = new Types.ObjectId().toString()
+            const doCliente = AvaliacaoMother.criarValido({ idContrato, autor: Papel.CLIENTE })
+            const doPrestador = AvaliacaoMother.criarValido({ idContrato, autor: Papel.PRESTADOR })
+            const deOutroContrato = AvaliacaoMother.criarValido({ autor: Papel.CLIENTE })
+            for (const a of [doCliente, doPrestador, deOutroContrato]) {
+                await AvaliacaoModel.create(AvaliacaoMapper.paraDocumento(a))
+            }
             // Act
-            const resultado = await repository.buscarPorIdContrato(avaliacaoMock.idContrato)
+            const resultado = await repository.buscarPorIdContrato(idContrato)
             // Assert
-            expect(resultado).toBeInstanceOf(Avaliacao)
-            expect(resultado?.idContrato).toBe(avaliacaoMock.idContrato)
+            expect(resultado).toHaveLength(2)
+            expect(resultado.every(a => a instanceof Avaliacao && a.idContrato === idContrato)).toBe(true)
+            expect(resultado.map(a => a.autor).sort()).toEqual([Papel.CLIENTE, Papel.PRESTADOR])
         })
 
-        it('deve retornar null quando o contrato não tiver avaliação', async () => {
+        it('deve retornar lista vazia quando o contrato não tiver avaliação', async () => {
             // Act
             const resultado = await repository.buscarPorIdContrato(new Types.ObjectId().toString())
             // Assert
-            expect(resultado).toBeNull()
+            expect(resultado).toEqual([])
         })
     })
 
     describe('buscarPorIdCliente()', () => {
-        it('deve buscar avaliações por idCliente e retornar lista', async () => {
+        it('deve buscar só as avaliações do cliente na direção informada', async () => {
             // Arrange
             const idCliente = new Types.ObjectId().toString()
-            const a1 = AvaliacaoMother.criarValido({ idCliente })
-            const a2 = AvaliacaoMother.criarValido({ idCliente })
-            await AvaliacaoModel.create(AvaliacaoMapper.paraDocumento(a1))
-            await AvaliacaoModel.create(AvaliacaoMapper.paraDocumento(a2))
+            const feita1 = AvaliacaoMother.criarValido({ idCliente, autor: Papel.CLIENTE })
+            const feita2 = AvaliacaoMother.criarValido({ idCliente, autor: Papel.CLIENTE })
+            const recebida = AvaliacaoMother.criarValido({ idCliente, autor: Papel.PRESTADOR })
+            const deOutroCliente = AvaliacaoMother.criarValido({ autor: Papel.CLIENTE })
+            for (const a of [feita1, feita2, recebida, deOutroCliente]) {
+                await AvaliacaoModel.create(AvaliacaoMapper.paraDocumento(a))
+            }
             // Act
-            const resultado = await repository.buscarPorIdCliente(idCliente)
+            const feitas = await repository.buscarPorIdCliente(idCliente, Papel.CLIENTE)
+            const recebidas = await repository.buscarPorIdCliente(idCliente, Papel.PRESTADOR)
             // Assert
-            expect(resultado).toHaveLength(2)
-            expect(resultado.every(a => a.idCliente === idCliente)).toBe(true)
+            expect(feitas.map(a => a.idContrato).sort()).toEqual([feita1.idContrato, feita2.idContrato].sort())
+            expect(recebidas.map(a => a.idContrato)).toEqual([recebida.idContrato])
         })
 
         it('deve retornar array vazio quando cliente não tiver avaliações', async () => {
             // Act
-            const resultado = await repository.buscarPorIdCliente(new Types.ObjectId().toString())
+            const resultado = await repository.buscarPorIdCliente(new Types.ObjectId().toString(), Papel.CLIENTE)
             // Assert
             expect(resultado).toHaveLength(0)
         })
     })
 
     describe('buscarPorIdPrestador()', () => {
-        it('deve buscar avaliações por idPrestador e retornar lista', async () => {
+        it('deve buscar só as avaliações do prestador na direção informada', async () => {
             // Arrange
             const idPrestador = new Types.ObjectId().toString()
-            const a1 = AvaliacaoMother.criarValido({ idPrestador })
-            const a2 = AvaliacaoMother.criarValido({ idPrestador })
-            await AvaliacaoModel.create(AvaliacaoMapper.paraDocumento(a1))
-            await AvaliacaoModel.create(AvaliacaoMapper.paraDocumento(a2))
+            const recebida1 = AvaliacaoMother.criarValido({ idPrestador, autor: Papel.CLIENTE })
+            const recebida2 = AvaliacaoMother.criarValido({ idPrestador, autor: Papel.CLIENTE })
+            const feita = AvaliacaoMother.criarValido({ idPrestador, autor: Papel.PRESTADOR })
+            const deOutroPrestador = AvaliacaoMother.criarValido({ autor: Papel.CLIENTE })
+            for (const a of [recebida1, recebida2, feita, deOutroPrestador]) {
+                await AvaliacaoModel.create(AvaliacaoMapper.paraDocumento(a))
+            }
             // Act
-            const resultado = await repository.buscarPorIdPrestador(idPrestador)
+            const recebidas = await repository.buscarPorIdPrestador(idPrestador, Papel.CLIENTE)
+            const feitas = await repository.buscarPorIdPrestador(idPrestador, Papel.PRESTADOR)
             // Assert
-            expect(resultado).toHaveLength(2)
-            expect(resultado.every(a => a.idPrestador === idPrestador)).toBe(true)
+            expect(recebidas.map(a => a.idContrato).sort()).toEqual([recebida1.idContrato, recebida2.idContrato].sort())
+            expect(feitas.map(a => a.idContrato)).toEqual([feita.idContrato])
         })
 
         it('deve retornar array vazio quando prestador não tiver avaliações', async () => {
             // Act
-            const resultado = await repository.buscarPorIdPrestador(new Types.ObjectId().toString())
+            const resultado = await repository.buscarPorIdPrestador(new Types.ObjectId().toString(), Papel.CLIENTE)
             // Assert
             expect(resultado).toHaveLength(0)
         })
     })
 
     describe('inserir()', () => {
-        it('deve inserir uma avaliação e retorná-la com id', async () => {
+        it('deve inserir uma avaliação e retorná-la com id e todos os campos', async () => {
+            // Arrange
+            const avaliacao = AvaliacaoMother.criarValido({ autor: Papel.PRESTADOR, nota: 2, comentario: 'Sumiu', anonima: true })
             // Act
-            const inserida = await repository.inserir(avaliacaoMock)
+            const inserida = await repository.inserir(avaliacao)
             // Assert
             expect(inserida).toBeInstanceOf(Avaliacao)
             expect(inserida.id).toBeDefined()
-            expect(inserida.nota).toBe(avaliacaoMock.nota)
-            expect(inserida.idCliente).toBe(avaliacaoMock.idCliente)
+            expect(inserida.idContrato).toBe(avaliacao.idContrato)
+            expect(inserida.idCliente).toBe(avaliacao.idCliente)
+            expect(inserida.idPrestador).toBe(avaliacao.idPrestador)
+            expect(inserida.autor).toBe(Papel.PRESTADOR)
+            expect(inserida.nota).toBe(2)
+            expect(inserida.comentario).toBe('Sumiu')
+            expect(inserida.anonima).toBe(true)
         })
 
-        it('deve garantir unicidade de id_contrato (índice único)', async () => {
+        it('deve aceitar uma avaliação de cada direção no mesmo contrato', async () => {
             // Arrange
             const idContrato = new Types.ObjectId().toString()
-            const primeiraAvaliacao = AvaliacaoMother.criarValido({ idContrato })
-            const segundaAvaliacao = AvaliacaoMother.criarValido({ idContrato })
-            await repository.inserir(primeiraAvaliacao)
+            await repository.inserir(AvaliacaoMother.criarValido({ idContrato, autor: Papel.CLIENTE }))
+            // Act
+            await repository.inserir(AvaliacaoMother.criarValido({ idContrato, autor: Papel.PRESTADOR }))
+            // Assert
+            expect(await AvaliacaoModel.countDocuments({ id_contrato: idContrato })).toBe(2)
+        })
+
+        it('deve recusar segunda avaliação do mesmo autor no mesmo contrato pelo índice nomeado', async () => {
+            // Arrange
+            const idContrato = new Types.ObjectId().toString()
+            await repository.inserir(AvaliacaoMother.criarValido({ idContrato, autor: Papel.CLIENTE }))
 
             // Act & Assert
-            await expect(repository.inserir(segundaAvaliacao)).rejects.toThrow()
+            await expect(repository.inserir(AvaliacaoMother.criarValido({ idContrato, autor: Papel.CLIENTE })))
+                .rejects.toMatchObject({ code: 11000, message: expect.stringContaining('avaliacao_contrato_autor_unico') })
+        })
+
+        it('deve traduzir o E11000 real do índice na mensagem específica do errorHandler', async () => {
+            // Arrange
+            const idContrato = new Types.ObjectId().toString()
+            await repository.inserir(AvaliacaoMother.criarValido({ idContrato, autor: Papel.PRESTADOR }))
+            const erro = await repository.inserir(AvaliacaoMother.criarValido({ idContrato, autor: Papel.PRESTADOR }))
+                .catch((e: Error) => e)
+            const res = { status: jest.fn().mockReturnThis(), json: jest.fn().mockReturnThis() }
+
+            // Act
+            errorHandler(erro as Error, {} as any, res as any, jest.fn())
+
+            // Assert
+            expect(res.status).toHaveBeenCalledWith(422)
+            expect(res.json).toHaveBeenCalledWith({ message: 'Você já avaliou este contrato.' })
         })
     })
 
@@ -148,12 +198,14 @@ describe('Testes de Integração do Repository: Avaliação MongoDB', () => {
             // Arrange
             const documentoInserido = await AvaliacaoModel.create(AvaliacaoMapper.paraDocumento(avaliacaoMock))
             const avaliacaoInserida = AvaliacaoMapper.paraEntidade(documentoInserido)
-            avaliacaoInserida.atualizar({ nota: 2 })
+            avaliacaoInserida.atualizar({ nota: 2, anonima: true })
             // Act
             const atualizada = await repository.atualizar(avaliacaoInserida)
             // Assert
             expect(atualizada).toBeInstanceOf(Avaliacao)
             expect(atualizada.nota).toBe(2)
+            expect(atualizada.anonima).toBe(true)
+            expect(atualizada.autor).toBe(avaliacaoMock.autor)
         })
     })
 

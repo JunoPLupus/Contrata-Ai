@@ -95,12 +95,15 @@
 ## **Avaliações**
 
 ```typescript
-  [X] GET '/avaliacoes' # retorna todas as avaliações feitas pelo cliente logado
-  [X] GET '/avaliacoes/{id}' # retorna uma avaliação (rota pública)
-  [X] GET '/contratos/{idContrato}/avaliacao' # retorna a avaliação de um contrato (rota pública)
-  [X] GET '/prestadores/{idPrestador}/avaliacoes' # retorna todas as avaliações feitas a contratos de um prestador (rota pública)
+  // Avaliação bidirecional: o cliente avalia o prestador e o prestador avalia o cliente.
+  // No máx. 1 por contrato e direção (campo 'autor': 'cliente' | 'prestador', deduzido pela API).
+  [X] GET '/avaliacoes' # retorna todas as avaliações feitas pelo cliente logado (autor 'cliente')
+  [X] GET '/avaliacoes/{id}' # retorna uma avaliação (rota pública; anônima oculta o id do autor)
+  [X] GET '/contratos/{idContrato}/avaliacoes' # retorna as avaliações de um contrato, de 0 a 2, uma por direção (rota pública)
+  [X] GET '/prestadores/{idPrestador}/avaliacoes' # retorna as avaliações recebidas pelo prestador (autor 'cliente'), com média e total (rota pública)
+  [X] GET '/clientes/{idCliente}/avaliacoes' # retorna as avaliações recebidas pelo cliente (autor 'prestador'), com média e total (só prestador logado ou o próprio cliente)
 
-  [X] POST '/avaliacoes' # cadastrar uma avaliação de um contrato realizado (apenas cliente vinculado ao contrato, e só pode avaliar contratos 'concluido')
-  [X] PATCH '/avaliacoes/{id}' # atualiza os dados de uma avaliação (apenas cliente/dono), podendo alterar apenas 'anonima', 'nota' e 'comentario'.
-  [X] DELETE '/avaliacoes/{id}' # deleta permanentemente uma avaliação (apenas autor da avaliação pode fazer isso, só pode deletar até 7 dias após a inserção da avaliação no banco)
+  [X] POST '/avaliacoes' # cadastra uma avaliação de um contrato 'concluido' (cliente ou prestador vinculado ao contrato; o 'autor' é deduzido pelo token)
+  [X] PATCH '/avaliacoes/{id}' # atualiza 'anonima', 'nota' e 'comentario' (apenas o autor, até 7 dias após o registro)
+  [X] DELETE '/avaliacoes/{id}' # deleta permanentemente uma avaliação (apenas o autor, até 7 dias após o registro)
 ```
