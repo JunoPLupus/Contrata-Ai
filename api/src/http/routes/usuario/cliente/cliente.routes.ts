@@ -1,4 +1,4 @@
-import { clienteController } from "../../../../shared/container";
+import { clienteController, avaliacaoController } from "../../../../shared/container";
 import { exigeAutenticacao } from "../../../middlewares/exige-autenticacao/exige-autenticacao.middleware";
 import { Router } from "express";
 
@@ -137,6 +137,47 @@ clienteRouter.put('/clientes', exigeAutenticacao, (req, res) => clienteControlle
  *         $ref: '#/components/responses/Erro500'
  */
 clienteRouter.get('/clientes/:id', exigeAutenticacao, (req, res) => clienteController.buscarPorId(req, res))
+//#endregion
+
+//#region Documentação - GET /clientes/{idCliente}/avaliacoes
+/**
+ * @openapi
+ * /clientes/{idCliente}/avaliacoes:
+ *   get:
+ *     tags: [Clientes]
+ *     summary: Lista as avaliações recebidas por um cliente (reputação)
+ *     description: >
+ *       Retorna as avaliações que o cliente recebeu de prestadores, na visão pública
+ *       (o id do prestador autor é omitido quando `anonima === true`), com média e total.
+ *       Acesso restrito a prestadores logados e ao próprio cliente — outros clientes recebem 403.
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: idCliente
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID do cliente.
+ *     responses:
+ *       200:
+ *         description: Avaliações recebidas pelo cliente com média e total.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ResumoAvaliacoesResposta'
+ *       403:
+ *         description: Usuário sem token válido, ou que não é prestador nem o próprio cliente.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErroResposta'
+ *             example:
+ *               message: "Você não têm permissão para acessar este recurso."
+ *       500:
+ *         $ref: '#/components/responses/Erro500'
+ */
+clienteRouter.get('/clientes/:idCliente/avaliacoes', exigeAutenticacao, (req, res) => avaliacaoController.buscarDoCliente(req, res))
 //#endregion
 
 export default clienteRouter

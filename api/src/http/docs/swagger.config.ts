@@ -567,9 +567,9 @@ const schemas = {
             dataAtualizacao: { type: 'string', format: 'date-time', nullable: true, example: '2026-07-07T09:00:00.000Z' },
         },
     },
-    AvaliacoesDoPrestadorResposta: {
+    ResumoAvaliacoesResposta: {
         type: 'object',
-        description: 'Avaliações públicas de um prestador acompanhadas de média e total (RF08).',
+        description: 'Avaliações recebidas por um perfil (prestador ou cliente), na visão pública, acompanhadas de média e total (RF08).',
         properties: {
             avaliacoes: {
                 type: 'array',

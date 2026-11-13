@@ -1,8 +1,8 @@
 import { Avaliacao } from "../../../domain/entities/avaliacao/avaliacao.entity";
 import { AvaliacaoRespostaDTO } from "../../dto/avaliacao/avaliacao-resposta.dto";
 import { AvaliacaoPublicaRespostaDTO } from "../../dto/avaliacao/avaliacao-publica-resposta.dto";
-import { AvaliacoesDoPrestadorRespostaDTO } from "../../dto/avaliacao/avaliacoes-do-prestador-resposta.dto";
-import { AvaliacoesDoPrestadorResultado } from "../../../domain/use-cases/avaliacao/buscar-avaliacoes-do-prestador/buscar-avaliacoes-do-prestador.use-case";
+import { ResumoAvaliacoesRespostaDTO } from "../../dto/avaliacao/resumo-avaliacoes-resposta.dto";
+import { ResumoAvaliacoes } from "../../../domain/use-cases/avaliacao/resumo-avaliacoes";
 import { Papel } from "../../../domain/value-objects/shared/papel/papel.vo";
 
 export class AvaliacaoMapper {
@@ -54,10 +54,10 @@ export class AvaliacaoMapper {
     }
 
     /**
-     * Visão do prestador — retorna `{ avaliacoes, media, total }` (RF08).
-     * A lista de avaliações usa a visão pública (respeita anonimato).
+     * Resumo das avaliações recebidas por um perfil — `{ avaliacoes, media, total }` (RF08).
+     * Usado pelo prestador e pelo cliente. A lista usa a visão pública (respeita anonimato).
      */
-    public static paraRespostaDoPrestadorDTO(resultado: AvaliacoesDoPrestadorResultado): AvaliacoesDoPrestadorRespostaDTO {
+    public static paraRespostaResumoDTO(resultado: ResumoAvaliacoes): ResumoAvaliacoesRespostaDTO {
         return {
             avaliacoes: AvaliacaoMapper.paraListaRespostaPublicaDTO(resultado.avaliacoes),
             media: resultado.media,

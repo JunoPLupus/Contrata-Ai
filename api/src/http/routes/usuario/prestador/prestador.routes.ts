@@ -284,7 +284,7 @@ prestadorRouter.get('/prestadores/:idPrestador/servicos', exigeAutenticacao, (re
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/AvaliacoesDoPrestadorResposta'
+ *               $ref: '#/components/schemas/ResumoAvaliacoesResposta'
  *       500:
  *         $ref: '#/components/responses/Erro500'
  */

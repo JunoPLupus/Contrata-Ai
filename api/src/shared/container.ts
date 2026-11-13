@@ -69,6 +69,7 @@ import { BuscarAvaliacaoPorIdUseCase } from "../domain/use-cases/avaliacao/busca
 import { BuscarAvaliacoesDoContratoUseCase } from "../domain/use-cases/avaliacao/buscar-avaliacoes-do-contrato/buscar-avaliacoes-do-contrato.use-case";
 import { BuscarAvaliacoesDoClienteLogadoUseCase } from "../domain/use-cases/avaliacao/buscar-avaliacoes-do-cliente-logado/buscar-avaliacoes-do-cliente-logado.use-case";
 import { BuscarAvaliacoesDoPrestadorUseCase } from "../domain/use-cases/avaliacao/buscar-avaliacoes-do-prestador/buscar-avaliacoes-do-prestador.use-case";
+import { BuscarAvaliacoesDoClienteUseCase } from "../domain/use-cases/avaliacao/buscar-avaliacoes-do-cliente/buscar-avaliacoes-do-cliente.use-case";
 import { AtualizarAvaliacaoUseCase } from "../domain/use-cases/avaliacao/atualizar-avaliacao/atualizar-avaliacao.use-case";
 import { DeletarAvaliacaoUseCase } from "../domain/use-cases/avaliacao/deletar-avaliacao/deletar-avaliacao.use-case";
 import { AvaliacaoController } from "../http/controllers/avaliacao/avaliacao.controller";
@@ -207,6 +208,7 @@ const buscarAvaliacoesDoClienteLogadoUseCase = new BuscarAvaliacoesDoClienteLoga
 const buscarAvaliacoesDoPrestadorUseCase = new BuscarAvaliacoesDoPrestadorUseCase(avaliacaoRepository)
 const atualizarAvaliacaoUseCase = new AtualizarAvaliacaoUseCase(avaliacaoRepository)
 const deletarAvaliacaoUseCase = new DeletarAvaliacaoUseCase(avaliacaoRepository)
+const buscarAvaliacoesDoClienteUseCase = new BuscarAvaliacoesDoClienteUseCase(avaliacaoRepository)
 export const avaliacaoController = new AvaliacaoController(
     cadastrarAvaliacaoUseCase,
     buscarAvaliacaoPorIdUseCase,
@@ -214,7 +216,8 @@ export const avaliacaoController = new AvaliacaoController(
     buscarAvaliacoesDoClienteLogadoUseCase,
     buscarAvaliacoesDoPrestadorUseCase,
     atualizarAvaliacaoUseCase,
-    deletarAvaliacaoUseCase
+    deletarAvaliacaoUseCase,
+    buscarAvaliacoesDoClienteUseCase
 )
 //#endregion
 

@@ -7,6 +7,7 @@ import { BuscarAvaliacaoPorIdUseCase } from "../../../domain/use-cases/avaliacao
 import { BuscarAvaliacoesDoContratoUseCase } from "../../../domain/use-cases/avaliacao/buscar-avaliacoes-do-contrato/buscar-avaliacoes-do-contrato.use-case";
 import { BuscarAvaliacoesDoClienteLogadoUseCase } from "../../../domain/use-cases/avaliacao/buscar-avaliacoes-do-cliente-logado/buscar-avaliacoes-do-cliente-logado.use-case";
 import { BuscarAvaliacoesDoPrestadorUseCase } from "../../../domain/use-cases/avaliacao/buscar-avaliacoes-do-prestador/buscar-avaliacoes-do-prestador.use-case";
+import { BuscarAvaliacoesDoClienteUseCase } from "../../../domain/use-cases/avaliacao/buscar-avaliacoes-do-cliente/buscar-avaliacoes-do-cliente.use-case";
 import { AtualizarAvaliacaoUseCase } from "../../../domain/use-cases/avaliacao/atualizar-avaliacao/atualizar-avaliacao.use-case";
 import { DeletarAvaliacaoUseCase } from "../../../domain/use-cases/avaliacao/deletar-avaliacao/deletar-avaliacao.use-case";
 import { AvaliacaoMother } from "../../../test-helpers/avaliacao.mother";
@@ -22,6 +23,7 @@ describe('Testes Unitários do Controller: Avaliação', () => {
     let buscarDoPrestadorMock: jest.Mocked<BuscarAvaliacoesDoPrestadorUseCase>
     let atualizarMock: jest.Mocked<AtualizarAvaliacaoUseCase>
     let deletarMock: jest.Mocked<DeletarAvaliacaoUseCase>
+    let buscarDoClienteMock: jest.Mocked<BuscarAvaliacoesDoClienteUseCase>
     let req: Partial<Request>
     let res: Partial<Response>
 
@@ -36,6 +38,7 @@ describe('Testes Unitários do Controller: Avaliação', () => {
         buscarDoPrestadorMock = { execute: jest.fn() } as any
         atualizarMock = { execute: jest.fn() } as any
         deletarMock = { execute: jest.fn() } as any
+        buscarDoClienteMock = { execute: jest.fn() } as any
 
         controller = new AvaliacaoController(
             cadastrarMock,
@@ -44,7 +47,8 @@ describe('Testes Unitários do Controller: Avaliação', () => {
             buscarDoClienteLogadoMock,
             buscarDoPrestadorMock,
             atualizarMock,
-            deletarMock
+            deletarMock,
+            buscarDoClienteMock
         )
 
         res = {
@@ -202,19 +206,46 @@ describe('Testes Unitários do Controller: Avaliação', () => {
     })
 
     describe('buscarDoPrestador()', () => {
-        it('deve retornar 200 com AvaliacoesDoPrestadorRespostaDTO', async () => {
+        it('deve retornar 200 com avaliações (visão pública), média e total', async () => {
             // Arrange
-            const idPrestador = new Types.ObjectId().toString()
-            const resultado = { avaliacoes: [AvaliacaoMother.criarValido({ idPrestador })], media: 5, total: 1 }
+            const avaliacao = AvaliacaoMother.criarValido({ idCliente, idPrestador, autor: Papel.CLIENTE, anonima: true, nota: 4 })
             req = { params: { idPrestador } }
-            buscarDoPrestadorMock.execute.mockResolvedValue(resultado)
+            buscarDoPrestadorMock.execute.mockResolvedValue({ avaliacoes: [avaliacao], media: 4, total: 1 })
 
             // Act
             await controller.buscarDoPrestador(req as any, res as any)
 
             // Assert
+            expect(buscarDoPrestadorMock.execute).toHaveBeenCalledWith(idPrestador)
             expect(res.status).toHaveBeenCalledWith(200)
-            expect(res.json).toHaveBeenCalledWith(AvaliacaoMapper.paraRespostaDoPrestadorDTO(resultado))
+            const corpo = (res.json as jest.Mock).mock.calls[0][0]
+            expect(corpo.media).toBe(4)
+            expect(corpo.total).toBe(1)
+            expect(corpo.avaliacoes).toHaveLength(1)
+            expect(corpo.avaliacoes[0]).toMatchObject({ id: avaliacao.id, nota: 4, idPrestador, autor: 'cliente' })
+            expect(corpo.avaliacoes[0].idCliente).toBeUndefined()
+        })
+    })
+
+    describe('buscarDoCliente()', () => {
+        it('deve repassar o cliente consultado e os perfis do token, e retornar 200 com o resumo', async () => {
+            // Arrange
+            const idClienteConsultado = new Types.ObjectId().toString()
+            const avaliacao = AvaliacaoMother.criarValido({ idCliente: idClienteConsultado, idPrestador, autor: Papel.PRESTADOR, nota: 2, anonima: true })
+            req = { params: { idCliente: idClienteConsultado }, user: { idCliente, idPrestador } }
+            buscarDoClienteMock.execute.mockResolvedValue({ avaliacoes: [avaliacao], media: 2, total: 1 })
+
+            // Act
+            await controller.buscarDoCliente(req as any, res as any)
+
+            // Assert
+            expect(buscarDoClienteMock.execute).toHaveBeenCalledWith(idClienteConsultado, idCliente, idPrestador)
+            expect(res.status).toHaveBeenCalledWith(200)
+            const corpo = (res.json as jest.Mock).mock.calls[0][0]
+            expect(corpo.media).toBe(2)
+            expect(corpo.total).toBe(1)
+            expect(corpo.avaliacoes[0]).toMatchObject({ id: avaliacao.id, nota: 2, idCliente: idClienteConsultado, autor: 'prestador' })
+            expect(corpo.avaliacoes[0].idPrestador).toBeUndefined()
         })
     })
 
