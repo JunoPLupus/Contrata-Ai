@@ -60,6 +60,7 @@ describe('BuscarAvaliacoesDoPrestadorUseCase', () => {
         // Arrange
         const avaliacoes = [
             AvaliacaoMother.criarValido({ idPrestador, nota: 4 }),
+            AvaliacaoMother.criarValido({ idPrestador, nota: 4 }),
             AvaliacaoMother.criarValido({ idPrestador, nota: 5 }),
         ]
         avaliacaoRepoMock.buscarPorIdPrestador.mockResolvedValue(avaliacoes)
@@ -68,6 +69,6 @@ describe('BuscarAvaliacoesDoPrestadorUseCase', () => {
         const resultado = await useCase.execute(idPrestador)
 
         // Assert
-        expect(resultado.media).toBe(4.5) // (4+5)/2 = 4.5
+        expect(resultado.media).toBe(4.3) // (4+4+5)/3 = 4.333...
     })
 })
