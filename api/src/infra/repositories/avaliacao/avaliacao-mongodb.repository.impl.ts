@@ -12,11 +12,10 @@ export class AvaliacaoMongodbRepositoryImpl implements IAvaliacaoRepository {
         return AvaliacaoMapper.paraEntidade(documento)
     }
 
-    public async buscarPorIdContrato(idContrato: string): Promise<Avaliacao | null> {
-        const documento = await AvaliacaoModel.findOne({ id_contrato: idContrato })
-        if (!documento) return null
+    public async buscarPorIdContrato(idContrato: string): Promise<Avaliacao[]> {
+        const documentos = await AvaliacaoModel.find({ id_contrato: idContrato })
 
-        return AvaliacaoMapper.paraEntidade(documento)
+        return documentos.map(doc => AvaliacaoMapper.paraEntidade(doc))
     }
 
     public async buscarPorIdCliente(idCliente: string, autor: PapelTipo): Promise<Avaliacao[]> {

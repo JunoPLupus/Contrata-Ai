@@ -4,7 +4,7 @@ import { Types } from 'mongoose';
 import { AvaliacaoController } from "./avaliacao.controller";
 import { CadastrarAvaliacaoUseCase } from "../../../domain/use-cases/avaliacao/cadastrar-avaliacao/cadastrar-avaliacao.use-case";
 import { BuscarAvaliacaoPorIdUseCase } from "../../../domain/use-cases/avaliacao/buscar-avaliacao-por-id/buscar-avaliacao-por-id.use-case";
-import { BuscarAvaliacaoDoContratoUseCase } from "../../../domain/use-cases/avaliacao/buscar-avaliacao-do-contrato/buscar-avaliacao-do-contrato.use-case";
+import { BuscarAvaliacoesDoContratoUseCase } from "../../../domain/use-cases/avaliacao/buscar-avaliacoes-do-contrato/buscar-avaliacoes-do-contrato.use-case";
 import { BuscarAvaliacoesDoClienteLogadoUseCase } from "../../../domain/use-cases/avaliacao/buscar-avaliacoes-do-cliente-logado/buscar-avaliacoes-do-cliente-logado.use-case";
 import { BuscarAvaliacoesDoPrestadorUseCase } from "../../../domain/use-cases/avaliacao/buscar-avaliacoes-do-prestador/buscar-avaliacoes-do-prestador.use-case";
 import { AtualizarAvaliacaoUseCase } from "../../../domain/use-cases/avaliacao/atualizar-avaliacao/atualizar-avaliacao.use-case";
@@ -17,7 +17,7 @@ describe('Testes Unitários do Controller: Avaliação', () => {
     let controller: AvaliacaoController
     let cadastrarMock: jest.Mocked<CadastrarAvaliacaoUseCase>
     let buscarPorIdMock: jest.Mocked<BuscarAvaliacaoPorIdUseCase>
-    let buscarDoContratoMock: jest.Mocked<BuscarAvaliacaoDoContratoUseCase>
+    let buscarDoContratoMock: jest.Mocked<BuscarAvaliacoesDoContratoUseCase>
     let buscarDoClienteLogadoMock: jest.Mocked<BuscarAvaliacoesDoClienteLogadoUseCase>
     let buscarDoPrestadorMock: jest.Mocked<BuscarAvaliacoesDoPrestadorUseCase>
     let atualizarMock: jest.Mocked<AtualizarAvaliacaoUseCase>
@@ -150,18 +150,38 @@ describe('Testes Unitários do Controller: Avaliação', () => {
     })
 
     describe('buscarDoContrato()', () => {
-        it('deve retornar 200 com AvaliacaoPublicaRespostaDTO', async () => {
+        it('deve retornar 200 com a lista na visão pública, uma por direção', async () => {
             // Arrange
-            const avaliacao = AvaliacaoMother.criarValido()
-            req = { params: { idContrato: avaliacao.idContrato } }
-            buscarDoContratoMock.execute.mockResolvedValue(avaliacao)
+            const idContrato = new Types.ObjectId().toString()
+            const doCliente = AvaliacaoMother.criarValido({ idContrato, idCliente, idPrestador, autor: Papel.CLIENTE, nota: 5 })
+            const doPrestador = AvaliacaoMother.criarValido({ idContrato, idCliente, idPrestador, autor: Papel.PRESTADOR, nota: 2, anonima: true })
+            req = { params: { idContrato } }
+            buscarDoContratoMock.execute.mockResolvedValue([doCliente, doPrestador])
+
+            // Act
+            await controller.buscarDoContrato(req as any, res as any)
+
+            // Assert
+            expect(buscarDoContratoMock.execute).toHaveBeenCalledWith(idContrato)
+            expect(res.status).toHaveBeenCalledWith(200)
+            const corpo = (res.json as jest.Mock).mock.calls[0][0]
+            expect(corpo).toHaveLength(2)
+            expect(corpo[0]).toMatchObject({ autor: 'cliente', nota: 5, idCliente, idPrestador })
+            expect(corpo[1]).toMatchObject({ autor: 'prestador', nota: 2, idCliente })
+            expect(corpo[1].idPrestador).toBeUndefined()
+        })
+
+        it('deve retornar 200 com lista vazia quando o contrato ainda não foi avaliado', async () => {
+            // Arrange
+            req = { params: { idContrato: new Types.ObjectId().toString() } }
+            buscarDoContratoMock.execute.mockResolvedValue([])
 
             // Act
             await controller.buscarDoContrato(req as any, res as any)
 
             // Assert
             expect(res.status).toHaveBeenCalledWith(200)
-            expect(res.json).toHaveBeenCalledWith(AvaliacaoMapper.paraRespostaPublicaDTO(avaliacao))
+            expect(res.json).toHaveBeenCalledWith([])
         })
     })
 

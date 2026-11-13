@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 
 import { CadastrarAvaliacaoUseCase } from "../../../domain/use-cases/avaliacao/cadastrar-avaliacao/cadastrar-avaliacao.use-case";
 import { BuscarAvaliacaoPorIdUseCase } from "../../../domain/use-cases/avaliacao/buscar-avaliacao-por-id/buscar-avaliacao-por-id.use-case";
-import { BuscarAvaliacaoDoContratoUseCase } from "../../../domain/use-cases/avaliacao/buscar-avaliacao-do-contrato/buscar-avaliacao-do-contrato.use-case";
+import { BuscarAvaliacoesDoContratoUseCase } from "../../../domain/use-cases/avaliacao/buscar-avaliacoes-do-contrato/buscar-avaliacoes-do-contrato.use-case";
 import { BuscarAvaliacoesDoClienteLogadoUseCase } from "../../../domain/use-cases/avaliacao/buscar-avaliacoes-do-cliente-logado/buscar-avaliacoes-do-cliente-logado.use-case";
 import { BuscarAvaliacoesDoPrestadorUseCase } from "../../../domain/use-cases/avaliacao/buscar-avaliacoes-do-prestador/buscar-avaliacoes-do-prestador.use-case";
 import { AtualizarAvaliacaoUseCase } from "../../../domain/use-cases/avaliacao/atualizar-avaliacao/atualizar-avaliacao.use-case";
@@ -15,7 +15,7 @@ export class AvaliacaoController {
     constructor(
         private readonly cadastrarAvaliacaoUseCase: CadastrarAvaliacaoUseCase,
         private readonly buscarAvaliacaoPorIdUseCase: BuscarAvaliacaoPorIdUseCase,
-        private readonly buscarAvaliacaoDoContratoUseCase: BuscarAvaliacaoDoContratoUseCase,
+        private readonly buscarAvaliacoesDoContratoUseCase: BuscarAvaliacoesDoContratoUseCase,
         private readonly buscarAvaliacoesDoClienteLogadoUseCase: BuscarAvaliacoesDoClienteLogadoUseCase,
         private readonly buscarAvaliacoesDoPrestadorUseCase: BuscarAvaliacoesDoPrestadorUseCase,
         private readonly atualizarAvaliacaoUseCase: AtualizarAvaliacaoUseCase,
@@ -39,8 +39,8 @@ export class AvaliacaoController {
     }
 
     public async buscarDoContrato(request: Request, response: Response): Promise<void> {
-        const avaliacao = await this.buscarAvaliacaoDoContratoUseCase.execute(request.params.idContrato as string)
-        response.status(200).json(AvaliacaoMapper.paraRespostaPublicaDTO(avaliacao))
+        const avaliacoes = await this.buscarAvaliacoesDoContratoUseCase.execute(request.params.idContrato as string)
+        response.status(200).json(AvaliacaoMapper.paraListaRespostaPublicaDTO(avaliacoes))
     }
 
     public async buscarDoClienteLogado(request: Request, response: Response): Promise<void> {

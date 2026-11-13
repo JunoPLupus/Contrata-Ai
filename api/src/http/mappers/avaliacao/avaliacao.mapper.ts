@@ -28,7 +28,7 @@ export class AvaliacaoMapper {
     /**
      * Visão pública — quando `anonima === true`, oculta o id do **autor** (RN08): `idCliente`
      * se quem escreveu foi o cliente, `idPrestador` se foi o prestador. O avaliado continua visível.
-     * Usada nas rotas públicas: `GET /avaliacoes/:id` e `GET /contratos/:idContrato/avaliacao`.
+     * Usada nas rotas públicas: `GET /avaliacoes/:id` e `GET /contratos/:idContrato/avaliacoes`.
      */
     public static paraRespostaPublicaDTO(avaliacao: Avaliacao): AvaliacaoPublicaRespostaDTO {
         return {

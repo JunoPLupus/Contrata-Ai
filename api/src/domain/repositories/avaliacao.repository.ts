@@ -10,12 +10,12 @@ export abstract class IAvaliacaoRepository {
     abstract buscarPorId(id: string): Promise<Avaliacao | null>
 
     /**
-     * Busca a avaliação de um contrato específico.
-     * Garante a regra de 1 avaliação por contrato (retorna no máximo 1).
+     * Busca as avaliações de um contrato: no máximo 2, uma por direção (índice único
+     * `{ id_contrato, autor }`).
      * @param idContrato - ID do contrato.
-     * @returns A avaliação do contrato, ou `null` se ainda não foi avaliado.
+     * @returns Lista com 0, 1 ou 2 avaliações.
      */
-    abstract buscarPorIdContrato(idContrato: string): Promise<Avaliacao | null>
+    abstract buscarPorIdContrato(idContrato: string): Promise<Avaliacao[]>
 
     /**
      * Busca as avaliações de contratos de um cliente, na direção informada.

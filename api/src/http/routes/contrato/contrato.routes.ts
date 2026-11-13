@@ -403,14 +403,17 @@ contratoRouter.patch('/contratos/:id/estender-prazo/:idExtensao/responder', exig
 contratoRouter.patch('/contratos/:id/relatar-problema', exigeAutenticacao, (req, res) => contratoController.relatarProblema(req, res))
 //#endregion
 
-//#region Documentação - GET /contratos/{idContrato}/avaliacao
+//#region Documentação - GET /contratos/{idContrato}/avaliacoes
 /**
  * @openapi
- * /contratos/{idContrato}/avaliacao:
+ * /contratos/{idContrato}/avaliacoes:
  *   get:
  *     tags: [Avaliações]
- *     summary: Busca a avaliação de um contrato
- *     description: Rota pública. Retorna a avaliação vinculada ao contrato na visão pública (respeita anonimato — RN08).
+ *     summary: Lista as avaliações de um contrato
+ *     description: >
+ *       Rota pública. Retorna até 2 avaliações na visão pública — uma por direção
+ *       (`autor` = `cliente` ou `prestador`). Quando `anonima === true`, o id do autor
+ *       é omitido (RN08). Contrato ainda não avaliado retorna lista vazia.
  *     parameters:
  *       - in: path
  *         name: idContrato
@@ -420,17 +423,18 @@ contratoRouter.patch('/contratos/:id/relatar-problema', exigeAutenticacao, (req,
  *         description: ID do contrato.
  *     responses:
  *       200:
- *         description: Avaliação do contrato (visão pública).
+ *         description: Avaliações do contrato (visão pública), de 0 a 2.
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/AvaliacaoPublicaResposta'
- *       404:
- *         $ref: '#/components/responses/Erro404Avaliacao'
+ *               type: array
+ *               maxItems: 2
+ *               items:
+ *                 $ref: '#/components/schemas/AvaliacaoPublicaResposta'
  *       500:
  *         $ref: '#/components/responses/Erro500'
  */
-contratoRouter.get('/contratos/:idContrato/avaliacao', (req, res) => avaliacaoController.buscarDoContrato(req, res))
+contratoRouter.get('/contratos/:idContrato/avaliacoes', (req, res) => avaliacaoController.buscarDoContrato(req, res))
 //#endregion
 
 export default contratoRouter

@@ -59,21 +59,28 @@ describe('Testes de Integração do Repository: Avaliação MongoDB', () => {
     })
 
     describe('buscarPorIdContrato()', () => {
-        it('deve retornar a avaliação do contrato', async () => {
+        it('deve retornar as avaliações das duas direções do contrato, e só dele', async () => {
             // Arrange
-            await AvaliacaoModel.create(AvaliacaoMapper.paraDocumento(avaliacaoMock))
+            const idContrato = new Types.ObjectId().toString()
+            const doCliente = AvaliacaoMother.criarValido({ idContrato, autor: Papel.CLIENTE })
+            const doPrestador = AvaliacaoMother.criarValido({ idContrato, autor: Papel.PRESTADOR })
+            const deOutroContrato = AvaliacaoMother.criarValido({ autor: Papel.CLIENTE })
+            for (const a of [doCliente, doPrestador, deOutroContrato]) {
+                await AvaliacaoModel.create(AvaliacaoMapper.paraDocumento(a))
+            }
             // Act
-            const resultado = await repository.buscarPorIdContrato(avaliacaoMock.idContrato)
+            const resultado = await repository.buscarPorIdContrato(idContrato)
             // Assert
-            expect(resultado).toBeInstanceOf(Avaliacao)
-            expect(resultado?.idContrato).toBe(avaliacaoMock.idContrato)
+            expect(resultado).toHaveLength(2)
+            expect(resultado.every(a => a instanceof Avaliacao && a.idContrato === idContrato)).toBe(true)
+            expect(resultado.map(a => a.autor).sort()).toEqual([Papel.CLIENTE, Papel.PRESTADOR])
         })
 
-        it('deve retornar null quando o contrato não tiver avaliação', async () => {
+        it('deve retornar lista vazia quando o contrato não tiver avaliação', async () => {
             // Act
             const resultado = await repository.buscarPorIdContrato(new Types.ObjectId().toString())
             // Assert
-            expect(resultado).toBeNull()
+            expect(resultado).toEqual([])
         })
     })
 

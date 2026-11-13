@@ -59,3 +59,5 @@ nome como texto solto — quebraria em silêncio se o índice fosse renomeado.
 * A extração depende do formato da mensagem do E11000. Um teste de integração gera o erro num
 MongoDB real (`mongodb-memory-server`) e confere a mensagem traduzida, para detectar mudança de
 formato numa atualização do MongoDB.
+* O índice continua com `id_contrato` como prefixo, então também atende às buscas só por contrato
+(`GET /contratos/{idContrato}/avaliacoes`, que retorna de 0 a 2 avaliações).

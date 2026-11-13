@@ -66,7 +66,7 @@ import { ExtensaoPrazoController } from "../http/controllers/extensao-prazo/exte
 import { AvaliacaoMongodbRepositoryImpl } from "../infra/repositories/avaliacao/avaliacao-mongodb.repository.impl";
 import { CadastrarAvaliacaoUseCase } from "../domain/use-cases/avaliacao/cadastrar-avaliacao/cadastrar-avaliacao.use-case";
 import { BuscarAvaliacaoPorIdUseCase } from "../domain/use-cases/avaliacao/buscar-avaliacao-por-id/buscar-avaliacao-por-id.use-case";
-import { BuscarAvaliacaoDoContratoUseCase } from "../domain/use-cases/avaliacao/buscar-avaliacao-do-contrato/buscar-avaliacao-do-contrato.use-case";
+import { BuscarAvaliacoesDoContratoUseCase } from "../domain/use-cases/avaliacao/buscar-avaliacoes-do-contrato/buscar-avaliacoes-do-contrato.use-case";
 import { BuscarAvaliacoesDoClienteLogadoUseCase } from "../domain/use-cases/avaliacao/buscar-avaliacoes-do-cliente-logado/buscar-avaliacoes-do-cliente-logado.use-case";
 import { BuscarAvaliacoesDoPrestadorUseCase } from "../domain/use-cases/avaliacao/buscar-avaliacoes-do-prestador/buscar-avaliacoes-do-prestador.use-case";
 import { AtualizarAvaliacaoUseCase } from "../domain/use-cases/avaliacao/atualizar-avaliacao/atualizar-avaliacao.use-case";
@@ -202,7 +202,7 @@ export const extensaoPrazoController = new ExtensaoPrazoController(
 const avaliacaoRepository = new AvaliacaoMongodbRepositoryImpl()
 const cadastrarAvaliacaoUseCase = new CadastrarAvaliacaoUseCase(avaliacaoRepository, contratoRepository)
 const buscarAvaliacaoPorIdUseCase = new BuscarAvaliacaoPorIdUseCase(avaliacaoRepository)
-const buscarAvaliacaoDoContratoUseCase = new BuscarAvaliacaoDoContratoUseCase(avaliacaoRepository)
+const buscarAvaliacoesDoContratoUseCase = new BuscarAvaliacoesDoContratoUseCase(avaliacaoRepository)
 const buscarAvaliacoesDoClienteLogadoUseCase = new BuscarAvaliacoesDoClienteLogadoUseCase(avaliacaoRepository)
 const buscarAvaliacoesDoPrestadorUseCase = new BuscarAvaliacoesDoPrestadorUseCase(avaliacaoRepository)
 const atualizarAvaliacaoUseCase = new AtualizarAvaliacaoUseCase(avaliacaoRepository)
@@ -210,7 +210,7 @@ const deletarAvaliacaoUseCase = new DeletarAvaliacaoUseCase(avaliacaoRepository)
 export const avaliacaoController = new AvaliacaoController(
     cadastrarAvaliacaoUseCase,
     buscarAvaliacaoPorIdUseCase,
-    buscarAvaliacaoDoContratoUseCase,
+    buscarAvaliacoesDoContratoUseCase,
     buscarAvaliacoesDoClienteLogadoUseCase,
     buscarAvaliacoesDoPrestadorUseCase,
     atualizarAvaliacaoUseCase,
