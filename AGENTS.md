@@ -70,10 +70,13 @@ decisões de arquitetura (ADRs, em AsciiDoc) em `api/docs/adr/`.
 
 Antes de começar um trabalho, decida o tamanho dele:
 
-- **Spec** = desenho antes de implementar (o problema, as decisões, os contratos, a lista de tasks).
-  Fica em `.agents/docs/specs/AAAA-MM-DD-<assunto>/spec.md`, com as tasks dela em `tasks/` na mesma pasta.
+- **Spec** = desenho antes de implementar. É uma pasta `.agents/docs/specs/AAAA-MM-DD-<assunto>/` com:
+  - `spec.md` — o quê e por quê: problema, escopo, decisões de produto, critérios de aceite (`CA-NN`);
+  - `design.md` — como: decisões técnicas, mudanças no modelo e na API, impacto, testes, lista de tasks;
+  - `tasks/NN-<assunto>.md` — fatias verticais, numeradas na ordem de dependência.
 - **Task** = execução de uma mudança já entendida. Task avulsa fica em
   `.agents/docs/tasks/AAAA-MM-DD-<assunto>.md`.
+- Modelos: [`.agents/docs/templates/`](.agents/docs/templates/) (`spec.md`, `design.md`, `task.md`).
 
 **Vira spec** se valer qualquer um destes:
 
