@@ -11,6 +11,7 @@ import { AtualizarAvaliacaoUseCase } from "../../../domain/use-cases/avaliacao/a
 import { DeletarAvaliacaoUseCase } from "../../../domain/use-cases/avaliacao/deletar-avaliacao/deletar-avaliacao.use-case";
 import { AvaliacaoMother } from "../../../test-helpers/avaliacao.mother";
 import { AvaliacaoMapper } from "../../mappers/avaliacao/avaliacao.mapper";
+import { Papel } from "../../../domain/value-objects/shared/papel/papel.vo";
 
 describe('Testes Unitários do Controller: Avaliação', () => {
     let controller: AvaliacaoController
@@ -25,6 +26,7 @@ describe('Testes Unitários do Controller: Avaliação', () => {
     let res: Partial<Response>
 
     const idCliente = new Types.ObjectId().toString()
+    const idPrestador = new Types.ObjectId().toString()
 
     beforeEach(() => {
         cadastrarMock = { execute: jest.fn() } as any
@@ -53,10 +55,12 @@ describe('Testes Unitários do Controller: Avaliação', () => {
     })
 
     describe('cadastrar()', () => {
-        it('deve retornar 201 com AvaliacaoRespostaDTO', async () => {
+        it('deve retornar 201 com a visão completa, incluindo o autor', async () => {
             // Arrange
-            const avaliacao = AvaliacaoMother.criarValido({ idCliente })
-            req = { user: { idCliente }, body: { idContrato: avaliacao.idContrato, nota: 5 } }
+            const avaliacao = AvaliacaoMother.criarValido({
+                idCliente, idPrestador, autor: Papel.PRESTADOR, nota: 2, comentario: 'Não pagou', anonima: true
+            })
+            req = { user: { idCliente, idPrestador }, body: { idContrato: avaliacao.idContrato, nota: 2 } }
             cadastrarMock.execute.mockResolvedValue(avaliacao)
 
             // Act
@@ -64,7 +68,36 @@ describe('Testes Unitários do Controller: Avaliação', () => {
 
             // Assert
             expect(res.status).toHaveBeenCalledWith(201)
-            expect(res.json).toHaveBeenCalledWith(AvaliacaoMapper.paraRespostaDTO(avaliacao))
+            expect(res.json).toHaveBeenCalledWith({
+                id: avaliacao.id,
+                idContrato: avaliacao.idContrato,
+                idCliente,
+                idPrestador,
+                autor: 'prestador',
+                nota: 2,
+                comentario: 'Não pagou',
+                anonima: true,
+                dataCriacao: avaliacao.dataCriacao,
+                dataAtualizacao: undefined,
+            })
+        })
+
+        it('deve repassar o body e os dois perfis do token ao use-case', async () => {
+            // Arrange
+            const avaliacao = AvaliacaoMother.criarValido()
+            const body = { idContrato: avaliacao.idContrato, nota: 4, comentario: 'Bom', anonima: false, autor: 'cliente' }
+            req = { user: { idCliente, idPrestador }, body }
+            cadastrarMock.execute.mockResolvedValue(avaliacao)
+
+            // Act
+            await controller.cadastrar(req as any, res as any)
+
+            // Assert — `autor` do body é ignorado: é deduzido pelo use-case
+            expect(cadastrarMock.execute).toHaveBeenCalledWith(
+                { idContrato: avaliacao.idContrato, nota: 4, comentario: 'Bom', anonima: false },
+                idCliente,
+                idPrestador
+            )
         })
     })
 

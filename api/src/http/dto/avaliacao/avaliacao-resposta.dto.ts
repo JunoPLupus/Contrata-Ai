@@ -6,6 +6,7 @@ export type AvaliacaoRespostaDTO = Pick<
     | 'idContrato'
     | 'idCliente'
     | 'idPrestador'
+    | 'autor'
     | 'nota'
     | 'comentario'
     | 'anonima'

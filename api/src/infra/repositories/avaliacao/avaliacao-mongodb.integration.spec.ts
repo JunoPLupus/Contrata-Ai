@@ -6,6 +6,7 @@ import { AvaliacaoModel } from "../../models/avaliacao/avaliacao.model";
 import { AvaliacaoMongodbRepositoryImpl } from "./avaliacao-mongodb.repository.impl";
 import { AvaliacaoMapper } from "./avaliacao.mapper";
 import { AvaliacaoMother } from "../../../test-helpers/avaliacao.mother";
+import { Papel } from "../../../domain/value-objects/shared/papel/papel.vo";
 
 describe('Testes de Integração do Repository: Avaliação MongoDB', () => {
     let repository: AvaliacaoMongodbRepositoryImpl
@@ -15,6 +16,7 @@ describe('Testes de Integração do Repository: Avaliação MongoDB', () => {
     beforeAll(async () => {
         mongod = await MongoMemoryServer.create()
         await mongoose.connect(mongod.getUri())
+        await AvaliacaoModel.syncIndexes()
     })
 
     afterAll(async () => {
@@ -121,25 +123,41 @@ describe('Testes de Integração do Repository: Avaliação MongoDB', () => {
     })
 
     describe('inserir()', () => {
-        it('deve inserir uma avaliação e retorná-la com id', async () => {
+        it('deve inserir uma avaliação e retorná-la com id e todos os campos', async () => {
+            // Arrange
+            const avaliacao = AvaliacaoMother.criarValido({ autor: Papel.PRESTADOR, nota: 2, comentario: 'Sumiu', anonima: true })
             // Act
-            const inserida = await repository.inserir(avaliacaoMock)
+            const inserida = await repository.inserir(avaliacao)
             // Assert
             expect(inserida).toBeInstanceOf(Avaliacao)
             expect(inserida.id).toBeDefined()
-            expect(inserida.nota).toBe(avaliacaoMock.nota)
-            expect(inserida.idCliente).toBe(avaliacaoMock.idCliente)
+            expect(inserida.idContrato).toBe(avaliacao.idContrato)
+            expect(inserida.idCliente).toBe(avaliacao.idCliente)
+            expect(inserida.idPrestador).toBe(avaliacao.idPrestador)
+            expect(inserida.autor).toBe(Papel.PRESTADOR)
+            expect(inserida.nota).toBe(2)
+            expect(inserida.comentario).toBe('Sumiu')
+            expect(inserida.anonima).toBe(true)
         })
 
-        it('deve garantir unicidade de id_contrato (índice único)', async () => {
+        it('deve aceitar uma avaliação de cada direção no mesmo contrato', async () => {
             // Arrange
             const idContrato = new Types.ObjectId().toString()
-            const primeiraAvaliacao = AvaliacaoMother.criarValido({ idContrato })
-            const segundaAvaliacao = AvaliacaoMother.criarValido({ idContrato })
-            await repository.inserir(primeiraAvaliacao)
+            await repository.inserir(AvaliacaoMother.criarValido({ idContrato, autor: Papel.CLIENTE }))
+            // Act
+            await repository.inserir(AvaliacaoMother.criarValido({ idContrato, autor: Papel.PRESTADOR }))
+            // Assert
+            expect(await AvaliacaoModel.countDocuments({ id_contrato: idContrato })).toBe(2)
+        })
+
+        it('deve recusar segunda avaliação do mesmo autor no mesmo contrato pelo índice nomeado', async () => {
+            // Arrange
+            const idContrato = new Types.ObjectId().toString()
+            await repository.inserir(AvaliacaoMother.criarValido({ idContrato, autor: Papel.CLIENTE }))
 
             // Act & Assert
-            await expect(repository.inserir(segundaAvaliacao)).rejects.toThrow()
+            await expect(repository.inserir(AvaliacaoMother.criarValido({ idContrato, autor: Papel.CLIENTE })))
+                .rejects.toMatchObject({ code: 11000, message: expect.stringContaining('avaliacao_contrato_autor_unico') })
         })
     })
 
@@ -148,12 +166,14 @@ describe('Testes de Integração do Repository: Avaliação MongoDB', () => {
             // Arrange
             const documentoInserido = await AvaliacaoModel.create(AvaliacaoMapper.paraDocumento(avaliacaoMock))
             const avaliacaoInserida = AvaliacaoMapper.paraEntidade(documentoInserido)
-            avaliacaoInserida.atualizar({ nota: 2 })
+            avaliacaoInserida.atualizar({ nota: 2, anonima: true })
             // Act
             const atualizada = await repository.atualizar(avaliacaoInserida)
             // Assert
             expect(atualizada).toBeInstanceOf(Avaliacao)
             expect(atualizada.nota).toBe(2)
+            expect(atualizada.anonima).toBe(true)
+            expect(atualizada.autor).toBe(avaliacaoMock.autor)
         })
     })
 

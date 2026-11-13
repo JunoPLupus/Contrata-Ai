@@ -29,7 +29,7 @@ export class AvaliacaoController {
             comentario: request.body.comentario,
             anonima: request.body.anonima,
         }
-        const avaliacao = await this.cadastrarAvaliacaoUseCase.execute(dto, request.user!.idCliente)
+        const avaliacao = await this.cadastrarAvaliacaoUseCase.execute(dto, request.user!.idCliente, request.user!.idPrestador)
         response.status(201).json(AvaliacaoMapper.paraRespostaDTO(avaliacao))
     }
 

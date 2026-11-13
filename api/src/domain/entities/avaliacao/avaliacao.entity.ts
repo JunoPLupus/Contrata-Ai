@@ -2,6 +2,7 @@ import { AvaliacaoProps } from "./avaliacao.props";
 import { NumberValueObject } from "../../value-objects/shared/number/number.vo";
 import { StringValueObject } from "../../value-objects/shared/string/string.vo";
 import { BooleanValueObject } from "../../value-objects/shared/boolean/boolean.vo";
+import { PapelTipo } from "../../value-objects/shared/papel/papel.vo";
 
 const SETE_DIAS_MS = 7 * 24 * 60 * 60 * 1000
 
@@ -26,6 +27,11 @@ export class Avaliacao {
 
     get idPrestador(): string {
         return this.props.idPrestador.valor
+    }
+
+    /** Papel de quem escreveu a avaliação. O avaliado é sempre a outra ponta do contrato. */
+    get autor(): PapelTipo {
+        return this.props.autor.valor
     }
 
     get nota(): number {

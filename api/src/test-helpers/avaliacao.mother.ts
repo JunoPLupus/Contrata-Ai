@@ -3,6 +3,7 @@ import { Types } from "mongoose";
 import { Avaliacao } from "../domain/entities/avaliacao/avaliacao.entity";
 import { AvaliacaoFactory } from "../domain/factories/avaliacao.factory";
 import { IAvaliacaoRepository } from "../domain/repositories/avaliacao.repository";
+import { Papel, PapelTipo } from "../domain/value-objects/shared/papel/papel.vo";
 
 export class AvaliacaoMother {
     public static criarValido(dados?: Partial<{
@@ -10,6 +11,7 @@ export class AvaliacaoMother {
         idContrato: string
         idCliente: string
         idPrestador: string
+        autor: PapelTipo
         nota: number
         comentario: string
         anonima: boolean
@@ -21,6 +23,7 @@ export class AvaliacaoMother {
             idContrato: dados?.idContrato ?? new Types.ObjectId().toString(),
             idCliente: dados?.idCliente ?? new Types.ObjectId().toString(),
             idPrestador: dados?.idPrestador ?? new Types.ObjectId().toString(),
+            autor: dados?.autor ?? Papel.CLIENTE,
             nota: dados?.nota ?? 5,
             comentario: dados?.comentario,
             anonima: dados?.anonima ?? false,

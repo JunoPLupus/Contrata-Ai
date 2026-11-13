@@ -2,6 +2,7 @@ import { Avaliacao } from "../entities/avaliacao/avaliacao.entity";
 import { StringValueObject } from "../value-objects/shared/string/string.vo";
 import { NumberValueObject } from "../value-objects/shared/number/number.vo";
 import { BooleanValueObject } from "../value-objects/shared/boolean/boolean.vo";
+import { PapelValueObject, PapelTipo } from "../value-objects/shared/papel/papel.vo";
 
 export class AvaliacaoFactory {
     public static criar(dados: {
@@ -9,6 +10,7 @@ export class AvaliacaoFactory {
         idContrato: string
         idCliente: string
         idPrestador: string
+        autor: PapelTipo
         nota: number
         comentario?: string
         anonima?: boolean
@@ -20,6 +22,7 @@ export class AvaliacaoFactory {
             idContrato: new StringValueObject('idContrato', dados.idContrato),
             idCliente: new StringValueObject('idCliente', dados.idCliente),
             idPrestador: new StringValueObject('idPrestador', dados.idPrestador),
+            autor: new PapelValueObject('autor', dados.autor),
             nota: new NumberValueObject('nota', dados.nota, 1, 5),
             comentario: dados.comentario
                 ? new StringValueObject('comentário', dados.comentario)
