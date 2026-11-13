@@ -127,6 +127,44 @@ As variáveis de ambiente necessárias estão documentadas em [`api/.env.example
 
 ---
 
+## 🤖 Desenvolvimento com agentes de IA
+
+Se você usa um agente de IA (Claude Code, Codex, Cursor, Gemini, Copilot…) neste repositório, as
+instruções dele estão no [`AGENTS.md`](./AGENTS.md) e o material de apoio em [`.agents/`](./.agents/README.md).
+
+> Pré-requisito **para agentes**: [rtk](https://github.com/rtk-ai/rtk). O `AGENTS.md` exige o prefixo
+> `rtk` nos comandos, para condensar a saída e economizar contexto. Quem roda o projeto sem agente não precisa dele.
+
+```bash
+# Homebrew (recomendado)
+brew install rtk
+
+# Linux / macOS via script
+curl -fsSL https://raw.githubusercontent.com/rtk-ai/rtk/refs/heads/master/install.sh | sh
+
+# Verificar a instalação e ver a economia de tokens
+rtk --version
+rtk gain
+```
+
+Integrar ao agente (cria o hook que intercepta os comandos; `-g` = configuração global):
+
+```bash
+# Claude Code (padrão)
+rtk init -g
+
+# Outros agentes: --gemini, --opencode ou --agent <nome> (cursor, windsurf, cline…)
+rtk init -g --agent cursor
+
+# Conferir a configuração
+rtk init --show
+```
+
+**Claude Code:** ele lê `CLAUDE.md`, não `AGENTS.md`. Crie um `CLAUDE.local.md` na raiz (não versionado)
+com a linha `@AGENTS.md` para importar as instruções.
+
+---
+
 ## 📌 Requisitos Não Funcionais Atendidos no MVP
 
 - 🔒 Senhas criptografadas com BCrypt (`RNF08`)

@@ -26,17 +26,29 @@ decisões de arquitetura (ADRs, em AsciiDoc) em `api/docs/adr/`.
 | `shared/` | config e container (injeção de dependências) |
 | `test-helpers/` | object mothers para os testes |
 
-## Comandos (rodar dentro de `api/`)
+## Comandos
+
+**Prefixo `rtk` obrigatório em todos os comandos** — não só nos da tabela abaixo (`rtk git diff`,
+`rtk grep …`, `rtk npm test`…). O rtk condensa a saída e economiza contexto.
+
+- **Exceção:** processos longos ou interativos, que não terminam sozinhos (`npm run dev`, watchers).
+  Rode-os sem `rtk`, em segundo plano, e leia só o trecho do log que precisar — nunca o fluxo inteiro.
+- **rtk não instalado** (`rtk: command not found`): **pare**, avise o usuário, aponte a instalação
+  (ver README, seção "Desenvolvimento com agentes de IA") e espere ele instalar ou autorizar seguir sem.
+  Não contorne em silêncio nem instale por conta própria.
+
+Comandos da API (rodar dentro de `api/`):
 
 | Comando | O que faz |
 |---|---|
-| `npm run dev` | sobe a API com nodemon + ts-node |
-| `npm run build` | compila com `tsc` |
-| `npm test` | todos os testes (Jest) |
-| `npm run test:unit` | só unitários |
-| `npm run test:integration` | só integração (mongodb-memory-server) |
+| `npm run dev` | sobe a API com nodemon + ts-node (exceção: sem `rtk`) |
+| `rtk npm run build` | compila com `tsc` |
+| `rtk npm test` | todos os testes (Jest) |
+| `rtk npm run test:unit` | só unitários |
+| `rtk npm run test:integration` | só integração (mongodb-memory-server) |
 
-- Sem Node na máquina? Rode pela imagem Docker `node:22`, montando a pasta `api/`.
+- Sem Node na máquina? Rode pela imagem Docker `node:22`, montando a pasta `api/`. O `rtk` vai no
+  comando da máquina (`rtk docker run …`), nunca dentro do container.
 - Os testes de integração precisam de `--runInBand` (rodar em série), por causa de memória.
 - O CI (`.github/workflows/api-tests.yml`) roda `npm ci` + `npm test` em `api/` a cada push e PR.
 
