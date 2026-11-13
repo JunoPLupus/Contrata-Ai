@@ -6,14 +6,13 @@
 [![MongoDB](https://img.shields.io/badge/MongoDB-6.0+-47A248?logo=mongodb&logoColor=white)](https://www.mongodb.com/)
 [![Status](https://img.shields.io/badge/status-Em%20Desenvolvimento-yellow)]()
 
-> **Projeto de Extensão II** – Plataforma web para conectar clientes e prestadores de serviços (MEI), com foco em orçamentos, gestão de serviços e reputação – **sem intermediação financeira**.
+> **Projeto de Extensão III** – Plataforma web para conectar clientes e prestadores de serviços (MEI), com foco em orçamentos, gestão de serviços e reputação – **sem intermediação financeira**.
 
 ---
 
 ## 👥 Equipe
 
 - Juno Piazza Lopes
-- Efraim Nascimento
 
 ---
 
