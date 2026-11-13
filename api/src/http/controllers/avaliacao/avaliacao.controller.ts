@@ -61,14 +61,15 @@ export class AvaliacaoController {
         }
         const avaliacao = await this.atualizarAvaliacaoUseCase.execute(
             request.params.id as string,
+            dto,
             request.user!.idCliente,
-            dto
+            request.user!.idPrestador
         )
         response.status(200).json(AvaliacaoMapper.paraRespostaDTO(avaliacao))
     }
 
     public async deletar(request: Request, response: Response): Promise<void> {
-        await this.deletarAvaliacaoUseCase.execute(request.params.id as string, request.user!.idCliente)
+        await this.deletarAvaliacaoUseCase.execute(request.params.id as string, request.user!.idCliente, request.user!.idPrestador)
         response.status(204).send()
     }
 }

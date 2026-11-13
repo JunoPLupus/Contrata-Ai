@@ -102,9 +102,9 @@ describe('Testes Unitários do Controller: Avaliação', () => {
     })
 
     describe('buscarPorId()', () => {
-        it('deve retornar 200 com AvaliacaoPublicaRespostaDTO', async () => {
+        it('deve retornar 200 com a visão pública', async () => {
             // Arrange
-            const avaliacao = AvaliacaoMother.criarValido()
+            const avaliacao = AvaliacaoMother.criarValido({ idCliente, idPrestador, nota: 3 })
             req = { params: { id: avaliacao.id! } }
             buscarPorIdMock.execute.mockResolvedValue(avaliacao)
 
@@ -113,7 +113,39 @@ describe('Testes Unitários do Controller: Avaliação', () => {
 
             // Assert
             expect(res.status).toHaveBeenCalledWith(200)
-            expect(res.json).toHaveBeenCalledWith(AvaliacaoMapper.paraRespostaPublicaDTO(avaliacao))
+            expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
+                id: avaliacao.id, idCliente, idPrestador, autor: 'cliente', nota: 3, anonima: false,
+            }))
+        })
+
+        it('deve ocultar o id do cliente quando o cliente for o autor e a avaliação for anônima', async () => {
+            // Arrange
+            const avaliacao = AvaliacaoMother.criarValido({ idCliente, idPrestador, autor: Papel.CLIENTE, anonima: true })
+            req = { params: { id: avaliacao.id! } }
+            buscarPorIdMock.execute.mockResolvedValue(avaliacao)
+
+            // Act
+            await controller.buscarPorId(req as any, res as any)
+
+            // Assert
+            const corpo = (res.json as jest.Mock).mock.calls[0][0]
+            expect(corpo.idCliente).toBeUndefined()
+            expect(corpo.idPrestador).toBe(idPrestador)
+        })
+
+        it('deve ocultar o id do prestador quando o prestador for o autor e a avaliação for anônima', async () => {
+            // Arrange
+            const avaliacao = AvaliacaoMother.criarValido({ idCliente, idPrestador, autor: Papel.PRESTADOR, anonima: true })
+            req = { params: { id: avaliacao.id! } }
+            buscarPorIdMock.execute.mockResolvedValue(avaliacao)
+
+            // Act
+            await controller.buscarPorId(req as any, res as any)
+
+            // Assert
+            const corpo = (res.json as jest.Mock).mock.calls[0][0]
+            expect(corpo.idPrestador).toBeUndefined()
+            expect(corpo.idCliente).toBe(idCliente)
         })
     })
 
@@ -178,7 +210,20 @@ describe('Testes Unitários do Controller: Avaliação', () => {
 
             // Assert
             expect(res.status).toHaveBeenCalledWith(200)
-            expect(atualizarMock.execute).toHaveBeenCalledWith(avaliacao.id, idCliente, { nota: 4, comentario: undefined, anonima: undefined })
+            expect(atualizarMock.execute).toHaveBeenCalledWith(avaliacao.id, { nota: 4, comentario: undefined, anonima: undefined }, idCliente, undefined)
+        })
+
+        it('deve repassar o idPrestador do token ao use-case', async () => {
+            // Arrange
+            const avaliacao = AvaliacaoMother.criarValido({ idPrestador, autor: Papel.PRESTADOR })
+            req = { user: { idCliente, idPrestador }, params: { id: avaliacao.id! }, body: { anonima: true } }
+            atualizarMock.execute.mockResolvedValue(avaliacao)
+
+            // Act
+            await controller.atualizar(req as any, res as any)
+
+            // Assert
+            expect(atualizarMock.execute).toHaveBeenCalledWith(avaliacao.id, { nota: undefined, comentario: undefined, anonima: true }, idCliente, idPrestador)
         })
     })
 
@@ -195,6 +240,20 @@ describe('Testes Unitários do Controller: Avaliação', () => {
             // Assert
             expect(res.status).toHaveBeenCalledWith(204)
             expect(res.send).toHaveBeenCalled()
+            expect(deletarMock.execute).toHaveBeenCalledWith(avaliacao.id, idCliente, undefined)
+        })
+
+        it('deve repassar o idPrestador do token ao use-case', async () => {
+            // Arrange
+            const avaliacao = AvaliacaoMother.criarValido()
+            req = { user: { idCliente, idPrestador }, params: { id: avaliacao.id! } }
+            deletarMock.execute.mockResolvedValue(undefined)
+
+            // Act
+            await controller.deletar(req as any, res as any)
+
+            // Assert
+            expect(deletarMock.execute).toHaveBeenCalledWith(avaliacao.id, idCliente, idPrestador)
         })
     })
 })
