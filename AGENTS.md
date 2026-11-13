@@ -66,6 +66,31 @@ decisões de arquitetura (ADRs, em AsciiDoc) em `api/docs/adr/`.
 - **Testes:** toda mudança de comportamento vem com teste. Rode os testes antes de dizer que terminou e
   informe o resultado real (inclusive falhas).
 
+## Spec ou task?
+
+Antes de começar um trabalho, decida o tamanho dele:
+
+- **Spec** = desenho antes de implementar (o problema, as decisões, os contratos, a lista de tasks).
+  Fica em `.agents/docs/specs/AAAA-MM-DD-<assunto>/spec.md`, com as tasks dela em `tasks/` na mesma pasta.
+- **Task** = execução de uma mudança já entendida. Task avulsa fica em
+  `.agents/docs/tasks/AAAA-MM-DD-<assunto>.md`.
+
+**Vira spec** se valer qualquer um destes:
+
+1. Cria um agregado ou coleção nova, ou muda como os agregados se relacionam.
+2. Depende de decisões ainda não tomadas (de modelagem ou arquitetura), ou vai gerar um ADR novo.
+3. Vai virar mais de uma task (não cabe numa branch só, com poucos commits).
+4. Muda o contrato da API (campos ou rotas) em mais de um recurso.
+5. Integra um serviço externo (envio de email, ViaCEP, IBGE…).
+6. O Juno pediu uma spec.
+
+Senão, é **task**.
+
+Antes de começar, diga em palavras simples "isto me parece spec/task porque…" e espere a confirmação.
+Se uma task crescer no meio do caminho, pare, avise e proponha transformá-la em spec.
+
+Estes critérios podem mudar com o uso: proponha o ajuste com o motivo e só aplique depois de aprovado.
+
 ## Skills
 
 Skills são procedimentos passo a passo para tarefas recorrentes. Ficam em
