@@ -7,6 +7,7 @@ import { AvaliacaoMongodbRepositoryImpl } from "./avaliacao-mongodb.repository.i
 import { AvaliacaoMapper } from "./avaliacao.mapper";
 import { AvaliacaoMother } from "../../../test-helpers/avaliacao.mother";
 import { Papel } from "../../../domain/value-objects/shared/papel/papel.vo";
+import { errorHandler } from "../../../http/middlewares/error-handler/error-handler.middleware";
 
 describe('Testes de Integração do Repository: Avaliação MongoDB', () => {
     let repository: AvaliacaoMongodbRepositoryImpl
@@ -158,6 +159,22 @@ describe('Testes de Integração do Repository: Avaliação MongoDB', () => {
             // Act & Assert
             await expect(repository.inserir(AvaliacaoMother.criarValido({ idContrato, autor: Papel.CLIENTE })))
                 .rejects.toMatchObject({ code: 11000, message: expect.stringContaining('avaliacao_contrato_autor_unico') })
+        })
+
+        it('deve traduzir o E11000 real do índice na mensagem específica do errorHandler', async () => {
+            // Arrange
+            const idContrato = new Types.ObjectId().toString()
+            await repository.inserir(AvaliacaoMother.criarValido({ idContrato, autor: Papel.PRESTADOR }))
+            const erro = await repository.inserir(AvaliacaoMother.criarValido({ idContrato, autor: Papel.PRESTADOR }))
+                .catch((e: Error) => e)
+            const res = { status: jest.fn().mockReturnThis(), json: jest.fn().mockReturnThis() }
+
+            // Act
+            errorHandler(erro as Error, {} as any, res as any, jest.fn())
+
+            // Assert
+            expect(res.status).toHaveBeenCalledWith(422)
+            expect(res.json).toHaveBeenCalledWith({ message: 'Você já avaliou este contrato.' })
         })
     })
 

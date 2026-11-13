@@ -33,3 +33,29 @@ middleware já pertence à camada HTTP.
 `unique: true` no schema e tratamento do código `11000` no handler.
 * A mensagem retornada ao cliente é genérica (`'Este cadastro já existe.'`)
 para não expor detalhes internos do banco.
+== Atualização (2026-11-11): mensagem específica por índice
+
+A avaliação passou a ser bidirecional (cliente → prestador e prestador → cliente), com no
+máximo uma avaliação por contrato *e direção*. A mensagem genérica (`'Este cadastro já existe.'`)
+não diz ao usuário o que aconteceu, então o padrão foi estendido — sem abandonar a decisão
+original de *só índice, sem consulta prévia*:
+
+* A unicidade continua garantida só pelo banco: índice único composto
+`{ id_contrato: 1, autor: 1 }` em `avaliacoes` (o `unique` isolado de `id_contrato` foi
+removido). O use-case `cadastrar-avaliacao` não consulta se já existe avaliação.
+* O índice recebe um *nome explícito* no schema (`name: 'avaliacao_contrato_autor_unico'`,
+exportado como constante pelo model).
+* O `errorHandler` extrai o nome do índice violado da mensagem do E11000
+(`... index: <nome> dup key: ...`) e consulta um mapa `nome do índice -> mensagem`
+(`'Você já avaliou este contrato.'`). Índices não mapeados continuam com a mensagem genérica.
+
+Consequências adicionais:
+
+* Para dar mensagem específica a um índice novo: dar `name` explícito no schema e adicionar
+a entrada no mapa do `errorHandler`. Índices sem nome continuam funcionando com a genérica.
+* O `errorHandler` passa a importar a constante com o nome do índice do model (camada de
+infraestrutura), ampliando a dependência HTTP -> infra já aceita acima. A alternativa — repetir o
+nome como texto solto — quebraria em silêncio se o índice fosse renomeado.
+* A extração depende do formato da mensagem do E11000. Um teste de integração gera o erro num
+MongoDB real (`mongodb-memory-server`) e confere a mensagem traduzida, para detectar mudança de
+formato numa atualização do MongoDB.
