@@ -1,6 +1,7 @@
 import { Avaliacao } from "../entities/avaliacao/avaliacao.entity";
 import { StringValueObject } from "../value-objects/shared/string/string.vo";
 import { NumberValueObject } from "../value-objects/shared/number/number.vo";
+import { BooleanValueObject } from "../value-objects/shared/boolean/boolean.vo";
 
 export class AvaliacaoFactory {
     public static criar(dados: {
@@ -23,7 +24,7 @@ export class AvaliacaoFactory {
             comentario: dados.comentario
                 ? new StringValueObject('comentário', dados.comentario)
                 : undefined,
-            anonima: dados.anonima ?? false,
+            anonima: new BooleanValueObject('anonima', dados.anonima ?? false),
             dataCriacao: dados.dataCriacao ?? new Date(),
             dataAtualizacao: dados.dataAtualizacao,
         })

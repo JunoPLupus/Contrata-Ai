@@ -1,5 +1,6 @@
 import { StringValueObject } from "../../value-objects/shared/string/string.vo";
 import { NumberValueObject } from "../../value-objects/shared/number/number.vo";
+import { BooleanValueObject } from "../../value-objects/shared/boolean/boolean.vo";
 
 export type AvaliacaoProps = {
     id?: string
@@ -8,7 +9,7 @@ export type AvaliacaoProps = {
     idPrestador: StringValueObject
     nota: NumberValueObject
     comentario?: StringValueObject
-    anonima: boolean
+    anonima: BooleanValueObject
     dataCriacao: Date
     dataAtualizacao?: Date
 }

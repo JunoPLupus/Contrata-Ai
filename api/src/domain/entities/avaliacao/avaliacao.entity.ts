@@ -1,6 +1,7 @@
 import { AvaliacaoProps } from "./avaliacao.props";
 import { NumberValueObject } from "../../value-objects/shared/number/number.vo";
 import { StringValueObject } from "../../value-objects/shared/string/string.vo";
+import { BooleanValueObject } from "../../value-objects/shared/boolean/boolean.vo";
 
 const SETE_DIAS_MS = 7 * 24 * 60 * 60 * 1000
 
@@ -36,7 +37,7 @@ export class Avaliacao {
     }
 
     get anonima(): boolean {
-        return this.props.anonima
+        return this.props.anonima.valor
     }
 
     get dataCriacao(): Date {
@@ -62,7 +63,7 @@ export class Avaliacao {
             this.props.comentario = new StringValueObject('comentário', dados.comentario)
         }
         if (dados.anonima !== undefined) {
-            this.props.anonima = dados.anonima
+            this.props.anonima = new BooleanValueObject('anonima', dados.anonima)
         }
         this.props.dataAtualizacao = new Date()
     }

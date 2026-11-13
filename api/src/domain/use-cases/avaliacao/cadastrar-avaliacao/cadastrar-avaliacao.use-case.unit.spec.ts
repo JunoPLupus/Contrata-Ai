@@ -6,6 +6,7 @@ import { StatusContrato } from "../../../value-objects/contrato/status/status.vo
 import { RecursoNaoEncontradoError } from "../../../errors/recurso-nao-encontrado.error";
 import { AcessoProibidoError } from "../../../errors/acesso-proibido.error";
 import { OperacaoNaoPermitidaError } from "../../../errors/operacao-nao-permitida.error";
+import { FormatoInvalidoError } from "../../../errors/formato-invalido.error";
 
 describe('CadastrarAvaliacaoUseCase', () => {
     let useCase: CadastrarAvaliacaoUseCase
@@ -76,5 +77,17 @@ describe('CadastrarAvaliacaoUseCase', () => {
         // Act & Assert
         await expect(useCase.execute({ idContrato, nota: 5 }, idCliente))
             .rejects.toThrow(OperacaoNaoPermitidaError)
+    })
+
+    it('deve lançar FormatoInvalidoError se anonima não for booleano', async () => {
+        // Arrange
+        const contrato = ContratоMother.criarValido({ idCliente, status: StatusContrato.CONCLUIDO })
+        contratoRepoMock.buscarPorId.mockResolvedValue(contrato)
+        avaliacaoRepoMock.buscarPorIdContrato.mockResolvedValue(null)
+
+        // Act & Assert
+        await expect(useCase.execute({ idContrato, nota: 5, anonima: 'true' as any }, idCliente))
+            .rejects.toThrow(FormatoInvalidoError)
+        expect(avaliacaoRepoMock.inserir).not.toHaveBeenCalled()
     })
 })

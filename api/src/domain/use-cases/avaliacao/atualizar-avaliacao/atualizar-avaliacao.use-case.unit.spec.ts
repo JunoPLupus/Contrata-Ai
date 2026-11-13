@@ -4,6 +4,7 @@ import { AvaliacaoMother } from "../../../../test-helpers/avaliacao.mother";
 import { RecursoNaoEncontradoError } from "../../../errors/recurso-nao-encontrado.error";
 import { AcessoProibidoError } from "../../../errors/acesso-proibido.error";
 import { OperacaoNaoPermitidaError } from "../../../errors/operacao-nao-permitida.error";
+import { FormatoInvalidoError } from "../../../errors/formato-invalido.error";
 
 describe('AtualizarAvaliacaoUseCase', () => {
     let useCase: AtualizarAvaliacaoUseCase
@@ -57,5 +58,16 @@ describe('AtualizarAvaliacaoUseCase', () => {
         // Act & Assert
         await expect(useCase.execute(avaliacao.id!, idCliente, { nota: 3 }))
             .rejects.toThrow(OperacaoNaoPermitidaError)
+    })
+
+    it('deve lançar FormatoInvalidoError se anonima não for booleano', async () => {
+        // Arrange
+        const avaliacao = AvaliacaoMother.criarValido({ idCliente, dataCriacao: new Date() })
+        avaliacaoRepoMock.buscarPorId.mockResolvedValue(avaliacao)
+
+        // Act & Assert
+        await expect(useCase.execute(avaliacao.id!, idCliente, { anonima: 1 as any }))
+            .rejects.toThrow(FormatoInvalidoError)
+        expect(avaliacaoRepoMock.atualizar).not.toHaveBeenCalled()
     })
 })
