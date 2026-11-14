@@ -35,7 +35,7 @@ Apague estes comentários ao preencher.
 - **Quando** <ação>
 - **Então** <resultado observável>
 
-## 3. O que fazer nesta fatia
+## 3. O que fazer nesta tarefa
 
 <!-- Fatia vertical: o caminho completo pelas camadas necessárias, testável sozinho. -->
 
@@ -57,7 +57,7 @@ Pare e avise antes: isso é mudança de escopo e precisa ser aprovada (e registr
 **Testes existentes que vão mudar de propósito:** <teste e motivo, ex.: o teste do mapper passa a
 esperar o campo novo>. Teste que quebrar e não estiver nesta lista é regressão até prova em contrário.
 
-## 4. Como provar que terminou
+## 4. Como validar o que foi feito
 
 **Antes de começar:** rode `npm run test:unit` e `npm run test:integration -- --runInBand` e anote o
 resultado no fechamento. Assim, o que já estava quebrado não se confunde com o que a task quebrou.
