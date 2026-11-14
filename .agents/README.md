@@ -55,4 +55,7 @@ Cada skill é uma pasta `skills/<nome>/` com um `SKILL.md` (obrigatório) e, se 
 - Toda skill precisa estar na tabela de roteamento do `AGENTS.md`.
 - Skill baseada em material externo registra a origem (repositório, commit e licença) num
   `ORIGEM.md` dentro da própria pasta.
-- Para criar ou alterar uma skill, use a skill [`criar-skill`](skills/criar-skill/SKILL.md).
+- **Nome da skill = substantivo do assunto** (`spec`, `task`, `adr`), não verbo: o nome diz *sobre o quê*
+  e a tabela do `AGENTS.md` diz *quando* usar. Assim, uma responsabilidade nova (ex.: criar **e** atualizar)
+  não obriga a renomear a skill.
+- Para criar ou alterar uma skill, use a skill [`oficina-de-skills`](skills/oficina-de-skills/SKILL.md).

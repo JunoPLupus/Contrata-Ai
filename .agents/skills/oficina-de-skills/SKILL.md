@@ -1,10 +1,10 @@
 ---
-name: criar-skill
+name: oficina-de-skills
 description: Cria, adapta, traduz ou melhora skills do projeto em .agents/skills/ e prova que funcionam, comparando o agente com e sem a skill. Use sempre que for escrever uma skill nova, trazer uma skill externa para o projeto (traduzir ou adaptar), alterar uma skill existente ou verificar se uma skill realmente muda o comportamento do agente.
 license: Apache-2.0 (ver LICENSE.txt e ORIGEM.md)
 ---
 
-# Criar skill
+# Oficina de skills
 
 Adaptação da `skill-creator` da Anthropic com o "cenário de pressão" da `writing-skills` (obra).
 Origem, licenças e o que mudou: [ORIGEM.md](ORIGEM.md).

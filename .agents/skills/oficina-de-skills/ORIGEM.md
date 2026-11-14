@@ -1,4 +1,4 @@
-# Origem da skill `criar-skill`
+# Origem da skill `oficina-de-skills`
 
 ## Fontes
 
@@ -20,7 +20,8 @@ Da `skill-creator`: `LICENSE.txt`, `agents/grader.md`, `agents/comparator.md`, `
 Em relação à `skill-creator` original:
 
 - `SKILL.md` **traduzido para pt-BR e adaptado** ao projeto ContrataAí:
-  - nome `skill-creator` → `criar-skill` (evita conflito com a skill global de mesmo nome);
+  - nome `skill-creator` → `criar-skill` (evita conflito com a skill global de mesmo nome), renomeada
+    depois para `oficina-de-skills` (padrão de nomes por substantivo, 2026-11-13);
   - acrescentado o passo "de onde a skill vem" (regra do projeto: nenhuma skill nasce da imaginação;
     fonte externa lida inteira e registrada, ou padrão comprovado no código);
   - acrescentada a classificação por tipo (regra, técnica, padrão, referência) e o teste adequado a
