@@ -1,32 +1,37 @@
 ---
 name: oficina-de-skills
-description: Cria, adapta, traduz ou melhora skills do projeto em .agents/skills/ e prova que funcionam, comparando o agente com e sem a skill. Use sempre que for escrever uma skill nova, trazer uma skill externa para o projeto (traduzir ou adaptar), alterar uma skill existente ou verificar se uma skill realmente muda o comportamento do agente.
+description: Cria, adapta, traduz ou melhora skills do projeto em .agents/skills/ e prova que funcionam, comparando o agente com e sem a skill. Use sempre que for escrever uma skill nova, trazer uma skill externa para o projeto (traduzir ou adaptar), alterar uma skill existente ou verificar se uma skill realmente muda o comportamento do agente. Não use para executar uma skill existente nem para escrever documentação que não seja skill.
 license: Apache-2.0 (ver LICENSE.txt e ORIGEM.md)
 ---
 
 # Oficina de skills
 
-Adaptação da `skill-creator` da Anthropic com o "cenário de pressão" da `writing-skills` (obra).
-Origem, licenças e o que mudou: [ORIGEM.md](ORIGEM.md).
+Adaptação da `skill-creator` da Anthropic com o "cenário de pressão" da `writing-skills` (obra) e a
+checagem estática da `skill-creator` do okjpg. Origem, licenças e o que mudou: [ORIGEM.md](ORIGEM.md).
 
 O ciclo, em resumo:
 
-1. Entender o que a skill deve fazer e **de onde ela vem** (fonte externa ou padrão do projeto).
-2. Escrever um rascunho.
-3. Criar 2–3 cenários de teste e rodar o agente **com** e **sem** a skill.
-4. Mostrar a comparação ao usuário e ouvir o que ele achou.
-5. Reescrever a skill a partir disso e repetir até ficar boa.
-6. Registrar a skill na tabela do `AGENTS.md` e entregar o texto do commit.
+1. Entender o que a skill deve fazer, **de onde ela vem** e **que tipo é**.
+2. **Ver o agente falhar primeiro:** criar 2–3 cenários e rodá-los **sem** a skill. Anotar as falhas.
+3. Escrever o rascunho para corrigir **essas** falhas e passar pela checagem estática.
+4. Rodar os mesmos cenários **com** a skill, revisar os critérios e mostrar a comparação ao usuário.
+5. Reescrever a skill a partir do retorno e repetir até ficar boa.
+6. Rodada final de confirmação, registro na tabela do `AGENTS.md` e texto do commit.
 
-Descubra em que ponto o usuário está e entre dali. Se ele já tem um rascunho, vá direto ao teste.
-Se ele disser que não quer testes, pode pular, mas avise o que se perde: sem comparar, não há prova
-de que a skill muda alguma coisa.
+Descubra em que ponto o usuário está e entre dali. Se ele já tem um rascunho, rode a linha de base
+(passo 2) com ele de lado e siga para o passo 3.4. Se ele disser que não quer testes, pode pular, mas
+avise o que se perde: sem comparar, não há prova de que a skill muda alguma coisa.
+
+**Modo leve:** para um **ajuste pequeno numa skill que já existe** (corrigir um passo, reescrever um
+trecho), sugira ao usuário o modo leve — ele decide: 1 cenário que exercite a mudança, rodado com a
+versão antiga e com a nova, e a comparação resumida no chat (sem tela). **Skill nova usa sempre o ciclo
+completo:** foi ele que pegou os problemas que o modo leve deixaria passar.
 
 ## Falando com o usuário
 
 O usuário deste projeto está aprendendo o assunto. Evite jargão; quando um termo técnico for
 necessário (avaliação, cenário, critério de verificação, JSON), explique em uma frase na primeira
-vez. Uma decisão por vez.
+vez. Decisões em rodadas, como em qualquer conversa do projeto.
 
 ---
 
@@ -36,7 +41,8 @@ Se a conversa já mostra o fluxo que o usuário quer transformar em skill, extra
 (ferramentas usadas, ordem dos passos, correções que ele fez) e peça confirmação.
 
 1. O que a skill deve fazer o agente fazer?
-2. Em que situação ela deve ser usada? (vira a linha da tabela de roteamento do `AGENTS.md`)
+2. Em que situação ela deve ser usada — e em qual **não** deve? (vira a linha da tabela de roteamento
+   do `AGENTS.md` e o "não use para" da `description`)
 3. Qual o formato da saída?
 4. **De onde ela vem?** Regra do projeto: **nenhuma skill nasce da imaginação.** Toda skill parte de:
    - uma **skill externa** — leia-a **inteira** (instruções, referências e scripts) antes de adotar,
@@ -44,7 +50,7 @@ Se a conversa já mostra o fluxo que o usuário quer transformar em skill, extra
    - um **padrão já comprovado no código do projeto** — cite os arquivos que servem de modelo.
 
    Se não houver nenhuma das duas, pare e diga isso ao usuário em vez de inventar.
-5. **Que tipo de skill é?** Isso decide como testar (ver passo 3):
+5. **Que tipo de skill é?** Isso decide como testar (ver passo 2):
 
 | Tipo | O que faz | Exemplo |
 |---|---|---|
@@ -60,7 +66,65 @@ Se a conversa já mostra o fluxo que o usuário quer transformar em skill, extra
 - **Encaixa em parte** → use como base e reescreva com o padrão do projeto.
 - Em ambos os casos, o que contradiz o `AGENTS.md` ou o código real perde: o projeto manda.
 
-## 2. Escrever o SKILL.md
+## 2. Linha de base: ver o agente falhar primeiro
+
+**Por quê:** uma skill escrita antes de ver o agente errar trata o que **você** acha que vai dar errado,
+não o que dá errado. No primeiro uso desta oficina, a skill nasceu sem exemplos e sem formato de saída
+justamente por isso.
+
+### 2.1 Criar os cenários
+
+Escreva 2–3 pedidos realistas, do jeito que alguém do projeto pediria de verdade (com nomes de
+arquivos, entidades e contexto reais). Cubra o caminho principal **e** pelo menos um caso de borda (um
+pedido em que a skill **não** deveria ser usada também conta). Mostre ao usuário e pergunte se
+representam bem o uso. Salve em `evals/evals.json` dentro da pasta da skill (formato em
+[references/schemas.md](references/schemas.md)).
+
+**Skill do tipo regra?** Além dos pedidos normais, monte **cenários de pressão**: situações em que o
+agente tem um bom motivo para pular a regra (pressa, trabalho já feito, alguém mandando pular).
+Leia [references/cenario-de-pressao.md](references/cenario-de-pressao.md) antes de escrevê-los.
+
+| Tipo de skill | Como testar |
+|---|---|
+| Regra | cenários de pressão com 3+ pressões combinadas; anotar as desculpas do agente |
+| Técnica | aplicar a técnica num caso novo e num caso de borda |
+| Padrão | reconhecer quando o padrão se aplica **e** quando não se aplica |
+| Referência | achar a informação certa e usá-la corretamente |
+
+### 2.2 Rodar sem a skill
+
+Os resultados ficam em `.agents/skills/<nome>-workspace/` (ignorado pelo git), por rodada
+(`iteration-1/`, `iteration-2/`…) e, dentro dela, uma pasta por cenário com nome descritivo
+(`eval-teste-do-mapper/`, não `eval-0/`). A linha de base de cada cenário vai em
+`.../without_skill/run-1/outputs/` (skill nova) ou `.../old_skill/run-1/outputs/` (skill existente:
+antes de editar, copie a versão atual com `cp -r <skill> <workspace>/skill-snapshot/` e use a cópia).
+
+Regras para **todo** subagente de teste (com ou sem a skill), escritas no pedido que ele recebe:
+
+- **Não pode alterar o repositório.** O que ele criaria vai para a pasta `outputs/` da rodada, mantendo
+  o caminho relativo; a mensagem que mandaria ao usuário vai em `outputs/resposta.md`.
+- **Não pode ler as notas pessoais do usuário** (`.notes/`). Elas guardam decisões e contexto que
+  facilitam o teste e não existem para outra pessoa que clone o repositório.
+- Sem usuário para responder, ele faz o que faria na **primeira resposta** e para (ou recebe no pedido
+  as respostas que precisa, quando o cenário mede uma etapa posterior).
+
+**Limitação conhecida:** a ferramenta carrega as preferências pessoais do usuário (ex.: `CLAUDE.local.md`)
+nos subagentes, e não há como desligá-las de forma confiável. Os números medem "a skill + o ambiente do
+usuário", não um agente puro: diga isso ao apresentar os resultados.
+
+Grave um `eval_metadata.json` por cenário (formato em `references/schemas.md`).
+
+### 2.3 Anotar as falhas
+
+Leia as saídas da linha de base e liste, por cenário: o que o agente fez de errado, o que pulou, o que
+inventou e — em skill de regra — as desculpas **palavra por palavra**. Essa lista é o que o rascunho tem
+de corrigir. Mostre-a ao usuário antes de escrever.
+
+**Ferramenta sem subagentes?** Rode os cenários um por um, você mesmo. É menos rigoroso (quem escreveu a
+skill também a executa), então a revisão do usuário pesa mais. Nesse caso pule a medição de
+tempo/tokens.
+
+## 3. Escrever o SKILL.md
 
 ### Anatomia
 
@@ -68,17 +132,21 @@ Se a conversa já mostra o fluxo que o usuário quer transformar em skill, extra
 .agents/skills/<nome>/
 ├── SKILL.md          (obrigatório: cabeçalho YAML + instruções)
 ├── ORIGEM.md         (obrigatório quando vier de fonte externa)
+├── evals/            (cenários de teste: evals.json e arquivos de apoio)
 ├── references/       (textos lidos só quando necessário)
 ├── scripts/          (código para tarefas repetitivas e exatas)
 └── assets/           (modelos e arquivos usados na saída)
 ```
 
+Nome da pasta: o **substantivo do assunto** (`spec`, `task`, `adr`), não um verbo — regra do
+`.agents/README.md`.
+
 Cabeçalho YAML:
 
 - **name**: nome da pasta, em kebab-case (minúsculas e hífens).
-- **description**: o que a skill faz **e** quando usar. Outras ferramentas podem usar esse texto para
-  decidir sozinhas; neste projeto, quem decide é a tabela do `AGENTS.md`, mas a descrição continua
-  sendo o resumo que o agente lê primeiro. Sem `<` nem `>`, até 1024 caracteres.
+- **description**: o que a skill faz, **quando usar e quando não usar**. Outras ferramentas podem usar
+  esse texto para decidir sozinhas; neste projeto, quem decide é a tabela do `AGENTS.md`, mas a
+  descrição continua sendo o resumo que o agente lê primeiro. Sem `<` nem `>`, até 1024 caracteres.
 - **license**: quando vier de fonte externa.
 
 ### Carregamento em camadas
@@ -92,86 +160,88 @@ Se o `SKILL.md` passar de ~500 linhas, mova detalhes para `references/` e diga n
 
 ### Como escrever
 
+- Escreva para corrigir as falhas anotadas no passo 2.3. Cada regra nova tem de corresponder a uma
+  falha observada ou a um cenário que a teste; regra que nenhum cenário exercita é palpite.
 - Use o imperativo ("leia", "rode", "entregue").
 - **Explique o porquê** de cada instrução. Modelos atuais entendem razões e generalizam melhor a
   partir delas do que de ordens soltas. Se você se pegar escrevendo SEMPRE/NUNCA em maiúsculas, é
   sinal de alerta: troque pela explicação. A exceção são as skills de **regra** que, no teste, o agente
   quebrou sob pressão — aí a proibição explícita é a forma certa (ver
   [references/cenario-de-pressao.md](references/cenario-de-pressao.md)).
-- Formato de saída fixo: mostre o modelo exato. Exemplos: mostre entrada → saída.
+- **Mostre, não só descreva:** exemplos concretos de entrada → saída ensinam o formato melhor que
+  qualquer regra. Resultado genérico no teste costuma ser falta de exemplo.
+- Formato de saída fixo: mostre o modelo exato.
 - Escreva um rascunho e depois releia com olhos de quem nunca viu o projeto.
 - Nada de conteúdo malicioso ou que surpreenda o usuário se descrito em voz alta.
 
-## 3. Testar: com e sem a skill
+### 3.1 Checagem estática (antes de rodar com a skill)
+
+Confira item por item e corrija o que faltar **antes** de gastar subagentes:
+
+- [ ] `description` diz o que faz, **quando usar** e **quando não usar**;
+- [ ] pelo menos **2 exemplos concretos** de entrada → saída (caminho principal + um caso de borda),
+      com dados do projeto, não abstratos;
+- [ ] **formato da saída** definido (o que o agente entrega, em que ordem, onde grava);
+- [ ] passos no imperativo, um por vez, em ordem;
+- [ ] sem linguagem vaga ("trate adequadamente", "quando relevante", "conforme necessário") — troque
+      pelo comportamento concreto;
+- [ ] nada de credencial, token ou caminho pessoal da máquina;
+- [ ] cada falha anotada no passo 2.3 tem um trecho da skill que a corrige;
+- [ ] `ORIGEM.md` com repositório, commit, licença e o que mudou (se veio de fonte externa).
+
+Valide o cabeçalho com o script (exige Python 3 com `pyyaml`):
+
+```bash
+rtk python3 <pasta-desta-skill>/scripts/quick_validate.py .agents/skills/<nome>
+```
+
+## 4. Testar com a skill
 
 **A ideia é a mesma da mutação manual dos testes:** só vale a pena manter a skill se ela muda o
 comportamento do agente. Se o agente faz a mesma coisa com ou sem ela, a skill não ensina nada.
 
-### 3.1 Criar os cenários
+### 4.1 Rodar com a skill
 
-Escreva 2–3 pedidos realistas, do jeito que alguém do projeto pediria de verdade (com nomes de
-arquivos, entidades e contexto reais). Mostre ao usuário e pergunte se representam bem o uso. Salve em
-`evals/evals.json` dentro da pasta da skill (formato em
-[references/schemas.md](references/schemas.md)), ainda sem os critérios de verificação.
+Para cada cenário, um subagente recebe o pedido, as regras do passo 2.2 e a instrução "antes de
+começar, leia `<caminho>/SKILL.md` inteiro e siga-o". Saída em `.../with_skill/run-1/outputs/`. Rode
+os cenários em paralelo.
 
-**Skill do tipo regra?** Além dos pedidos normais, monte **cenários de pressão**: situações em que o
-agente tem um bom motivo para pular a regra (pressa, trabalho já feito, alguém mandando pular).
-Leia [references/cenario-de-pressao.md](references/cenario-de-pressao.md) antes de escrevê-los.
+**Número de execuções:** 1 por cenário nas iterações (barato enquanto a skill muda). Na **rodada final**
+(passo 6), 3 por cenário e configuração, para a média não depender de uma execução só.
 
-| Tipo de skill | Como testar |
-|---|---|
-| Regra | cenários de pressão com 3+ pressões combinadas; anotar as desculpas do agente |
-| Técnica | aplicar a técnica num caso novo e num caso de borda |
-| Padrão | reconhecer quando o padrão se aplica **e** quando não se aplica |
-| Referência | achar a informação certa e usá-la corretamente |
-
-### 3.2 Rodar com e sem
-
-Os resultados ficam em `.agents/skills/<nome>-workspace/` (ignorado pelo git), organizados por
-rodada (`iteration-1/`, `iteration-2/`…) e, dentro dela, uma pasta por cenário com nome descritivo
-(`eval-teste-do-mapper/`, não `eval-0/`).
-
-Para cada cenário, rode **os dois** ao mesmo tempo, para terminarem juntos:
-
-- **Com a skill:** um subagente recebe o pedido e a instrução "antes de começar, leia
-  `<caminho>/SKILL.md` inteiro e siga-o". Saída em `.../with_skill/outputs/`.
-- **Sem a skill (linha de base):**
-  - skill **nova** → o mesmo pedido, sem mencionar a skill. Saída em `.../without_skill/outputs/`.
-  - skill **existente sendo melhorada** → antes de editar, copie a versão atual
-    (`cp -r <skill> <workspace>/skill-snapshot/`) e use-a. Saída em `.../old_skill/outputs/`.
-
-Grave um `eval_metadata.json` por cenário (formato em `references/schemas.md`).
-
-**Ferramenta sem subagentes?** Rode os cenários um por um, você mesmo, lendo a skill antes de cada
-um. É menos rigoroso (quem escreveu a skill também a executa), então a revisão do usuário pesa mais.
-Nesse caso pule a linha de base e a medição de tempo/tokens.
-
-### 3.3 Enquanto rodam, escrever os critérios de verificação
+### 4.2 Critérios de verificação
 
 Critério de verificação = uma afirmação objetiva sobre a saída, que dá para conferir como
 "passou/não passou" (ex.: "o teste do mapper usa valores literais, não chama o mapper"). Dê nomes
 que se entendam sozinhos na tela de comparação. Coisas subjetivas (estilo, clareza) ficam para a
-avaliação do usuário. Atualize `evals/evals.json` e os `eval_metadata.json` e explique ao usuário o
-que ele vai ver.
+avaliação do usuário. Escreva-os a partir das falhas do passo 2.3 e grave em `evals/evals.json` e nos
+`eval_metadata.json`.
 
-### 3.4 Guardar tempo e tokens
+**Revise os critérios depois da primeira execução com a skill**, antes de confiar nos números: algum
+critério premia um comportamento errado ou pune uma trava que a skill tem de propósito? Exemplo real: um
+cenário esperava "escreve o `spec.md`", e a skill foi punida por perguntar antes de inventar — o defeito
+estava no critério. Critério corrigido vale para as duas configurações (reavalie a linha de base também).
+
+### 4.3 Guardar tempo e tokens
 
 Quando cada subagente termina, a notificação traz `total_tokens` e `duration_ms`. Salve na hora em
 `timing.json` na pasta da rodada — essa informação não fica guardada em outro lugar.
 
-### 3.5 Avaliar, agregar e abrir a comparação
+### 4.4 Avaliar, agregar e mostrar
 
-1. **Avaliar cada rodada:** um subagente avaliador (ou você mesmo) segue `agents/grader.md` e grava
+1. **Avaliar cada execução:** um subagente avaliador (ou você mesmo) segue `agents/grader.md` e grava
    `grading.json`. Use exatamente os campos `text`, `passed` e `evidence` (a tela de comparação
    depende deles). Critério que dá para checar com script? Escreva o script.
 2. **Agregar** (a partir da pasta desta skill):
    ```bash
-   python3 -m scripts.aggregate_benchmark <workspace>/iteration-N --skill-name <nome>
+   rtk python3 -m scripts.aggregate_benchmark <workspace>/iteration-N --skill-name <nome>
    ```
    Gera `benchmark.json` e `benchmark.md` com taxa de acerto, tempo e tokens de cada lado.
 3. **Analisar:** leia os números procurando o que a média esconde (ver `agents/analyzer.md`):
-   critério que passa com e sem a skill (não mede nada), cenário instável, custo alto.
-4. **Abrir a tela de comparação:**
+   critério que passa com e sem a skill (não mede nada), cenário instável, custo alto, e a limitação do
+   passo 2.2 (preferências do usuário na linha de base).
+4. **Mostrar ao usuário.** Resuma no chat, por cenário: o que mudou com a skill, o que falhou e o que os
+   números não mostram. Se ele quiser ver as respostas lado a lado, abra a tela de comparação:
    ```bash
    nohup python3 <pasta-desta-skill>/eval-viewer/generate_review.py \
      <workspace>/iteration-N \
@@ -183,47 +253,46 @@ Quando cada subagente termina, a notificação traz `total_tokens` e `duration_m
    A partir da 2ª rodada, acrescente `--previous-workspace <workspace>/iteration-<N-1>`.
    Sem navegador disponível: `--static <arquivo.html>` gera um HTML para abrir depois; o botão
    "Submit All Reviews" baixa um `feedback.json`, que deve ser copiado para o workspace.
-   Gere a tela **antes** de tirar suas próprias conclusões: o usuário precisa ver os resultados cedo.
-5. **Avise o usuário:** a aba "Outputs" mostra cada cenário com caixa de comentário; a aba
-   "Benchmark" mostra os números. Ele volta aqui quando terminar.
+   A aba "Outputs" mostra cada cenário com caixa de comentário; a aba "Benchmark" mostra os números.
 
-### 3.6 Ler o retorno
+### 4.5 Ler o retorno
 
-Leia `feedback.json`. Comentário vazio = estava bom. Concentre-se nos cenários com reclamação.
-Encerre a tela: `kill $VIEWER_PID 2>/dev/null`.
+Leia o retorno do usuário (no chat ou no `feedback.json`). Comentário vazio = estava bom. Concentre-se
+nos cenários com reclamação. Se abriu a tela, encerre-a: `kill $VIEWER_PID 2>/dev/null`.
 
-## 4. Melhorar a skill
+## 5. Melhorar a skill
 
 1. **Generalize.** A skill vai ser usada em muitos pedidos, não só nos 3 cenários. Evite remendos
    que só servem para os exemplos.
 2. **Enxugue.** Leia o passo a passo dos subagentes, não só o resultado final. Se a skill faz o agente
    perder tempo com algo improdutivo, corte o trecho e veja o que acontece.
-3. **Explique o porquê** (ver passo 2).
+3. **Explique o porquê** (ver passo 3).
 4. **Procure trabalho repetido.** Se todos os subagentes escreveram o mesmo script auxiliar, coloque-o
    em `scripts/` e mande a skill usá-lo.
 5. **Skill de regra que o agente quebrou?** Siga o ciclo de fechar brechas de
    [references/cenario-de-pressao.md](references/cenario-de-pressao.md).
+6. **Cenário novo para cada falha nova** que aparecer no uso real ou no retorno do usuário.
 
-Depois: aplique as mudanças, rode tudo de novo numa nova `iteration-<N+1>/` (com linha de base),
-abra a tela com `--previous-workspace` e espere o retorno. Pare quando o usuário estiver satisfeito,
-quando os comentários vierem vazios ou quando não houver mais progresso.
+Depois: aplique as mudanças, passe de novo pela checagem estática (3.1), rode tudo numa nova
+`iteration-<N+1>/` (com linha de base), mostre a comparação e espere o retorno. Pare quando o usuário
+estiver satisfeito, quando os comentários vierem vazios ou quando não houver mais progresso.
 
 ### Comparação às cegas (opcional)
 
 Para saber se a versão nova é mesmo melhor: entregue as duas saídas a um agente independente sem dizer
 qual é qual e peça que julgue. Detalhes em `agents/comparator.md` e `agents/analyzer.md`.
 
-## 5. Finalizar
+## 6. Finalizar
 
-1. **Validar o cabeçalho** (exige Python 3 com `pyyaml`):
-   ```bash
-   python3 <pasta-desta-skill>/scripts/quick_validate.py .agents/skills/<nome>
-   ```
-2. **Registrar na tabela de roteamento do `AGENTS.md`** ("Situação → Skill"). Sem isso a skill nunca
+1. **Rodada final de confirmação:** com a skill aprovada pelo usuário, rode todos os cenários **3 vezes**
+   em cada configuração e confira se o resultado se mantém. Se um cenário variar muito entre as
+   execuções, a skill ainda está ambígua nesse ponto: volte ao passo 5.
+2. **Validar o cabeçalho** (`quick_validate.py`, ver 3.1).
+3. **Registrar na tabela de roteamento do `AGENTS.md`** ("Situação → Skill"). Sem isso a skill nunca
    é lida.
-3. **`ORIGEM.md`** (se veio de fonte externa): repositório, commit, licença e o que foi mudado.
+4. **`ORIGEM.md`** (se veio de fonte externa): repositório, commit, licença e o que foi mudado.
    Licenças que exigem a mesma licença na obra derivada (ex.: CC BY-SA) precisam ser respeitadas.
-4. **Não commitar.** Entregue o texto do commit e a lista de arquivos, conforme o `AGENTS.md`. O
+5. **Não commitar.** Entregue o texto do commit e a lista de arquivos, conforme o `AGENTS.md`. O
    workspace de testes fica fora do git; os cenários em `evals/` podem ser versionados, se o usuário
    quiser repetir os testes depois.
 
@@ -249,6 +318,7 @@ de campos JSON e de pastas também ficam em inglês, porque os scripts e a tela 
 | linha de base (sem a skill) | baseline, `without_skill` / `old_skill` |
 | com a skill | `with_skill` |
 | rodada | iteration |
+| execução | run (`run-1`, `run-2`…) |
 | avaliador | grader |
 | comparação às cegas | blind comparison, comparator |
 | tela de comparação | eval viewer, review |
