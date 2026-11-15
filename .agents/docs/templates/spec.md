@@ -54,9 +54,10 @@ Ao final, isto é verdade:
 <!-- Decisões técnicas (camadas, índices, padrões de código) vão no design.md. -->
 
 - **Fechadas** (não se rediscutem nesta spec):
-  - <decisão> — <onde foi tomada: link para a decisão/ADR ou data da conversa>
-- **Em aberto** (precisam de resposta antes da task que depende delas):
-  - <pergunta> — bloqueia: <task NN ou "aprovação da spec">
+  - <decisão> — descartadas: <alternativa (motivo)> — <onde foi tomada: link para a decisão/ADR ou data da conversa>
+- **Em aberto** (precisam de resposta antes do que bloqueiam; a spec só é aprovada sem nada bloqueando a aprovação):
+  - <pergunta> — bloqueia: <"aprovação da spec" ou "design"> (as tasks ainda não existem nesta fase)
+  - <contradição com requisito/ADR: trecho de cada lado> — bloqueia: aprovação da spec
 
 ## 4. Critérios de aceite
 

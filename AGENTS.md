@@ -97,7 +97,8 @@ Antes de começar um trabalho, decida o tamanho dele:
 3. Vai virar mais de uma task (não cabe numa branch só, com poucos commits).
 4. Muda o contrato da API (campos ou rotas) em mais de um recurso.
 5. Integra um serviço externo (envio de email, ViaCEP, IBGE…).
-6. O Juno pediu uma spec.
+6. O Juno pediu uma spec **depois** de ver a recomendação de task (o agente sempre diz antes o que o
+   trabalho parece e por quê; se o Juno mantiver o pedido, vale spec).
 
 Senão, é **task**.
 

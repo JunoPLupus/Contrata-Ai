@@ -26,7 +26,7 @@ externa de bibliotecas e serviços. Arquivos de código específicos a ler ou al
 ## 1. Decisões técnicas
 
 - **Fechadas:**
-  - <decisão> — <motivo, ou link para o ADR/decisão>
+  - <decisão> — <motivo> — descartadas: <alternativa (motivo)> — <link para o ADR/decisão, se houver>
 - **Em aberto:**
   - <pergunta> — bloqueia: <task NN>
 - **ADR novo?** <não | sim: título provável e o que ele registra>
