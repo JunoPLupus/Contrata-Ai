@@ -121,3 +121,4 @@ Skills são procedimentos passo a passo para tarefas recorrentes. Ficam em
 | Situação | Skill |
 |---|---|
 | Criar, adaptar, traduzir ou melhorar uma skill | [`oficina-de-skills`](.agents/skills/oficina-de-skills/SKILL.md) |
+| Criar ou atualizar uma spec (`spec.md` + `design.md`) | [`spec`](.agents/skills/spec/SKILL.md) |

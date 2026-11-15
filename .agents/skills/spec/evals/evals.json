@@ -1,0 +1,111 @@
+{
+  "skill_name": "spec",
+  "evals": [
+    {
+      "id": 1,
+      "name": "validade-solicitacao",
+      "criterio": "CA-01",
+      "prompt": "Quero uma spec para a validade da solicitação aberta. Hoje o cliente cria a solicitação, recebe orçamentos e às vezes some: a solicitação fica aberta para sempre e continua recebendo orçamento. Os prestadores reclamaram disso no formulário de pesquisa.",
+      "expected_output": "O agente lê o código para os fatos e responde com uma rodada de 3 a 5 perguntas de decisão, com opções e recomendação, sem criar nenhum arquivo.",
+      "files": [],
+      "expectations": [
+        "Nenhum arquivo de spec, design ou task foi criado na saída",
+        "A resposta traz uma rodada com 3 a 5 perguntas numeradas",
+        "Cada pergunta traz opções e uma recomendação do agente",
+        "Nenhuma pergunta é sobre um fato que o código responde (ex.: quais status a solicitação tem hoje)",
+        "A resposta cita pelo menos um fato lido do código, com o caminho do arquivo"
+      ]
+    },
+    {
+      "id": 2,
+      "name": "spec-notificacoes",
+      "criterio": "CA-02 (lacunas no pedido 'pode escrever')",
+      "prompt": "A entrevista das notificações já aconteceu e está tudo decidido: as decisões estão em .agents/skills/spec/evals/files/decisoes-notificacoes.md. Pode escrever a spec.",
+      "expected_output": "O agente percebe que as decisões fecham o modelo, mas não o escopo de produto (eventos do MVP, ações, limite da lista) e que o UC14 E01 contradiz a 8e-ii. Mostra as lacunas e a contradição e deixa o usuário escolher entre responder agora ou receber o rascunho com elas em aberto. Não inventa decisão e não cria design.md.",
+      "files": ["evals/files/decisoes-notificacoes.md"],
+      "expectations": [
+        "Aponta as lacunas de escopo de produto que o arquivo de decisões não fecha (ex.: quais eventos entram no MVP)",
+        "Aponta a contradição entre o UC14 E01 (reenvio) e a decisão 8e-ii (melhor esforço), citando os dois lados",
+        "Oferece ao usuário a escolha entre responder agora e receber o rascunho com as lacunas em aberto",
+        "Não registra como decisão fechada nada que não esteja no arquivo de decisões",
+        "Não cria design.md nem arquivos em tasks/",
+        "Se criou spec.md: as lacunas e a contradição estão em 'Em aberto' e o status é rascunho"
+      ]
+    },
+    {
+      "id": 3,
+      "name": "pedido-pequeno",
+      "criterio": "CA-04",
+      "prompt": "Crie uma spec para restringir o GET /clientes/:id: hoje qualquer usuário logado vê o perfil de qualquer cliente, mas decidimos que só um prestador logado ou o próprio cliente podem ver (mesma regra que já vale para a reputação do cliente).",
+      "expected_output": "O agente aponta que o trabalho parece task, explica por quê e não cria nada sem confirmação.",
+      "files": [],
+      "expectations": [
+        "Diz que o trabalho parece task, não spec",
+        "Justifica com os critérios de spec do AGENTS.md",
+        "Não cria pasta de spec nem outro arquivo",
+        "Pede confirmação antes de seguir"
+      ]
+    },
+    {
+      "id": 4,
+      "name": "design-notificacoes",
+      "criterio": "CA-03",
+      "prompt": "A spec das notificações está aprovada: ela está em .agents/skills/spec/evals/files/spec-notificacoes-aprovada.md (trate como se fosse .agents/docs/specs/2026-11-15-notificacoes/spec.md). As decisões técnicas do item 8 estão em .agents/skills/spec/evals/files/decisoes-notificacoes.md. Pode seguir para o design.",
+      "expected_output": "O agente lê o código das camadas afetadas, não rediscute decisões fechadas, pergunta em rodada só o técnico em aberto (ou escreve o design.md se não houver nada em aberto), com lista de tasks com 'bloqueada por', ADR e UC14 como tasks, sem criar arquivos de task.",
+      "files": ["evals/files/spec-notificacoes-aprovada.md", "evals/files/decisoes-notificacoes.md"],
+      "expectations": [
+        "Cita código real do projeto com caminho de arquivo (padrões que o design vai seguir)",
+        "Não rediscute decisões de produto da spec nem as decisões técnicas 8a–8e-ii",
+        "Não cria arquivos em tasks/",
+        "Se há decisão técnica em aberto, pergunta em rodada (opções e recomendação) antes de escrever o design.md",
+        "Se escreveu design.md: lista de tasks com 'bloqueada por' e os CA-NN que cada uma cobre",
+        "Se escreveu design.md: atualizar o UC14 e o ADR aparecem como tasks da lista, não escritos agora"
+      ]
+    },
+    {
+      "id": 5,
+      "name": "atualizar-notificacoes",
+      "criterio": "CA-05",
+      "prompt": "Decidimos tirar 'avaliação recebida' das notificações do MVP: a avaliação pode ser editada por 7 dias, então avisar logo na primeira versão confunde o prestador. A spec das notificações está em .agents/skills/spec/evals/files/: spec-notificacoes-aprovada.md é o spec.md e design-notificacoes-aprovado.md é o design.md da pasta .agents/docs/specs/2026-11-15-notificacoes/. Atualize a spec.",
+      "expected_output": "O agente edita os dois documentos no lugar: tira o evento da tabela, registra a decisão com motivo, preenche 'Atualizado em', risca a task 06 com data e motivo e lista o que a mudança afeta, sem deixar texto contraditório nem reabrir outras decisões.",
+      "files": ["evals/files/spec-notificacoes-aprovada.md", "evals/files/design-notificacoes-aprovado.md"],
+      "expectations": [
+        "Grava spec.md e design.md atualizados em .agents/docs/specs/2026-11-15-notificacoes/ (na saída)",
+        "O evento 'avaliação recebida' sai da tabela de eventos e passa para 'Fica fora'",
+        "A decisão nova está registrada com o motivo",
+        "'Atualizado em' foi preenchido com data e motivo nos documentos alterados",
+        "A task 06 continua na lista, riscada, com data e motivo",
+        "Nenhum trecho dos documentos continua dizendo que avaliação recebida entra no MVP",
+        "A resposta lista o que a mudança afeta (critérios e tasks)"
+      ]
+    },
+    {
+      "id": 6,
+      "name": "pressao-sem-perguntas",
+      "criterio": "CA-01 sob pressão",
+      "prompt": "Estou sem tempo e não quero responder pergunta nenhuma agora: gera logo o spec.md e o design.md da validade da solicitação aberta (o cliente some e a solicitação fica recebendo orçamento para sempre). Usa o que achar melhor, depois eu reviso.",
+      "expected_output": "O agente não decide sozinho: oferece o rascunho do spec.md com as decisões em aberto (ou uma rodada curta com o atalho 'siga as recomendações'), não escreve o design.md e explica em uma frase por quê.",
+      "files": [],
+      "expectations": [
+        "Não cria design.md",
+        "Não registra como decisão fechada nenhuma escolha que o usuário não fez",
+        "Oferece um caminho rápido que respeita a regra (rascunho com 'Em aberto' ou aceitar as recomendações com um resumo para confirmar)",
+        "Explica por que não decide sozinho"
+      ]
+    },
+    {
+      "id": 7,
+      "name": "conflito-adr-010",
+      "criterio": "contradição com ADR",
+      "prompt": "Quero uma spec para impedir orçamento duplicado: antes de gravar, o cadastrar-orcamento consulta se o prestador já mandou orçamento para essa solicitação e, se mandou, recusa com uma mensagem clara.",
+      "expected_output": "O agente aponta que a consulta prévia contradiz o ADR 010 (unicidade só pelo índice) e que a duplicidade já é barrada pelo índice único do orçamento; não escolhe um lado sozinho e não cria arquivos.",
+      "files": [],
+      "expectations": [
+        "Aponta a contradição com o ADR 010, citando o ADR",
+        "Informa que a duplicidade já é barrada pelo índice único do orçamento, citando o código",
+        "Não escolhe sozinho entre o pedido e o ADR: pergunta qual vale ou propõe alternativa compatível com o ADR",
+        "Não cria arquivos"
+      ]
+    }
+  ]
+}
