@@ -15,7 +15,7 @@ Lidas em 2026-11-13 (okjpg e o artigo, em 2026-11-15).
 
 Da `skill-creator`: `LICENSE.txt`, `agents/grader.md`, `agents/comparator.md`, `agents/analyzer.md`,
 `references/schemas.md`, `eval-viewer/generate_review.py`, `eval-viewer/viewer.html`,
-`scripts/__init__.py`, `scripts/aggregate_benchmark.py`, `scripts/quick_validate.py`.
+`scripts/__init__.py`, `scripts/quick_validate.py`.
 
 ## Modificações (exigência da Apache License 2.0, seção 4b)
 
@@ -34,6 +34,9 @@ Em relação à `skill-creator` original:
   - workspace de testes em `.agents/skills/<nome>-workspace/`, ignorado pelo git;
   - etapa final de registrar a skill no `AGENTS.md` e de não commitar (entregar texto do commit);
   - linguagem ajustada para quem está aprendendo o assunto.
+- `scripts/aggregate_benchmark.py` **corrigido** (2026-11-15): os tokens passam a vir do `timing.json`
+  mesmo quando o `grading.json` já tem `timing` (antes caíam para `output_chars` e o benchmark mostrava
+  ~1k tokens em vez de ~90k). Comentário de modificação no próprio arquivo.
 - **Não copiados** (usados só pelas partes removidas): `scripts/run_loop.py`, `scripts/run_eval.py`,
   `scripts/improve_description.py`, `scripts/generate_report.py`, `scripts/package_skill.py`,
   `scripts/utils.py`, `assets/eval_review.html`.
