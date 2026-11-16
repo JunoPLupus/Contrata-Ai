@@ -11,10 +11,10 @@ cada coisa daqui. Para pessoas, a documentação do projeto continua em `docs/` 
 | `skills/` | **O que fazer agora**, passo a passo? | criar uma skill, implementar um use-case |
 | `docs/architecture/` | **O que é** o sistema? (fatos) | camadas, módulos, dependências entre agregados |
 | `docs/decisions/` | **Por que** é assim? | decisões de modelagem já firmadas |
-| `docs/guides/` | **Como fazemos** aqui? (convenções) | padrão dos value objects, testes, commits |
+| `docs/guides/` | **Como fazemos** aqui? (convenções) | padrão dos value objects, testes |
 | `docs/specs/` | **O que vamos construir** (quê, por quê, como, em que ordem)? | uma pasta por spec: `spec.md`, `design.md`, `tasks/` |
 | `docs/tasks/` | Tarefas avulsas (sem spec) | correção localizada, ajuste pequeno |
-| `docs/templates/` | Modelos prontos para copiar | `spec.md`, `design.md`, `task.md` |
+| `docs/templates/` | Modelos prontos para copiar | `spec.md`, `design.md`, `task.md`, `commit.md` |
 
 As pastas de `docs/` são criadas quando o primeiro conteúdo delas for escrito. Assim nenhuma pasta
 fica vazia nem com arquivo provisório.

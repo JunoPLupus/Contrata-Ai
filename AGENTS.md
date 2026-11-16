@@ -70,8 +70,9 @@ Comandos da API (rodar dentro de `api/`):
 - **Idioma:** responda e escreva documentação em **português (pt-BR)**.
 - **Git:** o agente **não** faz commit, push, merge, rebase nem cria branch. Pode usar só comandos de
   leitura (`git status`, `git diff`, `git log`). Ao fim de cada tarefa, entregue:
-  - o **texto do commit** em Conventional Commits, no padrão do histórico
-    (`tipo(escopo): Descrição em português`, ex.: `feat(avaliacao): Remodelagem da avaliação`);
+  - o **texto do commit** em Conventional Commits, seguindo o modelo
+    [`.agents/docs/templates/commit.md`](.agents/docs/templates/commit.md). O modelo cobre o título, o
+    corpo em lista, os rodapés `BREAKING CHANGE:` e `Task:` e a ordem recomendada dos tipos;
   - a **lista de arquivos** de cada commit e o que muda em cada um. Se um mesmo arquivo tiver mudanças
     de commits diferentes, avise: quem commita precisa usar o staging area da IDE.
   - Não inclua trailer de coautoria de IA (`Co-Authored-By: ...`) no texto do commit.
@@ -88,7 +89,8 @@ Antes de começar um trabalho, decida o tamanho dele:
   - `tasks/NN-<assunto>.md` — fatias verticais, numeradas na ordem de dependência.
 - **Task** = execução de uma mudança já entendida. Task avulsa fica em
   `.agents/docs/tasks/AAAA-MM-DD-<assunto>.md`.
-- Modelos: [`.agents/docs/templates/`](.agents/docs/templates/) (`spec.md`, `design.md`, `task.md`).
+- Modelos: [`.agents/docs/templates/`](.agents/docs/templates/) (`spec.md`, `design.md`, `task.md`,
+  `commit.md`).
 
 **Vira spec** se valer qualquer um destes:
 
