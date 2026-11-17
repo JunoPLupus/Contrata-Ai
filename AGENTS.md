@@ -104,7 +104,9 @@ Antes de começar um trabalho, decida o tamanho dele:
 Senão, é **task**.
 
 Antes de começar, diga em palavras simples "isto me parece spec/task porque…" e espere a confirmação.
-Se uma task crescer no meio do caminho, pare, avise e proponha transformá-la em spec.
+Se o Juno já pediu uma task e você concorda que é task, não precisa esperar: siga (a confirmação
+existe para quando você discorda do tamanho). Se uma task crescer no meio do caminho, pare, avise e
+proponha transformá-la em spec.
 
 Estes critérios podem mudar com o uso: proponha o ajuste com o motivo e só aplique depois de aprovado.
 
