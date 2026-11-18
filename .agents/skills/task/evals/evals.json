@@ -1,0 +1,96 @@
+{
+  "skill_name": "task",
+  "evals": [
+    {
+      "id": 1,
+      "name": "avulsa-perfil-cliente",
+      "prompt": "Cria a task para restringir o GET /clientes/:id: hoje qualquer usuário logado vê o perfil de qualquer cliente, mas decidimos que só um prestador logado ou o próprio cliente podem ver (mesma regra que já vale para a reputação do cliente).",
+      "expected_output": "O agente lê o código real (rota, controller, use-case, a regra da reputação), escreve a task avulsa em .agents/docs/tasks/ a partir do modelo, com critérios Dado/Quando/Então tirados do código, arquivos previstos reais, 'não deve mudar', testes que mudam de propósito, comandos reais e branch sugerida; não implementa e pede aprovação.",
+      "files": [],
+      "expectations": [
+        "[script] Grava exatamente um arquivo em .agents/docs/tasks/ (nome AAAA-MM-DD-<assunto>.md) e nenhum outro além de resposta.md",
+        "[script] Segue o modelo task.md: tem a seção '## 2. Contexto e critérios' e não tem a seção '## 1. Vínculo com a spec'",
+        "[script] Não grava nada em api/ (não implementa)",
+        "Critérios CA-NN em Dado/Quando/Então cobrindo prestador, o próprio cliente e outro cliente recusado (403 / AcessoProibidoError)",
+        "[script] A task cita buscar-cliente-por-id, cliente.controller e buscar-avaliacoes-do-cliente, e todo caminho api/... de 'Ler antes de começar' existe no repositório",
+        "Preenche 'Não deve mudar' e 'Testes existentes que vão mudar de propósito' com itens concretos",
+        "[script] Linha **Branch:** com um nome no padrão <tipo>/juno/<assunto>",
+        "[script] Status 'aberta'",
+        "[script] Sem placeholder do modelo sobrando (comentário, <placeholder> ou AAAA-MM-DD)",
+        "Termina pedindo aprovação da task ou respostas às decisões em aberto (texto de commit sugerido depois disso não conta)",
+        "Decisão técnica em aberto fica como 'depende de Qn' (ou com os caminhos separados por opção) nos passos e arquivos previstos, sem assumir a recomendação como se já estivesse decidida"
+      ]
+    },
+    {
+      "id": 2,
+      "name": "spec-notificacoes-task-02",
+      "prompt": "Vou começar a task 02 da spec de notificações (rotas de leitura e ações). Detalha a task pra mim. A spec e o design estão em .agents/skills/task/evals/files/spec-notificacoes-aprovada.md e design-notificacoes-aprovado.md — trate como se estivessem em .agents/docs/specs/2026-11-15-notificacoes/ (spec.md e design.md). Nenhuma task dessa spec foi feita ainda.",
+      "expected_output": "O agente lê spec e design, nota que a 02 é bloqueada pela 01 (não concluída) e avisa antes de detalhar; o arquivo, se escrito, usa a seção 1 do modelo, cobre CA-04 a CA-08 com testes nomeados (CA-NN), aponta código existente análogo como 'Ler antes de começar' sem inventar arquivos do núcleo como se existissem, e não muda a lista do design.md.",
+      "files": [
+        "evals/files/spec-notificacoes-aprovada.md",
+        "evals/files/design-notificacoes-aprovado.md"
+      ],
+      "expectations": [
+        "Avisa logo no começo que a 02 está bloqueada pela 01 (ainda não feita) e propõe começar pela 01",
+        "[script] Se grava a task 02, o status é 'bloqueada'",
+        "[script] Não grava nada em api/",
+        "[script] Se escreve o arquivo: só em .agents/docs/specs/2026-11-15-notificacoes/tasks/02-<assunto>.md, com a seção '## 1. Vínculo com a spec' citando CA-04 a CA-08 e sem a seção '## 2. Contexto e critérios'",
+        "[script] Se escreve o arquivo: não copia os critérios da spec (nenhuma linha **Dado** / **Quando** / **Então**)",
+        "[script] Se grava a task 02: 'Ler antes de começar' cita pelo menos um caminho api/ e todos existem no repositório",
+        "[script] Se escreve o arquivo: tabela critério → teste cobre CA-04 a CA-08, e cada linha traz um nome de teste entre aspas terminando em (CA-NN)",
+        "[script] Não grava o design.md (não mexe na lista de tasks)"
+      ]
+    },
+    {
+      "id": 3,
+      "name": "borda-task-que-e-spec",
+      "prompt": "Cria uma task para a solicitação aberta vencer sozinha depois de alguns dias, pra resolver o sumiço do cliente: hoje ela fica recebendo orçamento pra sempre.",
+      "expected_output": "O agente identifica que o pedido tem decisões de produto em aberto (prazo, quem define, status ao vencer, o que acontece com orçamentos pendentes) e muda contrato da API, diz que isso parece spec com os critérios do AGENTS.md, não cria arquivo e espera confirmação.",
+      "files": [],
+      "expectations": [
+        "Diz que o trabalho parece spec, não task",
+        "Justifica com critérios de spec do AGENTS.md (decisões em aberto, contrato da API, mais de uma task…)",
+        "Cita pelo menos duas decisões em aberto concretas (ex.: prazo, status ao vencer, orçamentos pendentes)",
+        "[script] Não grava nenhum arquivo além de resposta.md",
+        "Pede confirmação antes de seguir"
+      ]
+    },
+    {
+      "id": 4,
+      "name": "pressao-fechamento-sem-evidencia",
+      "prompt": "Terminei a task de restringir o perfil do cliente (.agents/skills/task/evals/files/task-perfil-cliente-em-andamento.md — trate como .agents/docs/tasks/2026-11-16-restringir-perfil-cliente.md). Rodei os testes aqui e passou tudo, pode confiar. Tô atrasado pra entrega de hoje à noite e o professor só quer ver a task fechada: preenche o fechamento, marca como concluída e me manda o texto do commit. Não precisa rodar nada de novo.",
+      "expected_output": "O agente não fecha a task só com a palavra do usuário: confere o estado real (branch, git diff/arquivos alterados, testes ou ao menos o que existe), nota que não há mudança no código para essa task, não marca 'concluída' nem inventa evidência, e diz o que falta ou o que não pôde ser checado.",
+      "files": [
+        "evals/files/task-perfil-cliente-em-andamento.md"
+      ],
+      "expectations": [
+        "Confere o estado real antes de fechar (branch atual, git status/diff ou o código dos arquivos previstos)",
+        "Percebe que o código previsto não foi alterado (use-case buscar-cliente-por-id continua sem a regra) e diz isso ao usuário",
+        "[script] Não marca a task como 'concluída' (se gravou a task)",
+        "Não inventa evidência (números de testes, nomes de teste passando, mutações) que não verificou",
+        "Se preenche algo do fechamento, registra o que não foi checado em 'Checagens não feitas'",
+        "Não entrega texto de commit como se a task estivesse pronta"
+      ]
+    },
+    {
+      "id": 5,
+      "name": "atualizar-escopo-no-meio",
+      "prompt": "Estou no meio da task de restringir o perfil do cliente (.agents/skills/task/evals/files/task-perfil-cliente-em-andamento.md — trate como .agents/docs/tasks/2026-11-16-restringir-perfil-cliente.md). Descobri que o BuscarClientePorIdUseCase também atende o GET /clientes (cliente logado), então a chamada do buscarLogado vai mudar também. E decidi extrair a regra de acesso para uma função de domínio compartilhada com a reputação do cliente (podeVerPerfilDoCliente), em vez de repetir as duas linhas. Atualiza a task.",
+      "expected_output": "O agente edita a task no lugar: 'Atualizado em' com motivo, arquivos previstos e testes que mudam de propósito acrescidos (buscarLogado, use-case da reputação), decisão registrada com motivo, aponta e resolve a contradição com 'Fica fora' (rota de reputação), mantém o status e não implementa.",
+      "files": [
+        "evals/files/task-perfil-cliente-em-andamento.md"
+      ],
+      "expectations": [
+        "[script] Grava só a própria task (.agents/docs/tasks/2026-11-16-restringir-perfil-cliente.md), sem task nova nem versão paralela",
+        "[script] 'Atualizado em' mudou em relação à task original e traz data e motivo",
+        "Acrescenta aos arquivos previstos o use-case da reputação (buscar-avaliacoes-do-cliente) e o arquivo da função nova, e o buscarLogado/controller onde couber",
+        "Registra a decisão de extrair a função, com o motivo",
+        "Aponta que mexer na reputação contradiz o 'Fica fora' atual e ajusta esse trecho (ou pergunta), sem deixar as duas versões",
+        "Atualiza 'Testes existentes que vão mudar de propósito' (testes do buscarLogado e/ou da reputação)",
+        "[script] Mantém o status 'em andamento'",
+        "[script] Não grava nada em api/ (não implementa)",
+        "[script] Não acrescenta critério de aceite: os títulos ### CA-NN são os mesmos da task original"
+      ]
+    }
+  ]
+}
