@@ -16,6 +16,16 @@ You receive these parameters in your prompt:
 - **transcript_path**: Path to the execution transcript (markdown file)
 - **outputs_dir**: Directory containing output files from execution
 
+**Project adaptations (ContrataAí):**
+
+- **Skip expectations prefixed with `[script] `.** A script (`scripts/apply_checks.py` + the tested
+  skill's `evals/checks.py`) grades them after you; do not include them in your output.
+- **Blind, one grader per scenario.** You may receive several executions of the same scenario at once,
+  labeled A, B, C… (with and without the skill, all repetitions, shuffled). You are not told which is
+  which — do not try to guess. Grade each label independently against the same expectations and return
+  one result (the `expectations` list below) per label. Comparing them side by side is fine for
+  calibration (apply the same bar to all), but each verdict must rest on that label's own evidence.
+
 ## Process
 
 ### Step 1: Read the Transcript

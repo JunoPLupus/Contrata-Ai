@@ -57,3 +57,6 @@ CLAUDE.local.md
 
 # Área de testes das skills (gerada pela skill oficina-de-skills)
 .agents/skills/*-workspace/
+
+# Python
+__pycache__/

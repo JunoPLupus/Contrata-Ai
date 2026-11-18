@@ -13,8 +13,8 @@ Lidas em 2026-11-13 (okjpg e o artigo, em 2026-11-15).
 
 ## Arquivos copiados sem alteração (em inglês)
 
-Da `skill-creator`: `LICENSE.txt`, `agents/grader.md`, `agents/comparator.md`, `agents/analyzer.md`,
-`references/schemas.md`, `eval-viewer/generate_review.py`, `eval-viewer/viewer.html`,
+Da `skill-creator`: `LICENSE.txt`, `agents/comparator.md`, `agents/analyzer.md`,
+`eval-viewer/generate_review.py`, `eval-viewer/viewer.html`,
 `scripts/__init__.py`, `scripts/quick_validate.py`.
 
 ## Modificações (exigência da Apache License 2.0, seção 4b)
@@ -40,6 +40,14 @@ Em relação à `skill-creator` original:
 - **Não copiados** (usados só pelas partes removidas): `scripts/run_loop.py`, `scripts/run_eval.py`,
   `scripts/improve_description.py`, `scripts/generate_report.py`, `scripts/package_skill.py`,
   `scripts/utils.py`, `assets/eval_review.html`.
+- **Economia de tokens nos testes** (2026-11-18, depois da rodada final da `task` custar ~2,7M tokens;
+  sugestões do Gemini e do Grok, decididas pelo Juno):
+  - `SKILL.md`: linha de base reaproveitada entre iterações (refeita só quando o cenário ou o ambiente
+    mudam), rodada final 3× só com a skill, iteração parcial (só os cenários afetados), um avaliador
+    às cegas por cenário e critérios `[script]` conferidos por código;
+  - `agents/grader.md`: seção "Project adaptations" (ignora `[script]`; vários rótulos às cegas);
+  - `references/schemas.md`: seção do contrato `evals/checks.py`;
+  - `scripts/apply_checks.py` e `scripts/test_apply_checks.py` **criados** pelo projeto.
 
 Em relação à `writing-skills`:
 

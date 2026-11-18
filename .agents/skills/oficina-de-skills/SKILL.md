@@ -98,6 +98,8 @@ Os resultados ficam em `.agents/skills/<nome>-workspace/` (ignorado pelo git), p
 (`eval-teste-do-mapper/`, não `eval-0/`). A linha de base de cada cenário vai em
 `.../without_skill/run-1/outputs/` (skill nova) ou `.../old_skill/run-1/outputs/` (skill existente:
 antes de editar, copie a versão atual com `cp -r <skill> <workspace>/skill-snapshot/` e use a cópia).
+Essa linha de base é **reaproveitada** nas iterações seguintes e na rodada final (regras no passo 5): ela
+custa metade dos subagentes de cada rodada e só muda quando o cenário ou o ambiente mudam.
 
 Regras para **todo** subagente de teste (com ou sem a skill), escritas no pedido que ele recebe:
 
@@ -207,7 +209,8 @@ começar, leia `<caminho>/SKILL.md` inteiro e siga-o". Saída em `.../with_skill
 os cenários em paralelo.
 
 **Número de execuções:** 1 por cenário nas iterações (barato enquanto a skill muda). Na **rodada final**
-(passo 6), 3 por cenário e configuração, para a média não depender de uma execução só.
+(passo 6), 3 por cenário **só com a skill**, para a média não depender de uma execução só; a linha de
+base é reaproveitada (passo 5).
 
 ### 4.2 Critérios de verificação
 
@@ -216,6 +219,16 @@ Critério de verificação = uma afirmação objetiva sobre a saída, que dá pa
 que se entendam sozinhos na tela de comparação. Coisas subjetivas (estilo, clareza) ficam para a
 avaliação do usuário. Escreva-os a partir das falhas do passo 2.3 e grave em `evals/evals.json` e nos
 `eval_metadata.json`.
+
+**Critério que um script confere sozinho** (arquivo existe, placeholder sobrando, ID no formato, texto
+proibido presente) **não vai para o avaliador LLM:** escreva-o com o prefixo `[script] ` e implemente-o em
+`evals/checks.py` da skill testada (contrato em [references/schemas.md](references/schemas.md), seção
+"checks.py"). Script não erra por cansaço nem gasta tokens; o avaliador LLM fica só com o que exige
+leitura de sentido. Reaproveite os scripts da própria skill quando existirem (ex.: a `spec` tem o
+`validate_spec.py`).
+O `checks.py` também é código: teste cada critério com um caso que passa e um que falha (saídas
+sintéticas, ex.: `task/evals/test_checks.py`) e faça mutação nele. Rodá-lo só nas saídas reais não basta:
+nelas pode não haver nenhum exemplo do erro (no primeiro uso, 5 de 8 mutações sobreviveram assim).
 
 **Revise os critérios depois da primeira execução com a skill**, antes de confiar nos números: algum
 critério premia um comportamento errado ou pune uma trava que a skill tem de propósito? Exemplo real: um
@@ -229,9 +242,18 @@ Quando cada subagente termina, a notificação traz `total_tokens` e `duration_m
 
 ### 4.4 Avaliar, agregar e mostrar
 
-1. **Avaliar cada execução:** um subagente avaliador (ou você mesmo) segue `agents/grader.md` e grava
-   `grading.json`. Use exatamente os campos `text`, `passed` e `evidence` (a tela de comparação
-   depende deles). Critério que dá para checar com script? Escreva o script.
+1. **Avaliar:** **um subagente avaliador por cenário**, com contexto limpo e **às cegas**: ele recebe
+   todas as execuções daquele cenário (com e sem a skill, todas as repetições) embaralhadas e rotuladas
+   A, B, C…, sem saber qual é qual; o mapa rótulo → execução fica só com você. Ele segue
+   `agents/grader.md`, avalia **só os critérios sem `[script]`** e devolve um resultado por rótulo; você
+   grava cada um como `grading.json` na pasta da execução. Use exatamente os campos `text`, `passed` e
+   `evidence` (a tela de comparação depende deles). Um avaliador por cenário, em vez de um por execução,
+   divide o custo pelo número de execuções e compara as saídas lado a lado.
+   Depois, se a skill tiver `evals/checks.py`, aplique os critérios `[script]` (a partir da pasta desta
+   skill):
+   ```bash
+   rtk python3 -m scripts.apply_checks <caminho absoluto da skill> <workspace>/iteration-N
+   ```
 2. **Agregar** (a partir da pasta desta skill):
    ```bash
    rtk python3 -m scripts.aggregate_benchmark <workspace>/iteration-N --skill-name <nome>
@@ -273,9 +295,21 @@ nos cenários com reclamação. Se abriu a tela, encerre-a: `kill $VIEWER_PID 2>
    [references/cenario-de-pressao.md](references/cenario-de-pressao.md).
 6. **Cenário novo para cada falha nova** que aparecer no uso real ou no retorno do usuário.
 
-Depois: aplique as mudanças, passe de novo pela checagem estática (3.1), rode tudo numa nova
-`iteration-<N+1>/` (com linha de base), mostre a comparação e espere o retorno. Pare quando o usuário
-estiver satisfeito, quando os comentários vierem vazios ou quando não houver mais progresso.
+Depois: aplique as mudanças, passe de novo pela checagem estática (3.1) e rode uma nova
+`iteration-<N+1>/` com estas regras de economia:
+
+- **Só os cenários que a mudança pode afetar** rodam com a skill. Diga ao usuário quais ficaram de fora
+  e por quê (ex.: "mudei só a regra de critérios da task avulsa: rodo só o cenário avulsa"). A rodada
+  final roda todos.
+- **Linha de base reaproveitada:** copie as pastas `without_skill/` (ou `old_skill/`) da iteração
+  anterior para a nova (`cp -r`, sem gastar subagente). Rode a base de novo **só** para o cenário cujo
+  pedido ou arquivos de apoio mudaram, ou quando mudar o ambiente que o cenário lê (`AGENTS.md`,
+  modelos em `.agents/docs/templates/`, a skill vizinha que ele usa). Exemplo real: uma linha nova no
+  `AGENTS.md` mudou o comportamento da base da `task` entre duas rodadas.
+- **Critério novo ou corrigido não pede execução nova:** reavalie as saídas que já existem.
+
+Mostre a comparação e espere o retorno. Pare quando o usuário estiver satisfeito, quando os comentários
+vierem vazios ou quando não houver mais progresso.
 
 ### Comparação às cegas (opcional)
 
@@ -284,9 +318,11 @@ qual é qual e peça que julgue. Detalhes em `agents/comparator.md` e `agents/an
 
 ## 6. Finalizar
 
-1. **Rodada final de confirmação:** com a skill aprovada pelo usuário, rode todos os cenários **3 vezes**
-   em cada configuração e confira se o resultado se mantém. Se um cenário variar muito entre as
-   execuções, a skill ainda está ambígua nesse ponto: volte ao passo 5.
+1. **Rodada final de confirmação:** com a skill aprovada pelo usuário, rode todos os cenários **3 vezes
+   com a skill** e confira se o resultado se mantém. A linha de base é a da última iteração, pelas regras
+   do passo 5: ela mostra que a falha existe sem a skill (essas falhas costumam ser sistemáticas), e a
+   variação que importa medir é a da skill. Se um cenário variar muito entre as execuções, a skill ainda
+   está ambígua nesse ponto: volte ao passo 5.
 2. **Validar o cabeçalho** (`quick_validate.py`, ver 3.1).
 3. **Registrar na tabela de roteamento do `AGENTS.md`** ("Situação → Skill"). Sem isso a skill nunca
    é lida.
@@ -303,7 +339,8 @@ qual é qual e peça que julgue. Detalhes em `agents/comparator.md` e `agents/an
 - `agents/grader.md` — como avaliar os critérios de verificação contra as saídas.
 - `agents/comparator.md` — comparação às cegas entre duas saídas.
 - `agents/analyzer.md` — por que uma versão venceu a outra; padrões nos números.
-- `references/schemas.md` — formatos dos arquivos JSON (`evals.json`, `grading.json`…).
+- `references/schemas.md` — formatos dos arquivos JSON (`evals.json`, `grading.json`…) e o contrato do `evals/checks.py`.
+- `scripts/apply_checks.py` — aplica os critérios `[script]` de uma skill em todas as execuções de uma iteração.
 - `references/cenario-de-pressao.md` — cenários de pressão e como fechar brechas (skills de regra).
 
 Esses arquivos (exceto o cenário de pressão) e os scripts estão em inglês, como no original. Os nomes

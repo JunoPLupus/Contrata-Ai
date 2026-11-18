@@ -36,6 +36,27 @@ Defines the evals for a skill. Located at `evals/evals.json` within the skill di
 
 ---
 
+## checks.py (critérios determinísticos — adaptação do ContrataAí)
+
+Optional file at `evals/checks.py` within the **tested** skill. Expectations it grades are written in
+`evals.json` (and copied to `eval_metadata.json`) with the prefix `[script] `; the LLM grader skips them.
+
+```python
+from pathlib import Path
+
+def check(eval_id: int, outputs: Path) -> dict[str, tuple[bool, str]]:
+    """For the scenario `eval_id`, grade its [script] expectations against `outputs/`.
+    Keys: the exact expectation text, prefix included. Values: (passed, evidence)."""
+```
+
+Run after the LLM graders, from the oficina-de-skills folder:
+`python3 -m scripts.apply_checks <skill dir> <workspace>/iteration-N`. It merges the results into each
+`run-*/grading.json` (replacing entries with the same text, creating the file if missing) and
+recalculates `summary`. An expectation `[script]` that `check` does not return is recorded as failed,
+so a typo between `evals.json` and `checks.py` shows up instead of passing silently.
+
+---
+
 ## history.json
 
 Tracks version progression in Improve mode. Located at workspace root.
