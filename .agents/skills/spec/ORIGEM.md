@@ -56,6 +56,10 @@ com código de saída dos linters e de um script de governança de outro projeto
 e `create_design.py` substituem a cópia manual dos modelos; `validate_spec.py` substitui a conferência
 com `rtk grep` (placeholders, seções, status, `CA-NN`, links). A checagem de links fica na lib
 compartilhada `.agents/scripts/lib/links.py`. Testes em `scripts/testes/` (unittest + pastas-fixture).
+Com os scripts da skill `task` (2026-11-18), as checagens comuns (placeholders, status, "Atualizado em",
+seções, `CA-NN`, links) e os utilitários de projeto (`fill_template`, `slugify`) foram para a lib
+(`md_checks.py`, `projeto.py`); o `validate_spec.py` passou a conferir também "Atualizado em" e status
+com a lista de opções do modelo.
 Mudou junto: o status das tasks saiu da lista do `design.md` e ficou só no arquivo de cada task.
 
 ## Licença MIT (todas as fontes acima)

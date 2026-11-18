@@ -6,21 +6,13 @@ Uso: python create_spec.py <assunto> [--titulo "Título"] [--data AAAA-MM-DD]
 """
 
 import argparse
-import re
-import unicodedata
 from datetime import date
 from pathlib import Path
 
-from utils import fill_template, get_project_root, relative_to_root
+from utils import fill_template, get_project_root, relative_to_root, slugify
 
 
 # region Funções auxiliares
-
-def _slugify(texto: str) -> str:
-    """'Validação da Solicitação!' -> 'validacao-da-solicitacao'."""
-    sem_acento = unicodedata.normalize("NFKD", texto).encode("ascii", "ignore").decode("ascii")
-    return re.sub(r"[^a-z0-9]+", "-", sem_acento.lower()).strip("-")
-
 
 def _titulo_padrao(slug: str) -> str:
     """Título provisório a partir do slug (sem acentos); prefira passar --titulo."""
@@ -36,7 +28,7 @@ def main() -> None:
     parser.add_argument("--data", type=date.fromisoformat, default=None, help="AAAA-MM-DD (padrão: hoje)")
     args = parser.parse_args()
 
-    slug = _slugify(args.assunto)
+    slug = slugify(args.assunto)
     if not slug:
         raise SystemExit(f"Assunto '{args.assunto}' não gera um nome de pasta válido.")
 

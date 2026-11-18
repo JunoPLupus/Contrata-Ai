@@ -55,6 +55,12 @@ class ValidateSpecTest(unittest.TestCase):
         self.assertIn("critério: ID 'CA-5' fora do formato CA-NN", saida)
         self.assertIn("[AVISO] critério: sequência com lacuna (CA-03, CA-05)", saida)
 
+    def test_status_com_lista_do_modelo_e_atualizado_sem_motivo(self):
+        codigo, saida = validar("metadados-com-problemas")
+        self.assertEqual(codigo, 1)
+        self.assertIn("spec.md:7 [ERRO] status: lista de opções do modelo; escolha um valor", saida)
+        self.assertIn("spec.md:9 [ERRO] atualizado em: use 'AAAA-MM-DD — motivo'", saida)
+
     def test_design_cita_ca_inexistente_e_link_quebrado(self):
         codigo, saida = validar("com-design")
         self.assertEqual(codigo, 1)
