@@ -1,0 +1,204 @@
+"""Cria o arquivo de uma task a partir do modelo .agents/docs/templates/task.md.
+
+- avulsa: .agents/docs/tasks/AAAA-MM-DD-<assunto>.md, status `aberta`, só com a seção 2;
+- de spec: <pasta da spec>/tasks/NN-<assunto>.md, com número, título e arquivo do link da lista do
+  design.md ("## 6. Tasks"), só com a seção 1 ("Bloqueada por" e CA-NN da linha). Status `bloqueada` se
+  alguma dependência não está `concluída` (task em tasks/done/ conta como concluída).
+
+Preenche título, datas, status, tipo e branch sugerida; o resto do modelo fica para quem escreve a task
+(depois, confira com validate_task.py).
+
+Uso:
+    python create_task.py avulsa "<assunto>" --tipo fix [--titulo "Título"] [--data AAAA-MM-DD]
+    python create_task.py spec <pasta da spec> <NN> --tipo feat [--data AAAA-MM-DD]
+"""
+
+import argparse
+import re
+import sys
+from datetime import date
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "scripts" / "lib"))
+from md_checks import read_status, section_body  # noqa: E402  (precisa do sys.path ajustado acima)
+from projeto import fill_template, get_project_root, read_text, relative_to_root, slugify  # noqa: E402
+
+TIPOS_COMMIT = ("feat", "fix", "refactor", "test", "docs", "chore")
+
+_SECAO_1 = re.compile(r"^## 1\. [\s\S]*?(?=^## 2\. )", re.MULTILINE)
+_SECAO_2 = re.compile(r"^## 2\. [\s\S]*?(?=^## 3\. )", re.MULTILINE)
+_ITEM_LISTA = re.compile(r"^\s*-\s*(?:\[[ xX]\]\s*)?(~~)?\[(\d{2})\s*[—–-]\s*([^\]]+)\]\((tasks/[^)\s]+\.md)\)(.*)$",
+                         re.MULTILINE)
+_BLOQUEADA_POR = re.compile(r"bloqueada por:\s*([^—]+)")
+_COBRE = re.compile(r"cobre:?\s*(.+)$")
+_BRANCH_DESIGN = re.compile(r"\*\*Branch:\*\*\s*`?([^`\s<]+)`?")
+
+
+# region Montagem do conteúdo
+
+def _trocar(conteudo: str, padrao: str, novo: str, descricao: str) -> str:
+    """Troca a primeira linha que casa com `padrao`; falha se o modelo mudou e a linha sumiu."""
+    conteudo, trocas = re.subn(padrao, lambda _: novo, conteudo, count=1, flags=re.MULTILINE)
+    if trocas == 0:
+        raise SystemExit(f"Modelo task.md sem a linha esperada: {descricao}.")
+    return conteudo
+
+
+def _remover_secao(conteudo: str, padrao: re.Pattern, descricao: str) -> str:
+    conteudo, trocas = padrao.subn("", conteudo, count=1)
+    if trocas == 0:
+        raise SystemExit(f"Modelo task.md sem a {descricao}.")
+    return conteudo
+
+
+def _limpar_fechamento(conteudo: str) -> str:
+    """Seção 5 nasce com os rótulos vazios: preenchida só ao fechar."""
+    secao = section_body(conteudo, "5. Fechamento")
+    if secao is None:
+        raise SystemExit("Modelo task.md sem a seção '## 5. Fechamento'.")
+    corpo, inicio = secao
+    limpo = re.sub(r"^(- \*\*[^*\n]+:\*\*) <[^\n]*>$", r"\1", corpo, flags=re.MULTILINE)
+    return conteudo[:inicio] + limpo + conteudo[inicio + len(corpo):]
+
+
+def montar(titulo: str, data: date, status: str, tipo: str, branch: str, tipo_task: str,
+           bloqueada_por: str = "", criterios: str = "") -> str:
+    conteudo = fill_template("task.md", titulo, data, status=status)
+    conteudo = _trocar(conteudo, r"^(- \*\*Atualizado em:\*\* \S+ — )<[^>\n]+>$",
+                       f"- **Atualizado em:** {data.isoformat()} — criação", "'Atualizado em'")
+    conteudo = _trocar(conteudo, r"^- \*\*Tipo:\*\*.*$", f"- **Tipo:** `{tipo}`", "'- **Tipo:**'")
+    conteudo = _trocar(conteudo, r"^- \*\*Branch:\*\*.*$",
+                       f"- **Branch:** `{branch}` (sugerida; criada pelo Juno)", "'- **Branch:**'")
+
+    if tipo_task == "avulsa":
+        conteudo = _remover_secao(conteudo, _SECAO_1, "seção '## 1.'")
+    else:
+        conteudo = _remover_secao(conteudo, _SECAO_2, "seção '## 2.'")
+        conteudo = _trocar(conteudo, r"^- \*\*Bloqueada por:\*\*.*$",
+                           f"- **Bloqueada por:** {bloqueada_por}", "'- **Bloqueada por:**'")
+        conteudo = _trocar(conteudo, r"^- \*\*Critérios de aceite cobertos:\*\*.*$",
+                           f"- **Critérios de aceite cobertos:** {criterios}", "'- **Critérios de aceite cobertos:**'")
+
+    return _limpar_fechamento(conteudo)
+
+# endregion
+
+# region Lista de tasks do design.md
+
+def ler_lista(design: Path) -> dict[str, dict]:
+    """NN → {titulo, arquivo, dependencias, criterios, cancelada} da lista "## 6. Tasks" do design.md."""
+    secao = section_body(read_text(design), "6. Tasks")
+    if secao is None:
+        raise SystemExit(f"'{relative_to_root(design)}' sem a seção '## 6. Tasks'.")
+
+    itens: dict[str, dict] = {}
+    for item in _ITEM_LISTA.finditer(secao[0]):
+        riscada, numero, titulo, alvo, resto = item.groups()
+        bloqueio = _BLOQUEADA_POR.search(resto)
+        cobre = _COBRE.search(resto)
+        itens[numero] = {
+            "titulo": titulo.strip(),
+            "arquivo": Path(alvo).name,
+            "dependencias": re.findall(r"\b\d{2}\b", bloqueio.group(1)) if bloqueio else [],
+            "criterios": cobre.group(1).strip().rstrip(".") if cobre else "nenhum",
+            "cancelada": bool(riscada),
+        }
+    return itens
+
+
+def status_da_task(pasta_tasks: Path, arquivo: str) -> str:
+    """Status atual de uma task da spec: lido do arquivo; em done/ é concluída; sem arquivo, 'não criada'."""
+    if (pasta_tasks / "done" / arquivo).exists():
+        return "concluída"
+    caminho = pasta_tasks / arquivo
+    if not caminho.exists():
+        return "não criada"
+    status, _ = read_status(read_text(caminho))
+    return status or "sem status"
+
+# endregion
+
+
+def _gravar(destino: Path, conteudo: str) -> None:
+    if destino.exists() or (destino.parent / "done" / destino.name).exists():
+        raise SystemExit(f"A task '{relative_to_root(destino)}' já existe.")
+    destino.parent.mkdir(parents=True, exist_ok=True)
+    destino.write_text(conteudo, encoding="utf-8")
+
+
+def criar_avulsa(args: argparse.Namespace) -> None:
+    slug = slugify(args.assunto)
+    if not slug:
+        raise SystemExit(f"Assunto '{args.assunto}' não gera um nome de arquivo válido.")
+    data = args.data or date.today()
+    titulo = args.titulo or slug.replace("-", " ").capitalize()
+
+    conteudo = montar(titulo, data, "aberta", args.tipo, f"{args.tipo}/juno/{slug}", "avulsa")
+    destino = get_project_root() / ".agents" / "docs" / "tasks" / f"{data.isoformat()}-{slug}.md"
+    _gravar(destino, conteudo)
+    print(f"Task criada em: {relative_to_root(destino)} (status `aberta`)")
+
+
+def criar_de_spec(args: argparse.Namespace) -> None:
+    pasta: Path = args.pasta_spec
+    design = pasta / "design.md"
+    if not design.exists():
+        raise SystemExit(f"'design.md' não encontrado em '{pasta}': a lista de tasks mora nele.")
+
+    numero = f"{int(args.numero):02d}"
+    lista = ler_lista(design)
+    if numero not in lista:
+        raise SystemExit(f"A task {numero} não está na lista '## 6. Tasks' de '{relative_to_root(design)}'.")
+    item = lista[numero]
+    if item["cancelada"]:
+        raise SystemExit(f"A task {numero} está riscada (cancelada) na lista do design.md.")
+
+    pasta_tasks = pasta / "tasks"
+    pendentes = []
+    nomes = []
+    for dep in item["dependencias"]:
+        if dep not in lista:
+            raise SystemExit(f"A task {numero} depende da {dep}, que não está na lista do design.md.")
+        nome = lista[dep]["arquivo"]
+        nomes.append(nome)
+        status = status_da_task(pasta_tasks, nome)
+        if status != "concluída":
+            pendentes.append(f"{nome} ({status})")
+
+    branch_design = _BRANCH_DESIGN.search(read_text(design))
+    slug_spec = re.sub(r"^\d{4}-\d{2}-\d{2}-", "", pasta.resolve().name)
+    branch = branch_design.group(1) if branch_design else f"{args.tipo}/juno/{slug_spec}"
+
+    status = "bloqueada" if pendentes else "aberta"
+    conteudo = montar(item["titulo"], args.data or date.today(), status, args.tipo, branch, "spec",
+                      bloqueada_por=", ".join(nomes) or "nenhuma", criterios=item["criterios"])
+    destino = pasta_tasks / item["arquivo"]
+    _gravar(destino, conteudo)
+
+    print(f"Task criada em: {relative_to_root(destino)} (status `{status}`)")
+    if pendentes:
+        print(f"Bloqueada por: {', '.join(pendentes)}")
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="Cria o arquivo de uma task a partir do modelo.")
+    sub = parser.add_subparsers(dest="modo", required=True)
+
+    avulsa = sub.add_parser("avulsa", help="Task avulsa em .agents/docs/tasks/")
+    avulsa.add_argument("assunto", help="Assunto curto; vira o nome do arquivo (ex.: 'restringir perfil cliente')")
+    avulsa.add_argument("--titulo", help="Título da task, com acentos (padrão: derivado do assunto)")
+
+    spec = sub.add_parser("spec", help="Task de spec, a partir da lista do design.md")
+    spec.add_argument("pasta_spec", type=Path, help="Pasta da spec (com design.md)")
+    spec.add_argument("numero", help="Número da task na lista do design.md (ex.: 02)")
+
+    for p in (avulsa, spec):
+        p.add_argument("--tipo", required=True, choices=TIPOS_COMMIT, help="Tipo do commit principal")
+        p.add_argument("--data", type=date.fromisoformat, default=None, help="AAAA-MM-DD (padrão: hoje)")
+
+    args = parser.parse_args()
+    criar_avulsa(args) if args.modo == "avulsa" else criar_de_spec(args)
+
+
+if __name__ == "__main__":
+    main()

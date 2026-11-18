@@ -83,19 +83,28 @@ pergunta reabre uma decisão "Fechada" do design, diga qual e por que antes de p
 
 ### 1.4 Escrever
 
-1. Copie o modelo para:
-   - avulsa: `.agents/docs/tasks/AAAA-MM-DD-<assunto>.md` (data de hoje, assunto curto em kebab-case);
-   - de spec: `.agents/docs/specs/<pasta-da-spec>/tasks/NN-<assunto>.md`, com o **mesmo número e
-     assunto do link** da lista do `design.md` (o link já aponta para esse caminho).
-2. Preencha pelas regras do modelo e estas:
+1. **Crie o arquivo com o script** (não copie o modelo à mão):
+   ```bash
+   # avulsa → .agents/docs/tasks/AAAA-MM-DD-<assunto>.md
+   rtk python3 .agents/skills/task/scripts/create_task.py avulsa "<assunto curto>" --tipo fix --titulo "<Título com acentos>"
+   # de spec → <pasta da spec>/tasks/NN-<assunto>.md, a partir da linha NN da lista do design.md
+   rtk python3 .agents/skills/task/scripts/create_task.py spec .agents/docs/specs/<pasta> 02 --tipo feat
+   ```
+   Ele preenche título, datas, "Atualizado em — criação", tipo, branch sugerida e status, deixa só a
+   seção que o tipo usa (avulsa: 2; de spec: 1) e o fechamento com os rótulos vazios. Na task de spec,
+   número, título e nome do arquivo vêm do link da lista do `design.md`, "Bloqueada por" e os `CA-NN`
+   vêm da mesma linha, a branch é a do `design.md` (se houver), e o status sai `bloqueada` quando uma
+   dependência não está `concluída` (o script diz qual e em que status está). Se o arquivo já existir,
+   ele recusa: é task existente (modo [Atualizar](#2-atualizar)).
+2. Preencha o resto pelas regras do modelo e estas:
    - **Seção 1 ou 2:** task de spec usa só a seção 1 e **cita** os `CA-NN` (não copia os critérios: eles
      moram no `spec.md`, e duas cópias divergem). Avulsa usa só a seção 2, com critérios Dado/Quando/Então
      tirados do código (mensagem e erro reais, ex.: `AcessoProibidoError` → 403).
-   - **Status:** `aberta` (ou `bloqueada`, se 1.2 achou bloqueio pendente).
-   - **Branch:** sugira `<tipo>/juno/<assunto>` (ex.: `fix/juno/restringir-perfil-cliente`) e escreva
-     "(sugerida; criada pelo Juno)". O agente não cria branch. Task de spec: use a branch do `design.md`,
-     se houver.
-   - **Ler antes de começar:** só caminhos que existem hoje (confira com `rtk ls` ou `rtk grep`). Arquivo
+   - **Status:** `aberta` (ou `bloqueada`, se 1.2 achou bloqueio pendente; o script já decide pela
+     lista do `design.md`).
+   - **Branch:** o script sugere `<tipo>/juno/<assunto>` (ex.: `fix/juno/restringir-perfil-cliente`)
+     com "(sugerida; criada pelo Juno)". O agente não cria branch.
+   - **Ler antes de começar:** só caminhos que existem hoje (o validador do passo 3 confere). Arquivo
      que outra task ainda vai criar não é leitura: cite a task ("o que a 01 entregar").
    - **Arquivos previstos:** criados e alterados, com caminho real. Arquivo que ainda não existe e cujo
      nome depende de outra task: diga isso, não invente o nome como se fosse certo.
@@ -111,10 +120,15 @@ pergunta reabre uma decisão "Fechada" do design, diga qual e por que antes de p
      está fora do pedido.
 3. **Conferência** antes de mostrar:
    ```bash
-   rtk grep -n "<!--\|<[a-zà-ú]" <caminho-da-task>
+   rtk python3 .agents/skills/task/scripts/validate_task.py <caminho-da-task>
    ```
-   Cada linha é comentário ou `<placeholder>` do modelo que sobrou: apague ou preencha. Seção 5
-   (fechamento) fica com os rótulos vazios.
+   Ele confere comentários, `<placeholders>` e listas de opções do modelo que sobraram, status, tipo,
+   alcance, "Atualizado em", seções do tipo da task, critérios `CA-NN` (avulsa: formato e
+   Dado/Quando/Então; de spec: só citados, sem cópia), branch, caminhos de "Ler antes de começar" e a
+   tabela critério → teste (nome entre aspas terminando em `(CA-NN)`), e lista cada problema como
+   `arquivo:linha [ERRO|AVISO] mensagem`. Corrija e rode de novo até sair sem erro (exit 0). Ele confere
+   a forma, não o sentido: "Não deve mudar" e os testes que mudam de propósito continuam com você.
+   Seção 5 (fechamento) fica com os rótulos vazios.
 4. **Não implemente.** Nem "só o teste", nem "só a assinatura".
 
 **Mensagem ao entregar:**
@@ -186,7 +200,8 @@ nova):
    - **não acrescente critério de aceite que o usuário não pediu.** Se a mudança sugere um critério novo
      (ex.: "`GET /clientes` continua igual"), proponha na mensagem; ele entra na task só com o "sim".
      Critério novo muda o que precisa ser provado no fechamento.
-5. Liste o impacto: critérios afetados, testes novos, se a mudança ainda cabe na task (se não cabe,
+5. Rode o validador (`validate_task.py <caminho-da-task>`, passo 1.4.3) e corrija até sair sem erro.
+6. Liste o impacto: critérios afetados, testes novos, se a mudança ainda cabe na task (se não cabe,
    proponha dividir ou virar spec).
 
 ## 3. Fechar
@@ -210,7 +225,13 @@ nova):
    - "Evidência por critério": `CA-NN → teste "…" passando`;
    - "Checagens não feitas": o que não rodou e por quê (ex.: mutação manual), ou "nenhuma".
 5. **Status `concluída`** só com todos os comandos passando e todo `CA-NN` com evidência. Faltou algo?
-   O status fica `em andamento` e você diz o que falta.
+   O status fica `em andamento` e você diz o que falta. Depois de gravar, rode:
+   ```bash
+   rtk python3 .agents/skills/task/scripts/validate_task.py <caminho-da-task> --fechar
+   ```
+   Com `--fechar` (ou status `concluída`), ele exige "Checagens não feitas" preenchida e, para
+   `concluída`, todos os rótulos do fechamento preenchidos e cada `CA-NN` citado em "Evidência por
+   critério". Ele confere que a evidência está escrita, não que é verdadeira: isso é o passo 1.
 6. **Texto do commit** pelo guia `.agents/docs/guides/commits.md`, com o rodapé `Task:` (avulsa: o nome
    do arquivo; de spec: `<pasta-da-spec>/tasks/NN-x.md`) e a lista de arquivos de cada commit.
 7. Não mova a task para `done/` nem mexa na lista do `design.md`: mover é da skill `encerramento`, e a

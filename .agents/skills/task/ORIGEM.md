@@ -31,10 +31,19 @@ Criado pelo projeto (sem fonte externa): os três modos (abrir, atualizar, fecha
 de tamanho quando usuário e agente concordam que é task; rodada curta (critérios e "Fica fora" antes das
 decisões técnicas, que vão para a seção 3 porque avulsa não tem `design.md`); branch sugerida
 `<tipo>/juno/<assunto>`; "Não deve mudar" e "testes que vão mudar de propósito" sempre procurados;
-conferência com `rtk grep`; fechamento só com evidência verificada pelo agente; dono único de cada campo
+conferência com `rtk grep` (substituída pelos scripts, ver abaixo); fechamento só com evidência verificada pelo agente; dono único de cada campo
 (o `done/` é da skill `encerramento`; a lista do `design.md` guarda só ordem e dependências, e o
 status mora no arquivo da task — mudança de 2026-11-18). Testes da skill: cenários em `evals/`, com
 critérios `[script]` conferidos por `evals/checks.py` (testado em `evals/test_checks.py`).
+
+**Scripts (`scripts/`, 2026-11-18):** escritos neste projeto, no padrão dos scripts da skill `spec`.
+`create_task.py` substitui a cópia manual do modelo (avulsa, ou de spec a partir da lista do `design.md`,
+com status `bloqueada` quando a dependência não está concluída); `validate_task.py` substitui a
+conferência com `rtk grep` e ganhou a flag `--fechar` para as regras de fechamento (não há
+`close_task.py`: mover para `done/` é da futura skill `encerramento`, que cobre task e spec). As
+checagens comuns com o `validate_spec.py` (placeholders, status, "Atualizado em", seções, `CA-NN`,
+caminhos e links) moram na lib `.agents/scripts/lib/md_checks.py`, e o `evals/checks.py` chama o
+`validate_task.py` em vez de repetir as regras. Testes em `scripts/testes/` (unittest).
 
 ## Licença MIT (todas as fontes acima)
 
