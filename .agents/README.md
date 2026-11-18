@@ -10,7 +10,6 @@ cada coisa daqui. Para pessoas, a documentação do projeto continua em `docs/` 
 |---|---|---|
 | `skills/` | **O que fazer agora**, passo a passo? | criar uma skill, implementar um use-case |
 | `docs/architecture/` | **O que é** o sistema? (fatos) | camadas, módulos, dependências entre agregados |
-| `docs/decisions/` | **Por que** é assim? | decisões de modelagem já firmadas |
 | `docs/guides/` | **Como fazemos** aqui? (convenções) | padrão dos value objects, testes |
 | `docs/specs/` | **O que vamos construir** (quê, por quê, como, em que ordem)? | uma pasta por spec: `spec.md`, `design.md`, `tasks/` |
 | `docs/tasks/` | Tarefas avulsas (sem spec) | correção localizada, ajuste pequeno |
