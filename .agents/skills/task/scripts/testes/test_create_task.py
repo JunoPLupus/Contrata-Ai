@@ -37,6 +37,8 @@ def _regras(caminho: Path) -> list[str]:
 
 
 class AvulsaTest(unittest.TestCase):
+    """Criação da task avulsa no lugar real, com data de 1999 e limpeza no fim."""
+
     DESTINO = RAIZ / ".agents" / "docs" / "tasks" / "1999-01-02-restringir-perfil-do-cliente.md"
 
     def setUp(self):
@@ -44,6 +46,7 @@ class AvulsaTest(unittest.TestCase):
         self.addCleanup(self.DESTINO.unlink, missing_ok=True)
 
     def test_cria_avulsa_com_metadados_e_so_a_secao_2(self):
+        """Preenche título, datas, status, tipo e branch, deixa só a seção 2 e o fechamento vazio, e passa nas regras do validate."""
         r = criar("avulsa", "Restringir perfil do cliente", "--tipo", "fix", "--titulo", "Restringir o perfil",
                   "--data", "1999-01-02")
         self.assertEqual(r.returncode, 0, r.stderr)
@@ -66,6 +69,7 @@ class AvulsaTest(unittest.TestCase):
         self.assertEqual(_regras(self.DESTINO), [])
 
     def test_nao_sobrescreve_task_existente(self):
+        """Criar a mesma task duas vezes falha na segunda, sem sobrescrever."""
         argumentos = ("avulsa", "restringir perfil do cliente", "--tipo", "fix", "--data", "1999-01-02")
         self.assertEqual(criar(*argumentos).returncode, 0)
         segunda = criar(*argumentos)
@@ -73,11 +77,14 @@ class AvulsaTest(unittest.TestCase):
         self.assertIn("já existe", segunda.stderr)
 
     def test_tipo_obrigatorio_e_do_conjunto(self):
+        """--tipo é obrigatório e só aceita os tipos de commit."""
         self.assertNotEqual(criar("avulsa", "x", "--data", "1999-01-02").returncode, 0)
         self.assertNotEqual(criar("avulsa", "x", "--tipo", "bug", "--data", "1999-01-02").returncode, 0)
 
 
 class DeSpecTest(unittest.TestCase):
+    """Criação da task de spec a partir da lista do design.md, numa cópia temporária da spec."""
+
     def setUp(self):
         self.pasta = Path(tempfile.mkdtemp()) / "specs" / "2026-11-15-notificacoes"
         self.addCleanup(shutil.rmtree, self.pasta.parents[1])
@@ -91,6 +98,7 @@ class DeSpecTest(unittest.TestCase):
         return r, arquivos[0].read_text(encoding="utf-8") if arquivos else ""
 
     def test_task_02_bloqueada_pela_01_nao_criada(self):
+        """A 02 nasce `bloqueada` pela 01 ainda não criada, com título, CA, branch e arquivo vindos do design.md."""
         r, texto = self.criar_task("02")
         self.assertEqual(r.returncode, 0, r.stderr)
         self.assertTrue((self.pasta / "tasks" / "02-rotas.md").exists())
@@ -106,6 +114,7 @@ class DeSpecTest(unittest.TestCase):
         self.assertEqual(_regras(self.pasta / "tasks" / "02-rotas.md"), [])
 
     def test_dependencia_concluida_ou_em_done_libera(self):
+        """Dependência `concluída`, ou já movida para done/, deixa a task `aberta`."""
         tasks = self.pasta / "tasks"
         tasks.mkdir()
         (tasks / "01-nucleo.md").write_text("- **Status:** `concluída`\n", encoding="utf-8")
@@ -120,6 +129,7 @@ class DeSpecTest(unittest.TestCase):
         self.assertIn("- **Status:** `aberta`\n", texto)
 
     def test_dependencia_em_andamento_bloqueia(self):
+        """Dependência em andamento bloqueia a task, e o script diz o status dela."""
         tasks = self.pasta / "tasks"
         tasks.mkdir()
         (tasks / "01-nucleo.md").write_text("- **Status:** `em andamento`\n", encoding="utf-8")
@@ -128,12 +138,14 @@ class DeSpecTest(unittest.TestCase):
         self.assertIn("- **Status:** `bloqueada`\n", texto)
 
     def test_sem_dependencia_e_sem_criterio(self):
+        """Task sem dependência e sem critério nasce `aberta`, com "nenhuma" e "nenhum"."""
         _, texto = self.criar_task("07")
         self.assertIn("- **Status:** `aberta`\n", texto)
         self.assertIn("- **Bloqueada por:** nenhuma\n", texto)
         self.assertIn("- **Critérios de aceite cobertos:** nenhum\n", texto)
 
     def test_criterios_com_dois_pontos_do_modelo_e_branch_sem_design(self):
+        """Aceita "cobre:" do modelo e, sem branch no design, sugere <tipo>/juno/<assunto da spec>."""
         design = self.pasta / "design.md"
         texto = design.read_text(encoding="utf-8")
         texto = re.sub(r"- \*\*Branch:\*\*.*", "- **Branch:** <nome da branch, criada pelo Juno>", texto)
@@ -144,6 +156,7 @@ class DeSpecTest(unittest.TestCase):
         self.assertIn("- **Branch:** `feat/juno/notificacoes` (sugerida; criada pelo Juno)\n", task)
 
     def test_numero_fora_da_lista_cancelada_ou_sem_design(self):
+        """Recusa número fora da lista, task riscada (cancelada) e pasta sem design.md."""
         r, _ = self.criar_task("42")
         self.assertIn("não está na lista", r.stderr)
 
@@ -157,6 +170,7 @@ class DeSpecTest(unittest.TestCase):
         self.assertIn("'design.md' não encontrado", r.stderr)
 
     def test_nao_sobrescreve_task_existente(self):
+        """Criar a mesma task de spec duas vezes falha na segunda."""
         self.criar_task("02")
         r, _ = self.criar_task("02")
         self.assertIn("já existe", r.stderr)
