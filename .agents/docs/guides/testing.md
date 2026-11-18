@@ -65,6 +65,9 @@ Informe o resultado real (suítes e testes, inclusive falhas), nunca "passou tud
   - skills: uma classe `unittest.TestCase` por contexto, todas no nível do arquivo (ex.:
     `AvulsaTest`, `FechamentoTest`). O arquivo é o grupo maior. **Não aninhe classes de teste:** o
     `unittest` não coleta classe dentro de classe e ignora esses testes sem avisar.
+- **Docstring nos testes das skills:** todo módulo, classe e método de teste tem uma docstring curta
+  dizendo o que garante (ex.: `"""Tabela sem nome de teste entre aspas lança erro."""`). Quando não for
+  óbvio, diga também o que quebraria o teste.
 - **Nome do teste que prova um critério** termina com o ID: `it('deve recusar outro cliente (CA-03)', ...)`.
 - Toda mudança de comportamento vem com teste, no mesmo commit (`.agents/docs/guides/commits.md`).
 
