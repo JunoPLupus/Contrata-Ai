@@ -137,7 +137,8 @@ tempo/tokens.
 ├── evals/            (cenários de teste: evals.json e arquivos de apoio)
 ├── references/       (textos lidos só quando necessário)
 ├── scripts/          (código para tarefas repetitivas e exatas)
-└── assets/           (modelos e arquivos usados na saída)
+├── agents/           (instruções para subagentes, se a skill usar subagentes)
+└── assets/           (opcional: modelos e arquivos usados na saída)
 ```
 
 Nome da pasta: o **substantivo do assunto** (`spec`, `task`, `adr`), não um verbo — regra do

@@ -14,7 +14,7 @@ cada coisa daqui. Para pessoas, a documentação do projeto continua em `docs/` 
 | `docs/guides/` | **Como fazemos** aqui? (convenções) | padrão dos value objects, testes |
 | `docs/specs/` | **O que vamos construir** (quê, por quê, como, em que ordem)? | uma pasta por spec: `spec.md`, `design.md`, `tasks/` |
 | `docs/tasks/` | Tarefas avulsas (sem spec) | correção localizada, ajuste pequeno |
-| `docs/templates/` | Modelos prontos para copiar | `spec.md`, `design.md`, `task.md`, `commit.md` |
+| `docs/templates/` | Modelos prontos para copiar | `spec.md`, `design.md`, `task.md` |
 
 As pastas de `docs/` são criadas quando o primeiro conteúdo delas for escrito. Assim nenhuma pasta
 fica vazia nem com arquivo provisório.
@@ -49,8 +49,8 @@ Cada arquivo tem um nível de detalhe. Isso evita que a spec envelheça a cada m
 
 ## Skills
 
-Cada skill é uma pasta `skills/<nome>/` com um `SKILL.md` (obrigatório) e, se precisar, `references/`
-(textos de apoio), `scripts/` (código executável) e `agents/` (instruções para subagentes).
+Cada skill é uma pasta `skills/<nome>/` com um `SKILL.md` obrigatório. A estrutura completa (o que vai em
+cada subpasta) está na [`oficina-de-skills`](skills/oficina-de-skills/SKILL.md), seção 3, "Anatomia".
 
 - Toda skill precisa estar na tabela de roteamento do `AGENTS.md`.
 - Skill baseada em material externo registra a origem (repositório, commit e licença) num

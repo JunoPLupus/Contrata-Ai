@@ -1,4 +1,4 @@
-# Commit: modelo da mensagem
+# Commits: como escrever a mensagem
 
 <!--
 Modelo e regras da mensagem de commit. O agente não commita: ele entrega o texto pronto (num bloco
