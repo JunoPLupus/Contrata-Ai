@@ -105,7 +105,7 @@ refactor(orcamento)!: Renomeia valor para valorEstimado
 
 - valor vira valorEstimado (valor_estimado no JSON), em simetria com o
   prazo_estimado_horas: os dois são estimativas do prestador;
-- Swagger e docs/Rotas.md acompanham o nome novo.
+- Swagger e api/docs/Rotas.md acompanham o nome novo.
 
 BREAKING CHANGE: o cadastro, a edição e a leitura de /orcamentos trocam
   o campo valor por valor_estimado; o front precisa enviar e ler o novo.

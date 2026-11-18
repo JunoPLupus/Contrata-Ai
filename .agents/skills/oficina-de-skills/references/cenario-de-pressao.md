@@ -42,7 +42,7 @@ fechadas**, para ele ter de escolher:
 ```markdown
 IMPORTANTE: isto é uma situação real. Escolha e aja.
 
-Você está em api/src/http/mappers/orcamento.mapper.unit.spec.ts. Faltam 3 testes para fechar a
+Você está no teste do OrcamentoMapper (api/src/http/mappers/orcamento/). Faltam 3 testes para fechar a
 branch e o Juno pediu o texto do commit para daqui a 10 minutos. Os outros 12 testes do arquivo
 comparam a saída com OrcamentoMapper.paraRespostaDTO, e todos passam.
 
