@@ -27,6 +27,12 @@ from utils import get_project_root, read_text, relative_to_root, use_global_lib
 
 use_global_lib()
 from links import broken_links  # noqa: E402  (precisa do sys.path ajustado acima)
+from md_utils import (  # noqa: E402
+    COMENTARIO_PATTERN as _COMENTARIO_PATTERN,
+    find_placeholders,
+    line_of as _linha,
+    mask_code_and_comments as _mask_code_and_comments,
+)
 
 
 # region Variáveis auxiliares
@@ -35,14 +41,6 @@ _OPCOES_STATUS = ("rascunho", "aprovada", "em andamento", "concluída", "cancela
 
 _STATUS_PATTERN = re.compile(r"\*\*Status:\*\*\s*`([^`]+)`")
 _BLOQUEIA_APROVACAO_PATTERN = re.compile(r"bloqueia:\s*aprovação")
-
-_COMENTARIO = r"<!--[\s\S]*?-->"
-_COMENTARIO_PATTERN = re.compile(_COMENTARIO)
-_PLACEHOLDER_PATTERN = re.compile(
-    rf"(?P<comentario>{_COMENTARIO})"
-    r'|(?P<placeholder><(?:[^\W\d_]|\.\.\.|")[^>\n]*>)'
-    r"|(?P<data>AAAA-MM-DD)"
-)
 
 _SECOES_OBRIGATORIAS = {
     "spec.md": (
@@ -92,11 +90,6 @@ class Finding:
 
 # region Funções auxiliares
 
-def _linha(conteudo: str, posicao: int) -> int:
-    """Número da linha (a partir de 1) de uma posição do texto."""
-    return conteudo.count("\n", 0, posicao) + 1
-
-
 def _erro(arquivo: Path, linha: int, mensagem: str, linha_fim: int | None = None) -> Finding:
     return Finding(arquivo, linha, linha_fim or linha, "erro", mensagem)
 
@@ -115,22 +108,6 @@ def _format_preview(texto: str, max_len: int = 80) -> str:
     return f"{limpo[:metade]} ... {limpo[-metade:]}"
 
 
-def _mask(match: re.Match) -> str:
-    """Troca cada caractere por espaço, mantendo as quebras de linha."""
-    return "".join("\n" if c == "\n" else " " for c in match.group(0))
-
-
-def _mask_code(conteudo: str) -> str:
-    """Mascara blocos de código e código inline (mesmo tamanho, mesmas quebras de linha)."""
-    mascarado = re.sub(r"```[\s\S]*?```", _mask, conteudo)  # 1º: blocos de três crases
-    return re.sub(r"`[^`\n]*`", _mask, mascarado)            # 2º: código inline
-
-
-def _mask_code_and_comments(conteudo: str) -> str:
-    """Mascara código e comentários: o que está neles (exemplos do modelo) não conta como estrutura."""
-    return _COMENTARIO_PATTERN.sub(_mask, _mask_code(conteudo))
-
-
 def _ca_ids(conteudo: str) -> list[tuple[str, re.Match]]:
     """IDs dos títulos '### CA-...' fora de código e comentários, na ordem em que aparecem."""
     mascarado = _mask_code_and_comments(conteudo)
@@ -141,19 +118,11 @@ def _ca_ids(conteudo: str) -> list[tuple[str, re.Match]]:
 # region Checagens (todas recebem o arquivo e devolvem list[Finding])
 
 def _check_placeholders(arquivo: Path) -> list[Finding]:
-    """Verifica se há placeholders, comentários do modelo ou datas não preenchidas."""
-    findings: list[Finding] = []
-    conteudo = read_text(arquivo)
-    mascarado = _mask_code(conteudo)
-
-    for match in _PLACEHOLDER_PATTERN.finditer(mascarado):
-        trecho = _format_preview(conteudo[match.start():match.end()], 80)
-        findings.append(
-            _erro(arquivo, _linha(conteudo, match.start()), f"{match.lastgroup}: {trecho}",
-                  linha_fim=_linha(conteudo, match.end()))
-        )
-
-    return findings
+    """Verifica se há placeholders, comentários do modelo ou datas não preenchidas (lib md_utils)."""
+    return [
+        _erro(arquivo, inicio, f"{tipo}: {_format_preview(trecho, 80)}", linha_fim=fim)
+        for inicio, fim, tipo, trecho in find_placeholders(read_text(arquivo))
+    ]
 
 
 def _check_status(arquivo: Path) -> list[Finding]:
