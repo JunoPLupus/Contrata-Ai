@@ -43,14 +43,11 @@ Comandos da API (rodar dentro de `api/`):
 |---|---|
 | `npm run dev` | sobe a API com nodemon + ts-node (exceção: sem `rtk`) |
 | `rtk npm run build` | compila com `tsc` |
-| `rtk npm test` | todos os testes (Jest) |
-| `rtk npm run test:unit` | só unitários |
-| `rtk npm run test:integration` | só integração (mongodb-memory-server) |
 
 - Sem Node na máquina? Rode pela imagem Docker `node:22`, montando a pasta `api/`. O `rtk` vai no
   comando da máquina (`rtk docker run …`), nunca dentro do container.
-- Os testes de integração precisam de `--runInBand` (rodar em série), por causa de memória.
-- O CI (`.github/workflows/api-tests.yml`) roda `npm ci` + `npm test` em `api/` a cada push e PR.
+- Comandos de teste (API e scripts de `.agents/`) e o CI: guia
+  [`testing.md`](.agents/docs/guides/testing.md), seção 3.
 
 ## Convenções do código
 
@@ -77,7 +74,34 @@ Comandos da API (rodar dentro de `api/`):
     de commits diferentes, avise: quem commita precisa usar o staging area da IDE.
   - Não inclua trailer de coautoria de IA (`Co-Authored-By: ...`) no texto do commit.
 - **Testes:** toda mudança de comportamento vem com teste. Rode os testes antes de dizer que terminou e
-  informe o resultado real (inclusive falhas).
+  informe o resultado real (inclusive falhas). Como escrever, rodar e provar com mutação manual: guia
+  [`testing.md`](.agents/docs/guides/testing.md).
+
+## Decisões em rodadas
+
+Quando houver decisões para o usuário tomar (numa spec, numa task, numa skill, numa revisão), pergunte em
+rodadas. Perguntas soltas, ou uma que depende da resposta de outra, fazem a pessoa decidir sobre suposições.
+
+- **3 a 5 perguntas por rodada**, independentes entre si, numeradas, cada uma com opções, consequências e
+  a recomendação. A pessoa responde por número ("1 A, 2 C").
+- **Só a fronteira:** decisões cujos pré-requisitos já estão decididos. Mais de 5 → as 5 de maior impacto;
+  menos de 3 → só as que existem. Nunca junte na rodada uma pergunta que depende de outra ainda em aberto.
+- **Fatos você lê** (código, `docs/`, ADRs, specs); pergunte só o que exige escolha.
+- **Depois da resposta:** confirme cada decisão em uma frase, aponte o que ficou sem resposta antes de
+  avançar e recalcule a próxima rodada a partir das respostas.
+
+Formato de cada pergunta:
+
+```
+❓ **Q1 — <título curto>**: <a pergunta, com o contexto necessário para responder>
+- A. <opção> — <consequência / trade-off>
+- B. <opção> — <consequência / trade-off>
+
+➡️ **<opção recomendada>**: <por quê, em uma ou duas frases>
+```
+
+Prefere outro ritmo ou formato? Configure no seu arquivo local de instruções (ex.: `CLAUDE.local.md`, fora
+do git): a preferência local prevalece sobre esta seção.
 
 ## Spec ou task?
 

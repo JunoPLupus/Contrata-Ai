@@ -23,6 +23,7 @@ Não introduza dependência de teste nova sem aprovação.
 | `api/` | `<nome>.unit.spec.ts` / `<nome>.integration.spec.ts` | Na mesma pasta do código testado |
 | `api/` | `<entidade>.mother.ts` (dados de teste) | `api/src/test-helpers/` |
 | `.agents/skills/` | `test_<script>.py` | Ao lado do script ou em `scripts/testes/` da skill (ex.: `spec/scripts/testes/`) |
+| `.agents/scripts/` | `test_<script>.py` | Em `.agents/scripts/testes/` |
 
 O Jest separa unitário e integração pelo nome do arquivo (`unit` / `integration`).
 
@@ -40,7 +41,9 @@ API (dentro de `api/`):
 Sem Node na máquina: rode pela imagem Docker `node:22`, montando a pasta `api/` (o `rtk` vai no comando da
 máquina, nunca dentro do container).
 
-Skills (a partir da raiz do projeto):
+O CI (`.github/workflows/api-tests.yml`) roda `npm ci` + `npm test` em `api/` a cada push e PR.
+
+Skills e scripts de `.agents/` (a partir da raiz do projeto):
 
 | Comando | O que testa |
 | --- | --- |
@@ -48,6 +51,7 @@ Skills (a partir da raiz do projeto):
 | `rtk python3 -m unittest discover -s .agents/skills/task/scripts/testes` | scripts da `task` |
 | `rtk python3 -m unittest discover -s .agents/skills/task/evals -p "test_*.py"` | critérios `[script]` dos evals da `task` |
 | `cd .agents/skills/oficina-de-skills && rtk python3 -m unittest scripts.test_apply_checks` | `apply_checks` da oficina |
+| `rtk python3 -m unittest discover -s .agents/scripts/testes` | `check_agents` (checagens das instruções dos agentes) |
 
 Informe o resultado real (suítes e testes, inclusive falhas), nunca "passou tudo".
 

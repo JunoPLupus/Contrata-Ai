@@ -31,7 +31,7 @@ completo:** foi ele que pegou os problemas que o modo leve deixaria passar.
 
 O usuário deste projeto está aprendendo o assunto. Evite jargão; quando um termo técnico for
 necessário (avaliação, cenário, critério de verificação, JSON), explique em uma frase na primeira
-vez. Decisões em rodadas, como em qualquer conversa do projeto.
+vez. Decisões em rodadas, pela seção "Decisões em rodadas" do `AGENTS.md`.
 
 ---
 
@@ -227,7 +227,8 @@ proibido presente) **não vai para o avaliador LLM:** escreva-o com o prefixo `[
 leitura de sentido. Reaproveite os scripts da própria skill quando existirem (ex.: a `spec` tem o
 `validate_spec.py`).
 O `checks.py` também é código: teste cada critério com um caso que passa e um que falha (saídas
-sintéticas, ex.: `task/evals/test_checks.py`) e faça mutação nele. Rodá-lo só nas saídas reais não basta:
+sintéticas, ex.: `task/evals/test_checks.py`) e faça mutação nele (guia `.agents/docs/guides/testing.md`,
+seção 5). Rodá-lo só nas saídas reais não basta:
 nelas pode não haver nenhum exemplo do erro (no primeiro uso, 5 de 8 mutações sobreviveram assim).
 
 **Revise os critérios depois da primeira execução com a skill**, antes de confiar nos números: algum

@@ -74,7 +74,8 @@ Comandos (dentro de `api/`; sem Node na máquina, via Docker `node:22`):
 - `npx tsc --noEmit` — tipos
 - `npm run test:unit`
 - `npm run test:integration -- --runInBand`
-- **Mutação manual** nas regras novas: <quais mutações; todas devem ser detectadas por algum teste>
+- **Mutação manual** nas regras novas (como fazer: `.agents/docs/guides/testing.md`, seção 5.2): <quais
+  mutações; todas devem ser detectadas por algum teste>
 
 - **Checagem manual**, quando fizer sentido: <ex.: chamar a rota pelo Swagger com um caso de erro>
 
