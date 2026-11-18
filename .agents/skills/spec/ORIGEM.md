@@ -26,8 +26,9 @@ em 2026-11-13 (wunki e okjpg em 2026-11-15) (instruções, referências e o que 
   usa critérios Dado/Quando/Então), spec descartável depois da entrega (aqui a spec é documento vivo).
 - **gstack `spec`** → fases (porquê → escopo → técnica → rascunho revisado), as perguntas de cada fase,
   a trava "nenhum documento antes da entrevista", "leia o código antes de perguntar e cite
-  `caminho:linha`", critérios sem adjetivo, sugestão de quebrar trabalho grande e a ideia do revisor
-  externo com nota de executabilidade (aqui opcional e manual). Descartados: preâmbulo e telemetria,
+  `caminho:linha`", critérios sem adjetivo, sugestão de quebrar trabalho grande e a ideia de um revisor
+  com contexto limpo (aqui opcional: uma sessão nova do Claude com acesso ao repositório, não um modelo
+  externo sem o código, que não consegue conferir a spec contra o projeto; mudado em 2026-11-18). Descartados: preâmbulo e telemetria,
   checagem de duplicidade no GitHub, filtro de segredos, nota automática do codex, criação de issue,
   arquivo em `~/.gstack` e abertura de agente em worktree.
 - **spec-kit `clarify`** → "Varredura de lacunas" depois do rascunho (categorias clara/parcial/faltando,
@@ -48,6 +49,14 @@ Criado pelo projeto (sem fonte externa), em parte a partir da revisão do Gemini
 as recomendações" com resumo antes de escrever, lista de tasks só no `design.md`, modo de atualizar spec existente, lista de tasks sem gerar os
 arquivos de task, ADR como task da lista, conferência manual no fim de cada documento, pt-BR e nomes do
 domínio do ContrataAí.
+
+**Scripts (`scripts/`, 2026-11-18):** escritos neste projeto (Juno e agente), a partir das sugestões de
+automação do Grok e do Gemini (tirar do agente o que é mecânico) e do padrão de achados `arquivo:linha`
+com código de saída dos linters e de um script de governança de outro projeto do Juno. `create_spec.py`
+e `create_design.py` substituem a cópia manual dos modelos; `validate_spec.py` substitui a conferência
+com `rtk grep` (placeholders, seções, status, `CA-NN`, links). A checagem de links fica na lib
+compartilhada `.agents/scripts/lib/links.py`. Testes em `scripts/testes/` (unittest + pastas-fixture).
+Mudou junto: o status das tasks saiu da lista do `design.md` e ficou só no arquivo de cada task.
 
 ## Licença MIT (todas as fontes acima)
 

@@ -85,8 +85,10 @@ externa de bibliotecas e serviços. Arquivos de código específicos a ler ou al
 <!--
 Fatias verticais: cada task atravessa as camadas necessárias e pode ser testada sozinha.
 Numeradas na ordem de dependência. Sem "bloqueada por" pendente = pode começar (ou rodar em paralelo,
-se não mexer nos mesmos arquivos de outra task em andamento). Marque [x] quando a task for encerrada.
+se não mexer nos mesmos arquivos de outra task em andamento). A lista guarda só ordem, dependências e
+critérios cobertos: o status de cada task mora no arquivo dela (tasks/NN-*.md), criado pela skill task.
+Task cancelada fica riscada, com data e motivo.
 -->
 
-- [ ] [01 — <título>](tasks/01-<assunto>.md) — bloqueada por: nenhuma
-- [ ] [02 — <título>](tasks/02-<assunto>.md) — bloqueada por: 01
+- [01 — <título>](tasks/01-<assunto>.md) — bloqueada por: nenhuma — cobre: <CA-01>
+- [02 — <título>](tasks/02-<assunto>.md) — bloqueada por: 01 — cobre: <CA-02>
