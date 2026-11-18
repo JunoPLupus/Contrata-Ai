@@ -74,7 +74,7 @@ Não pergunte o que o padrão vigente já responde (ex.: regra de negócio mora 
 - **Pergunta que muda os critérios ou o "Fica fora" (item 1):** espere a resposta antes de escrever.
   Critério escrito sobre uma suposição vira teste da suposição.
 
-Rodada: 3 a 5 perguntas, numeradas, com opções e recomendação, como na skill `spec`. As respostas
+Rodada: pela seção "Decisões em rodadas" do `AGENTS.md`. As respostas
 técnicas substituem o "depende de Qn" na seção 3 ("O que fazer"), com o motivo. Se uma resposta virar
 decisão de produto nova, volte ao 1.1: talvez seja spec.
 
@@ -254,5 +254,5 @@ Com o teste do CA-02 e a integração rodada, fecho e mando o commit.
 ## Entrega
 
 Não commite (regra do `AGENTS.md`). Ao abrir ou atualizar, sugira o commit da task, ex.:
-`docs(agents): Adiciona task de restringir o perfil do cliente`. Ao fechar, entregue os commits da
+`docs(cliente): Adiciona task de restringir o perfil do cliente` (escopo do domínio: guia `commits.md`). Ao fechar, entregue os commits da
 implementação (passo 3.6).

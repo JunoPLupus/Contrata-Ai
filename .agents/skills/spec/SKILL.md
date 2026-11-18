@@ -66,16 +66,15 @@ Pense no assunto como uma **árvore de decisões**: cada decisão abre outras qu
 **fronteira** são as decisões cujos pré-requisitos já estão decididos, ou seja, as perguntas que dá para
 fazer agora sem chutar respostas que ainda não vieram.
 
-- **Pergunte em rodadas de 3 a 5 decisões da fronteira**, independentes entre si. Fronteira com mais de 5:
-  vão as 5 de maior impacto (as que mais mudam o resto). Com menos de 3: só as que existem. Nunca coloque
-  na mesma rodada uma pergunta que depende da resposta de outra.
+- **Pergunte em rodadas**, pela seção "Decisões em rodadas" do `AGENTS.md` (3 a 5 decisões da fronteira,
+  independentes entre si, no formato de lá).
 - **Fatos são seus; decisões são do usuário.** Antes de perguntar, veja se a resposta está no código, nos
   ADRs (`api/docs/adr/`), nos requisitos (`docs/`) ou nas specs anteriores. Se estiver, leia e cite
   (`caminho:linha`). Pergunte só o que exige escolha. Perguntar o que dava para ler gasta a atenção do
   usuário com o que não precisa dele.
 - **Use os nomes do projeto** (solicitação, orçamento, prestador, contrato…), não termos genéricos.
-- Depois de cada rodada: confirme cada decisão em uma frase, recalcule a fronteira (respostas abrem
-  perguntas novas e às vezes resolvem pendentes) e faça a próxima rodada.
+- Ao recalcular a fronteira depois de cada rodada, lembre que respostas abrem perguntas novas e às vezes
+  resolvem pendentes.
 - **Atalho "siga as recomendações":** se o usuário responder assim (ou "todas A"), as recomendações
   daquela rodada viram decisões. Antes de escrever, mostre o **resumo do entendimento** (decisões, fora do
   escopo, critérios previstos) e espere a confirmação: aceitar tudo de uma vez é o jeito mais fácil de sair
@@ -85,20 +84,6 @@ fazer agora sem chutar respostas que ainda não vieram.
   confirma que o entendimento é o mesmo. Não comece a escrever só porque as perguntas acabaram.
 - Passou de umas 6 rodadas? Provavelmente o trabalho é grande demais para uma spec. Sugira quebrar em
   specs menores em vez de continuar.
-
-Formato de uma rodada (o usuário responde por número, ex.: "1 A, 2 C, 3 A"):
-
-```
-❓ **Q1 — <título curto>**: <a pergunta, com o contexto que o usuário precisa para responder>
-- A. <opção> — <consequência / trade-off>
-- B. <opção> — <consequência / trade-off>
-
-➡️ **<opção recomendada>**: <por quê, em uma ou duas frases>
-
----
-
-❓ **Q2 — …**
-```
 
 ### Exemplo — primeira resposta a um pedido com decisões em aberto
 
@@ -260,8 +245,9 @@ Só depois do `spec.md` aprovado: o design responde ao "como" de um "o quê" que
 
 ## 5. Entrega
 
-Não commite (regra do `AGENTS.md`). Entregue o texto do commit e a lista de arquivos. Sugestão:
-`docs(<escopo>): Adiciona spec de <assunto>`.
+Não commite (regra do `AGENTS.md`). Entregue o texto do commit e a lista de arquivos, pelo guia
+`.agents/docs/guides/commits.md`. Sugestão: `docs(<domínio>): Adiciona spec de <assunto>`, com o escopo do
+domínio da mudança (ex.: `orcamento`), não `agents`.
 
 ## 6. Atualizar uma spec existente
 

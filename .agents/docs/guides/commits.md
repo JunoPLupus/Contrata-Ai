@@ -30,8 +30,13 @@ Task: <identificador da task>
   comportamento), `test` (só testes), `docs` (só documentação), `chore` (manutenção: dependências,
   configuração).
 - **Escopo:** o agregado ou a área afetada, como nos commits que já existem: `orcamento`, `avaliacao`,
-  `servico`, `cliente`, `prestador`, `auth`, `layout`, `web` e `agents` (para o `.agents/` e o
-  `AGENTS.md`). Se a mudança atravessa tudo, o escopo fica de fora: `chore: …`.
+  `servico`, `cliente`, `prestador`, `auth`, `layout`, `web` e `agents`. Se a mudança atravessa tudo,
+  o escopo fica de fora: `chore: …`.
+  - **Spec e task** de uma mudança na API ou no front levam o escopo do domínio, mesmo morando em
+    `.agents/docs/`: `docs(orcamento): Adiciona spec de …`. Assim o `git log` do domínio mostra a spec
+    junto do código.
+  - **`agents`** fica para o material geral dos agentes, que não é de um domínio só: `AGENTS.md`,
+    skills, guias, modelos e scripts de `.agents/`.
 
 ## Corpo
 
