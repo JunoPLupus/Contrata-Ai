@@ -2,6 +2,9 @@
 
 Contrato: .agents/skills/oficina-de-skills/references/schemas.md, seção "checks.py".
 Aplicado por: python3 -m scripts.apply_checks <esta skill> <workspace>/iteration-N (na oficina-de-skills).
+
+As regras sobre o arquivo da task vêm do ../scripts/validate_task.py (e da lib global que ele usa): aqui
+fica só o que é do cenário (onde gravou, quais CA-NN, o que não podia mudar).
 """
 
 import re
@@ -10,16 +13,12 @@ from pathlib import Path
 
 _EVALS = Path(__file__).resolve().parent
 _RAIZ = next(p for p in _EVALS.parents if (p / ".agents").is_dir())
-sys.path.insert(0, str(_RAIZ / ".agents" / "scripts" / "lib"))
-from md_utils import find_placeholders, mask_code_and_comments  # noqa: E402
+sys.path.insert(0, str(_EVALS.parent / "scripts"))
+import validate_task as vt  # noqa: E402  (ajusta o sys.path da lib global ao ser importado)
+from md_checks import ca_numbers_cited, ca_titles, check_updated_at, read_status  # noqa: E402
+from md_utils import find_placeholders  # noqa: E402
 
-_STATUS = re.compile(r"\*\*Status:\*\*\s*`([^`]+)`")
-_BRANCH = re.compile(r"\*\*Branch:\*\*\s*`?([a-z]+/juno/[a-z0-9][a-z0-9-]*)`?")
 _ATUALIZADO = re.compile(r"\*\*Atualizado em:\*\*\s*(.+)")
-_CA_TITULO = re.compile(r"^### (CA-\d+)", re.MULTILINE)
-_CAMINHO_API = re.compile(r"api/[\w./\-\[\]]+?\.(?:ts|md|json)\b")
-_SECAO_1 = "## 1. Vínculo com a spec"
-_SECAO_2 = "## 2. Contexto e critérios"
 
 Resultado = dict[str, tuple[bool, str]]
 
@@ -42,8 +41,7 @@ def _ler(outputs: Path, relativo: str) -> str:
 
 
 def _status(texto: str) -> str | None:
-    m = _STATUS.search(texto)
-    return m.group(1) if m else None
+    return read_status(texto)[0]
 
 
 def _nada_em_api(arquivos: list[str]) -> tuple[bool, str]:
@@ -56,23 +54,28 @@ def _so_resposta(arquivos: list[str]) -> tuple[bool, str]:
 
 
 def _cas_de(texto: str) -> list[str]:
-    return _CA_TITULO.findall(mask_code_and_comments(texto))
+    return [ca_id for ca_id, _ in ca_titles(texto)]
 
 
-def _caminhos_ler_antes(texto: str) -> list[str]:
+def _caminhos_api_ler_antes(texto: str) -> list[str]:
     """Caminhos api/ citados em "Ler antes de começar" ("Arquivos previstos" pode listar arquivos novos)."""
-    bloco = re.search(r"\*\*Ler antes de começar\*\*([\s\S]*?)(?=\*\*Arquivos previstos|\n## |\Z)", texto)
-    return sorted(set(_CAMINHO_API.findall(bloco.group(1) if bloco else "")))
+    return [c for c in vt.ler_antes_paths(texto) if c.startswith("api/")]
 
 
-def _inexistentes(caminhos: list[str]) -> list[str]:
-    return [c for c in caminhos if not (_RAIZ / c).exists()]
+def _api_inexistentes(arquivo: Path, texto: str) -> list[str]:
+    """Caminhos api/ de "Ler antes de começar" que não existem no repositório (regra do validate_task)."""
+    prefixo = "ler antes: caminho não existe: "
+    return [
+        f.mensagem[len(prefixo):] for f in vt.check_read_first(arquivo, texto, _RAIZ)
+        if f.mensagem.startswith(prefixo + "api/")
+    ]
 
 
-def _cita_ca_04_a_08(texto: str) -> bool:
-    if re.search(r"CA-04\s*(?:a|até|–|-)\s*CA-08", texto):
-        return True
-    return all(f"CA-0{n}" in texto for n in range(4, 9))
+def _mensagens(findings) -> str:
+    return "; ".join(f.mensagem for f in findings[:5]) or "nenhum"
+
+
+_CAS_TASK_02 = set(range(4, 9))
 
 # endregion
 
@@ -100,24 +103,24 @@ def _eval_1(outputs: Path) -> Resultado:
             r[chave] = falta
         return r
 
+    arquivo = outputs / tasks[0]
     texto = _ler(outputs, tasks[0])
-    estrutura = mask_code_and_comments(texto)
 
-    tem_2, tem_1 = _SECAO_2 in estrutura, _SECAO_1 in estrutura
+    secoes = vt.check_type_sections(arquivo, texto, "avulsa")
     r["[script] Segue o modelo task.md: tem a seção '## 2. Contexto e critérios' e não tem a seção '## 1. Vínculo com a spec'"] = (
-        tem_2 and not tem_1, f"seção 2: {'sim' if tem_2 else 'não'}; seção 1: {'sim' if tem_1 else 'não'}")
+        not secoes, _mensagens(secoes))
 
     nomes = ("buscar-cliente-por-id", "cliente.controller", "buscar-avaliacoes-do-cliente")
     faltando = [n for n in nomes if n not in texto]
-    caminhos = _caminhos_ler_antes(texto)
-    inexistentes = _inexistentes(caminhos)
+    caminhos = _caminhos_api_ler_antes(texto)
+    inexistentes = _api_inexistentes(arquivo, texto)
     r["[script] A task cita buscar-cliente-por-id, cliente.controller e buscar-avaliacoes-do-cliente, e todo caminho api/... de 'Ler antes de começar' existe no repositório"] = (
         not faltando and not inexistentes,
         f"nomes ausentes: {faltando or 'nenhum'}; caminhos citados: {len(caminhos)}; inexistentes: {inexistentes or 'nenhum'}")
 
-    branch = _BRANCH.search(texto)
+    branch = vt.check_branch(arquivo, texto)
     r["[script] Linha **Branch:** com um nome no padrão <tipo>/juno/<assunto>"] = (
-        bool(branch), f"branch: {branch.group(1)}" if branch else "linha **Branch:** sem nome no padrão")
+        not branch, f"branch: {vt.task_branch(texto)}" if not branch else _mensagens(branch))
 
     status = _status(texto)
     r["[script] Status 'aberta'"] = (status == "aberta", f"status: {status}")
@@ -156,35 +159,28 @@ def _eval_2(outputs: Path) -> Resultado:
     certo = [a for a in tasks if re.fullmatch(re.escape(pasta) + r"tasks/02-[a-z0-9-]+\.md", a)]
     if len(certo) != 1 or len(escritos) != 1:
         r[chave_local] = (False, f"arquivos de task gravados: {escritos}")
+        arquivo = outputs / escritos[0]
         texto = _ler(outputs, escritos[0])
     else:
+        arquivo = outputs / certo[0]
         texto = _ler(outputs, certo[0])
-        estrutura = mask_code_and_comments(texto)
-        ok = _SECAO_1 in estrutura and _SECAO_2 not in estrutura and _cita_ca_04_a_08(texto)
-        r[chave_local] = (ok, f"seção 1: {_SECAO_1 in estrutura}; seção 2: {_SECAO_2 in estrutura}; "
-                              f"cita CA-04 a CA-08: {_cita_ca_04_a_08(texto)}")
+        secoes = vt.check_type_sections(arquivo, texto, "spec")
+        cita = _CAS_TASK_02 <= {n for n, _ in ca_numbers_cited(texto)}
+        r[chave_local] = (not secoes and cita, f"seções: {_mensagens(secoes)}; cita CA-04 a CA-08: {cita}")
 
-    copia = re.findall(r"^\s*-\s*\*\*(?:Dado|Quando|Então)\*\*", mask_code_and_comments(texto), re.MULTILINE)
+    copia = [f for f in vt.check_spec_criteria(arquivo, texto) if "Dado / Quando / Então" in f.mensagem]
     r[chave_copia] = (not copia, f"{len(copia)} linha(s) Dado/Quando/Então" if copia else "nenhuma")
 
-    linhas = [l for l in texto.splitlines() if re.match(r"\s*\|\s*CA-\d+", l)]
-    cobertos = {re.match(r"\s*\|\s*(CA-\d+)", l).group(1) for l in linhas}
-    sem_linha = [f"CA-0{n}" for n in range(4, 9) if f"CA-0{n}" not in cobertos]
-    # Nome de teste = trecho entre aspas ("…" ou “…”) que termina com o próprio (CA-NN) da linha.
-    sem_nome = [
-        l.strip()[:60] for l in linhas
-        if not re.search(r'["“][^"”]*\(' + re.match(r"\s*\|\s*(CA-\d+)", l).group(1) + r'\)["”]', l)
-    ]
-    r[chave_tabela] = (not sem_linha and not sem_nome,
-                       f"CA sem linha: {sem_linha or 'nenhum'}; linhas sem nome de teste: {sem_nome or 'nenhuma'}")
+    tabela = vt.check_criteria_table(arquivo, texto, _CAS_TASK_02)
+    r[chave_tabela] = (not tabela, _mensagens(tabela))
 
     status = _status(texto)
     r[chave_status] = (status == "bloqueada", f"status: {status}")
 
-    caminhos = _caminhos_ler_antes(texto)
-    inexistentes = _inexistentes(caminhos)
+    caminhos = _caminhos_api_ler_antes(texto)
+    inexistentes = _api_inexistentes(arquivo, texto)
     r[chave_ler] = (bool(caminhos) and not inexistentes,
-                    f"caminhos em 'Ler antes': {len(caminhos)}; inexistentes: {inexistentes or 'nenhum'}")
+                    f"caminhos api/ em 'Ler antes': {len(caminhos)}; inexistentes: {inexistentes or 'nenhum'}")
     return r
 
 
@@ -226,8 +222,9 @@ def _eval_5(outputs: Path) -> Resultado:
     antes = _ATUALIZADO.search(original).group(1).strip()
     depois_m = _ATUALIZADO.search(texto)
     depois = depois_m.group(1).strip() if depois_m else ""
-    ok = bool(depois) and depois != antes and re.match(r"\d{4}-\d{2}-\d{2}\s*[—-]\s*\S", depois) is not None
-    r[chaves[0]] = (ok, f"antes: '{antes}'; depois: '{depois[:80]}'")
+    formato = check_updated_at(outputs / alvo, texto)
+    ok = bool(depois) and depois != antes and not formato and not find_placeholders(depois)
+    r[chaves[0]] = (ok, f"antes: '{antes}'; depois: '{depois[:80]}'; formato: {_mensagens(formato)}")
 
     status = _status(texto)
     r[chaves[1]] = (status == "em andamento", f"status: {status}")

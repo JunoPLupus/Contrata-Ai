@@ -153,6 +153,11 @@ class Eval2Task02Test(_Base):
         self.grava(TASK_02, TASK_02_OK.replace('| CA-08 | "deve excluir lidas (CA-08)" |\n', ""))
         self.assertFalse(self.criterio(2, "Se escreve o arquivo: tabela"))
 
+    def test_nao_cita_um_dos_criterios(self):
+        texto = TASK_02_OK.replace("CA-04 a CA-08", "CA-04 a CA-07").replace('| CA-08 | "deve excluir lidas (CA-08)" |\n', "")
+        self.grava(TASK_02, texto)
+        self.assertFalse(self.criterio(2, "Se escreve o arquivo: só em"))
+
     def test_copia_criterios_da_spec(self):
         self.grava(TASK_02, TASK_02_OK + "\n- **Dado** um cliente\n")
         self.assertFalse(self.criterio(2, "Se escreve o arquivo: não copia"))
@@ -205,6 +210,14 @@ class Eval3E4E5Test(_Base):
 
     def test_atualizar_sem_mudar_a_data(self):
         self.grava(TASK_FIXTURE, self._fixture())
+        self.assertFalse(self.criterio(5, "'Atualizado em'"))
+
+    def test_atualizar_com_placeholder_no_lugar_da_data(self):
+        self.grava(TASK_FIXTURE, self._fixture().replace("2026-11-16 — início da implementação", "AAAA-MM-DD — <motivo>"))
+        self.assertFalse(self.criterio(5, "'Atualizado em'"))
+
+    def test_atualizar_sem_motivo(self):
+        self.grava(TASK_FIXTURE, self._fixture().replace("2026-11-16 — início da implementação", "2026-11-18"))
         self.assertFalse(self.criterio(5, "'Atualizado em'"))
 
     def test_atualizar_com_ca_novo_e_status_trocado(self):
