@@ -59,8 +59,8 @@ esperar o campo novo>. Teste que quebrar e não estiver nesta lista é regressã
 
 ## 4. Como validar o que foi feito
 
-**Antes de começar:** rode `npm run test:unit` e `npm run test:integration -- --runInBand` e anote o
-resultado no fechamento. Assim, o que já estava quebrado não se confunde com o que a task quebrou.
+**Antes de começar:** rode as suítes que a task afeta (lista abaixo) e anote o resultado no
+fechamento. Assim, o que já estava quebrado não se confunde com o que a task quebrou.
 
 | Critério | Teste que prova |
 |---|---|
@@ -69,11 +69,10 @@ resultado no fechamento. Assim, o que já estava quebrado não se confunde com o
 O nome do teste termina com o ID do critério, ex.: `it('deve recusar a avaliação antes da conclusão do contrato (CA-02)', ...)`.
 Assim dá para achar, com uma busca, qual teste prova cada critério.
 
-Comandos (dentro de `api/`; sem Node na máquina, via Docker `node:22`):
+Comandos: os da seção 3 do `.agents/docs/guides/testing.md` que o alcance da task afeta (API: tipos,
+unitários e integração; scripts de `.agents/`: a suíte do script).
 
-- `npx tsc --noEmit` — tipos
-- `npm run test:unit`
-- `npm run test:integration -- --runInBand`
+- <comando>
 - **Mutação manual** nas regras novas (como fazer: `.agents/docs/guides/testing.md`, seção 5.2): <quais
   mutações; todas devem ser detectadas por algum teste>
 
@@ -90,7 +89,7 @@ A task só está concluída com todos os comandos passando e a evidência regist
 - **Arquivos alterados:** <lista; compare com os previstos e explique os que ficaram fora da lista>
 - **Decisões tomadas no caminho:** <o que foi decidido durante a implementação e por quê>
 - **Testes antes de começar:** <suítes e resultado; falhas que já existiam>
-- **Testes no fim:** <suítes e testes passando; mutações feitas e detectadas>
+- **Testes no fim:** <suítes e testes passando; mutação: N mutantes, N mortos, os vivos e o que foi feito com eles>
 - **Evidência por critério:** <CA-01 → teste "…" passando; CA-02 → …>
 - **Checagens não feitas:** <qual e por quê, ou "nenhuma">
 - **Ficou para depois:** <pendências, riscos, ideias — com destino: nova task, estacionamento>
