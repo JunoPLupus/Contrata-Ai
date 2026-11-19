@@ -1,8 +1,8 @@
 # Task: Aceite de orçamento exige solicitação aberta
 
-- **Status:** `aberta`
+- **Status:** `concluída`
 - **Criado em:** 2026-11-18
-- **Atualizado em:** 2026-11-18 — criação
+- **Atualizado em:** 2026-11-18 — fechamento (implementado e verificado)
 - **Tipo:** `fix`
 - **Alcance:** `só API`
 - **Branch:** `fix/juno/aceite-exige-solicitacao-aberta` (sugerida; criada pelo Juno)
@@ -129,12 +129,33 @@ A task só está concluída com todos os comandos passando e a evidência regist
 
 ## 5. Fechamento
 
-- **O que foi feito:**
-- **Arquivos alterados:**
+- **O que foi feito:** `Solicitacao.estaAberta()` criado; `AceitarOrcamentoUseCase` recusa com
+  `OperacaoNaoPermitidaError` (422) quando a solicitação não está `aberta`, conferido depois do dono e
+  antes do orçamento `pendente` e de qualquer escrita; JSDoc, Swagger e `api/docs/Rotas.md` atualizados.
+- **Arquivos alterados:** exatamente os previstos: `solicitacao.entity.ts`, `aceitar-orcamento.use-case.ts`,
+  `aceitar-orcamento.use-case.unit.spec.ts`, `orcamento.routes.ts` (só o comentário do Swagger) e
+  `api/docs/Rotas.md`. Mais esta task (status e fechamento).
 - **Decisões tomadas no caminho:**
-- **Testes antes de começar:**
-- **Testes no fim:**
+  - Swagger da resposta 422 passou de `example` para `examples` (um por mensagem), como já faz
+    `avaliacao.routes.ts`: a rota agora tem dois motivos de 422;
+  - `Rotas.md` dizia "apenas prestador/dono" no aceite; corrigido para "o cliente dono" (quem aceita é o
+    cliente, conforme o use-case).
+- **Testes antes de começar:** `npx tsc --noEmit` ok; unitários 80 suítes / 435 testes passando;
+  integração 9 suítes / 105 testes passando (Docker `node:22`). Com os testes novos e o código antigo:
+  CA-01 e CA-02 falhando, CA-03 passando (como previsto na seção 4).
+- **Testes no fim:** `npx tsc --noEmit` ok; unitários 80 suítes / 438 testes passando; integração 9
+  suítes / 105 testes passando. Mutação: 6 mutantes (os 6 da seção 4), 6 mortos, nenhum vivo: remover a
+  guarda e `estaAberta()` sempre `true` → CA-01 e CA-02; `estaAberta()` sempre `false` → os 5 testes do
+  aceite feliz; guarda antes do dono → CA-03; guarda depois do `pendente` → CA-02; guarda depois da
+  escrita → CA-01 e CA-02.
 - **Evidência por critério:**
-- **Checagens não feitas:**
-- **Ficou para depois:**
+  - CA-01 → teste "deve recusar o aceite de solicitação cancelada sem gravar nada (CA-01)" passando;
+  - CA-02 → teste "deve recusar o aceite de solicitação encerrada pela regra da solicitação (CA-02)" passando;
+  - CA-03 → teste "deve lançar AcessoProibidoError para quem não é dono mesmo com a solicitação cancelada (CA-03)" passando (prova junto do mutante 4, morto).
+- **Checagens não feitas:** checagem manual pelo Swagger (a seção 4 a dispensou: a rota não muda).
+- **Ficou para depois:** cascata no cancelamento da solicitação (2B, estacionamento); task do
+  `GET /clientes/:id` com o `whatsapp` fora do perfil público (4A).
 - **Commits entregues:**
+  - `fix(orcamento): Recusa aceite de orçamento de solicitação não aberta` — entidade, use-case e testes;
+  - `docs(orcamento): Documenta a regra de solicitação aberta no aceite` — Swagger e `Rotas.md`;
+  - `docs(orcamento): Fecha a task do aceite exigir solicitação aberta` — esta task.
