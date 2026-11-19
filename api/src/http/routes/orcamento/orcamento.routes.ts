@@ -81,7 +81,7 @@ orcamentoRouter.post('/orcamentos', exigeAutenticacao, exigePerfilPrestador, (re
  *   patch:
  *     tags: [Orçamentos]
  *     summary: Aceita um orçamento
- *     description: O cliente aceita um orçamento recebido. Gera o contrato correspondente (conforme regras de negócio) e encerra os demais orçamentos da solicitação.
+ *     description: O cliente aceita um orçamento recebido. Exige a solicitação com status 'aberta' e o orçamento 'pendente'. Gera o contrato correspondente (conforme regras de negócio) e encerra os demais orçamentos da solicitação.
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -103,13 +103,18 @@ orcamentoRouter.post('/orcamentos', exigeAutenticacao, exigePerfilPrestador, (re
  *       404:
  *         $ref: '#/components/responses/Erro404Orcamento'
  *       422:
- *         description: Operação não permitida.
+ *         description: Operação não permitida (solicitação não está 'aberta' ou orçamento não está 'pendente').
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/ErroResposta'
- *             example:
- *               message: "Só é possível aceitar um orçamento com status 'pendente'."
+ *             examples:
+ *               solicitacaoNaoAberta:
+ *                 value:
+ *                   message: "Só é possível aceitar orçamento de uma solicitação com status 'aberta'."
+ *               orcamentoNaoPendente:
+ *                 value:
+ *                   message: "Só é possível aceitar um orçamento com status 'pendente'."
  *       500:
  *         $ref: '#/components/responses/Erro500'
  */
