@@ -4,7 +4,7 @@
 
 Nenhuma fonte encaixava inteira: a skill é uma **adaptação em pt-BR** que junta ideias de skills públicas
 com o modelo do projeto (`.agents/docs/templates/task.md`) e um padrão já comprovado aqui (a task real
-`.agents/docs/tasks/2026-11-13-skill-spec.md` e a skill `spec`). Fontes lidas inteiras em 2026-11-16.
+`2026-11-13-skill-spec.md` e a skill `spec`). Fontes lidas inteiras em 2026-11-16.
 
 | Fonte | Repositório | Commit | Licença |
 |---|---|---|---|
