@@ -324,9 +324,14 @@ qual é qual e peça que julgue. Detalhes em `agents/comparator.md` e `agents/an
    do passo 5: ela mostra que a falha existe sem a skill (essas falhas costumam ser sistemáticas), e a
    variação que importa medir é a da skill. Se um cenário variar muito entre as execuções, a skill ainda
    está ambígua nesse ponto: volte ao passo 5.
-2. **Validar o cabeçalho** (`quick_validate.py`, ver 3.1).
-3. **Registrar na tabela de roteamento do `AGENTS.md`** ("Situação → Skill"). Sem isso a skill nunca
+2. **Registrar na tabela de roteamento do `AGENTS.md`** ("Situação → Skill"). Sem isso a skill nunca
    é lida.
+3. **Conferir o conjunto** com o script da raiz, que roda o `quick_validate` em todas as skills e confere
+   a linha da tabela, os links e caminhos citados e os comandos `python3` da skill nova:
+   ```bash
+   rtk python3 .agents/scripts/check_agents.py
+   ```
+   Corrija até sair sem erro (exit 0). Aviso de skill citada que ainda não existe é pendência, não erro.
 4. **`ORIGEM.md`** (se veio de fonte externa): repositório, commit, licença e o que foi mudado.
    Licenças que exigem a mesma licença na obra derivada (ex.: CC BY-SA) precisam ser respeitadas.
 5. **Não commitar.** Entregue o texto do commit e a lista de arquivos, conforme o `AGENTS.md`. O
