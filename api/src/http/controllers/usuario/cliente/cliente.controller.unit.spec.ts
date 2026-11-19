@@ -67,17 +67,21 @@ describe('ClienteController', () => {
         expect(res.json).toHaveBeenCalledWith(ClienteMapper.paraPerfilPublicoDto(usuarioMock))
     })
 
-    it('deve retornar resposta com sucesso 200 e o perfil público ao buscar o id de outro cliente', async () => {
+    it('deve retornar o perfil público sem o whatsapp (CA-03)', async () => {
         // Arrange
-        const outroClienteMock = UsuarioMother.criarUsuarioValido({ id: '507f1f77bcf86cd799439099', nome: 'Outro Cliente' })
-        req.params = { id: outroClienteMock.id as string }
-        buscarClientePorIdUseCaseMock.execute.mockResolvedValue(outroClienteMock)
+        const nomeCliente = 'Cliente Com Whatsapp'
+        const clienteComWhatsappMock = UsuarioMother.criarUsuarioValido({ id: '507f1f77bcf86cd799439099', nome: nomeCliente, whatsapp: '11912345678' })
+        req.params = { id: clienteComWhatsappMock.id as string }
+        buscarClientePorIdUseCaseMock.execute.mockResolvedValue(clienteComWhatsappMock)
         // Act
         await controller.buscarPorId(req as any, res as any)
         // Assert
         expect(buscarClientePorIdUseCaseMock.execute).toHaveBeenCalledWith(req.params.id)
         expect(res.status).toHaveBeenCalledWith(200)
-        expect(res.json).toHaveBeenCalledWith(ClienteMapper.paraPerfilPublicoDto(outroClienteMock))
+        expect(res.json).toHaveBeenCalledWith({
+            nome: nomeCliente,
+            reputacao_flag_cancelamento: clienteComWhatsappMock.reputacao_flag_cancelamento
+        })
     })
 
     it('deve retornar resposta com sucesso 200 e o perfil atualizado ao atualizar o cliente logado', async () => {

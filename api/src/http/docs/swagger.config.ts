@@ -174,7 +174,6 @@ const schemas = {
         description: 'Visão pública/parcial de um cliente.',
         properties: {
             nome: { type: 'string', example: 'João da Silva' },
-            whatsapp: { type: 'string', nullable: true, example: '11912345678' },
             reputacao_flag_cancelamento: { type: 'integer', example: 0 },
         },
     },

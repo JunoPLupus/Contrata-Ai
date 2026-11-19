@@ -20,7 +20,6 @@ export class ClienteMapper {
     public static paraPerfilPublicoDto(usuario: Usuario) : ClientePerfilPublicoDto {
         return {
             nome: usuario.nome,
-            whatsapp: usuario.whatsapp,
             reputacao_flag_cancelamento: usuario.reputacao_flag_cancelamento
         }
     }
