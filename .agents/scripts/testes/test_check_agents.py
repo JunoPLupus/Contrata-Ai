@@ -250,6 +250,17 @@ class SkillsCitadasTest(ProjetoFalso):
         self.assertEqual([f.linha_inicio for f in achados], [1, 2, 3])
         self.assertIn("'encerramento'", achados[0].mensagem)
 
+    def test_registro_fechado_nao_gera_aviso(self):
+        """Task concluída, cancelada ou spec substituída é registro: a citação não gera aviso."""
+        for status in ("concluída", "cancelada", "substituída"):
+            with self.subTest(status=status):
+                self.assertEqual(self.checar(f"- **Status:** `{status}`\n\nskill `encerramento`\n"), [])
+
+    def test_task_aberta_continua_gerando_aviso(self):
+        """Task em andamento ainda pode ser corrigida: a citação de skill inexistente gera aviso."""
+        achados = self.checar("- **Status:** `em andamento`\n\nskill `encerramento`\n")
+        self.assertEqual([(f.severidade, f.linha_inicio) for f in achados], [("aviso", 3)])
+
     def test_palavra_comum_apos_skill_nao_conta(self):
         """'skill nova' (sem crases) não é citação de skill."""
         self.assertEqual(self.checar("(skill nova) ou skill existente\n"), [])

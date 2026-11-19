@@ -7,7 +7,8 @@ Verifica:
 - [x] Tabela de skills do AGENTS.md × pastas .agents/skills/*/SKILL.md (nos dois sentidos)
 - [x] Comandos `python3 <script>.py` e `python3 -m unittest discover -s <pasta>` apontam para algo real
 - [x] Seções que os validadores (validate_spec, validate_task) esperam existem nos modelos
-- [x] Skills citadas que ainda não existem viram AVISO (pendência conhecida), não erro
+- [x] Skills citadas que ainda não existem viram AVISO (pendência conhecida), não erro; registros fechados
+      (spec/task `concluída`, `cancelada` ou `substituída`) ficam de fora dessa checagem
 
 Entram o AGENTS.md e os .md de .agents/, menos *-workspace/ (saídas de rodadas), scripts/testes/ e
 evals/files/ (exemplos de propósito quebrados ou fictícios).
@@ -22,7 +23,7 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent / "lib"))
-from md_checks import Finding, aviso, check_links, erro, find_paths, section_titles  # noqa: E402
+from md_checks import Finding, aviso, check_links, erro, find_paths, read_status, section_titles  # noqa: E402
 from md_utils import line_of  # noqa: E402
 from projeto import get_project_root, read_text  # noqa: E402
 
@@ -218,8 +219,16 @@ _SKILL_CITADA = re.compile(
 )
 
 
+_STATUS_FECHADO = ("concluída", "cancelada", "substituída")
+
+
 def check_cited_skills(arquivo: Path, texto: str, raiz: Path) -> list[Finding]:
-    """Skill citada sem pasta em .agents/skills/ vira AVISO de pendência (pode ser uma skill futura)."""
+    """Skill citada sem pasta em .agents/skills/ vira AVISO de pendência (pode ser uma skill futura).
+
+    Spec ou task fechada é registro do que aconteceu e não vai ser editada: os nomes que cita (inclusive de
+    skills que nunca vão existir) gerariam aviso para sempre e ensinariam a ignorar os avisos."""
+    if read_status(texto)[0] in _STATUS_FECHADO:
+        return []
     existentes = existing_skills(raiz)
     findings: list[Finding] = []
     for citacao in _SKILL_CITADA.finditer(texto):
