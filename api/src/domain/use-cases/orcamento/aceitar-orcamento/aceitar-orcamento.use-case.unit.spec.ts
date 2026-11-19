@@ -199,4 +199,67 @@ describe('AceitarOrcamentoUseCase', () => {
         await expect(useCase.execute('algum-id', idCliente))
             .rejects.toThrow(OperacaoNaoPermitidaError)
     })
+
+    describe('solicitação fora do status aberta', () => {
+        const MENSAGEM_SOLICITACAO_NAO_ABERTA = "Só é possível aceitar orçamento de uma solicitação com status 'aberta'."
+
+        const esperarNenhumaEscrita = () => {
+            expect(orcamentoRepoMock.atualizar).not.toHaveBeenCalled()
+            expect(atualizarSolicitacaoUseCaseMock.execute).not.toHaveBeenCalled()
+            expect(criarContratoUseCaseMock.execute).not.toHaveBeenCalled()
+        }
+
+        it('deve recusar o aceite de solicitação cancelada sem gravar nada (CA-01)', async () => {
+            // Arrange — cancelar a solicitação não encerra os orçamentos: o orçamento segue pendente
+            const idCliente = new Types.ObjectId().toString()
+            const idSolicitacao = new Types.ObjectId().toString()
+            const orcamento = OrcamentoMother.criarValido({ idSolicitacao })
+            const solicitacao = SolicitacaoMother.criarValido({ idCliente, status: StatusSolicitacao.CANCELADA })
+
+            orcamentoRepoMock.buscarPorId.mockResolvedValue(orcamento)
+            solicitacaoRepoMock.buscarPorId.mockResolvedValue(solicitacao)
+            orcamentoRepoMock.buscarPorIdSolicitacao.mockResolvedValue([orcamento])
+            orcamentoRepoMock.atualizar.mockResolvedValue(orcamento)
+            atualizarSolicitacaoUseCaseMock.execute.mockResolvedValue(solicitacao as any)
+            criarContratoUseCaseMock.execute.mockResolvedValue(ContratоMother.criarValido())
+
+            // Act & Assert
+            const promessa = useCase.execute('algum-id', idCliente)
+            await expect(promessa).rejects.toThrow(OperacaoNaoPermitidaError)
+            await expect(promessa).rejects.toThrow(MENSAGEM_SOLICITACAO_NAO_ABERTA)
+            esperarNenhumaEscrita()
+        })
+
+        it('deve recusar o aceite de solicitação encerrada pela regra da solicitação (CA-02)', async () => {
+            // Arrange — o caso real: o aceite de outro orçamento encerrou a solicitação e este orçamento
+            const idCliente = new Types.ObjectId().toString()
+            const idSolicitacao = new Types.ObjectId().toString()
+            const orcamento = OrcamentoMother.criarValido({ idSolicitacao, status: StatusOrcamento.ENCERRADO })
+            const solicitacao = SolicitacaoMother.criarValido({ idCliente, status: StatusSolicitacao.ENCERRADA })
+
+            orcamentoRepoMock.buscarPorId.mockResolvedValue(orcamento)
+            solicitacaoRepoMock.buscarPorId.mockResolvedValue(solicitacao)
+
+            // Act & Assert — a mensagem aponta a solicitação, não o orçamento não pendente
+            await expect(useCase.execute('algum-id', idCliente))
+                .rejects.toThrow(MENSAGEM_SOLICITACAO_NAO_ABERTA)
+            esperarNenhumaEscrita()
+        })
+
+        it('deve lançar AcessoProibidoError para quem não é dono mesmo com a solicitação cancelada (CA-03)', async () => {
+            // Arrange
+            const orcamento = OrcamentoMother.criarValido()
+            const solicitacao = SolicitacaoMother.criarValido({
+                idCliente: new Types.ObjectId().toString(),
+                status: StatusSolicitacao.CANCELADA,
+            })
+            orcamentoRepoMock.buscarPorId.mockResolvedValue(orcamento)
+            solicitacaoRepoMock.buscarPorId.mockResolvedValue(solicitacao)
+
+            // Act & Assert — não revela o status da solicitação de outro cliente
+            await expect(useCase.execute('algum-id', new Types.ObjectId().toString()))
+                .rejects.toThrow(AcessoProibidoError)
+            esperarNenhumaEscrita()
+        })
+    })
 })

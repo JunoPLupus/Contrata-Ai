@@ -1,6 +1,6 @@
 import { SolicitacaoProps } from "./solicitacao.props";
 import { StringValueObject } from "../../value-objects/shared/string/string.vo";
-import { StatusSolicitacaoValueObject, StatusSolicitacaoTipo } from "../../value-objects/solicitacao/status/status.vo";
+import { StatusSolicitacao, StatusSolicitacaoValueObject, StatusSolicitacaoTipo } from "../../value-objects/solicitacao/status/status.vo";
 
 export class Solicitacao {
     private constructor(private readonly props: SolicitacaoProps) {}
@@ -41,5 +41,14 @@ export class Solicitacao {
 
     get dataSolicitacao(): Date {
         return this.props.dataSolicitacao
+    }
+
+    /**
+     * Indica se a solicitação está aberta (status `'aberta'`): ainda recebe orçamentos e
+     * pode ter um deles aceito. Ponto único da regra, para as demais regras de status
+     * da solicitação reaproveitarem.
+     */
+    public estaAberta(): boolean {
+        return this.status === StatusSolicitacao.ABERTA
     }
 }

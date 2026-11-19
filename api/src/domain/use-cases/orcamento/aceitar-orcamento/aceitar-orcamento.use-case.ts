@@ -37,6 +37,8 @@ export class AceitarOrcamentoUseCase {
      * @throws {RecursoNaoEncontradoError} Se o orçamento não existir.
      * @throws {RecursoNaoEncontradoError} Se a solicitação vinculada não existir.
      * @throws {AcessoProibidoError} Se o cliente não for o dono da solicitação.
+     * @throws {OperacaoNaoPermitidaError} Se a solicitação não estiver com status `'aberta'`
+     *   (conferido antes do orçamento e de qualquer escrita).
      * @throws {OperacaoNaoPermitidaError} Se o orçamento não estiver com status `'pendente'`.
      */
     async execute(idOrcamento: string, idCliente: string): Promise<Orcamento> {
@@ -47,6 +49,12 @@ export class AceitarOrcamentoUseCase {
         if (!solicitacao) throw new RecursoNaoEncontradoError('Solicitação')
 
         if (solicitacao.idCliente !== idCliente) throw new AcessoProibidoError()
+
+        if (!solicitacao.estaAberta()) {
+            throw new OperacaoNaoPermitidaError(
+                "Só é possível aceitar orçamento de uma solicitação com status 'aberta'."
+            )
+        }
 
         if (orcamento.status !== StatusOrcamento.PENDENTE) {
             throw new OperacaoNaoPermitidaError(
