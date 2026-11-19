@@ -2,7 +2,8 @@
 
 - **Spec:** [spec.md](spec.md)
 - **Criado em:** 2026-11-19
-- **Atualizado em:** 2026-11-19 — primeira versão, depois de três rodadas de decisões técnicas com o Juno
+- **Atualizado em:** 2026-11-19 — task 01 dividida: a base de achados virou a task 09 (decisão do Juno ao
+  abrir a 01)
 
 ## Referências técnicas
 
@@ -70,6 +71,9 @@
   - "Commits entregues" tem um bloco de código `text` por commit, com a mensagem completa, seguido da lista
     "Arquivos:"; o script compara a primeira linha do bloco e a lista — descartada: só título e arquivos, com o
     corpo apenas no chat (o texto commitado não fica registrado) — rodada 3 do design.
+  - A base de achados (código da regra no `Finding`, comparação, oficina) é uma task própria, a 09, separada
+    da governança (01); a 05 passa a depender dela — descartada: uma task só (PR grande que mistura a migração
+    do verificador com a mudança nos validadores de task e spec) — conversa de 2026-11-19, ao abrir a 01.
   - Nome da branch montado pelo "iniciar" a partir do padrão que o validador já cobra (`tipo/juno/assunto`):
     avulsa usa o nome do arquivo sem a data (como `fix/juno/restringir-perfil-cliente`); task de spec usa o
     assunto da spec mais o número da task — derivado do padrão vigente no `validate_task.py`, sem rodada própria.
@@ -160,7 +164,7 @@ e o item da lista do design é riscado com data e motivo → mesmo aviso da últ
 | O validador novo de spec (task 03) acusa esta spec no modelo antigo | a conversão desta spec e deste design entra na mesma task 03 |
 | O "iniciar" troca de branch com arquivos abertos no IntelliJ | árvore limpa é exigida antes; a troca só acontece depois de todas as checagens |
 | Formato rígido da base e dos commits entregues quebra com uma edição à mão | o validador cobra o formato; o script recusa com a linha do problema em vez de comparar errado |
-| O verificador geral acusa como erro o link da lista de tasks para um arquivo ainda não criado, que o validador da spec aceita (a mesma regra com dois donos); por isso a lista abaixo, por enquanto, não tem links | a governança (task 01) segue a regra do validador da spec: link da lista para task ainda não criada é aceito; os links voltam na task 01 |
+| O verificador geral acusa como erro o link da lista de tasks para um arquivo ainda não criado, que o validador da spec aceita (a mesma regra com dois donos); por isso, cada item da lista só ganha o link quando o arquivo da task é criado | a governança (task 01) segue a regra do validador da spec: link da lista para task ainda não criada é aceito |
 | Rodar os evals da task 07 com outros agentes pesados trava o notebook | um agente pesado por vez (nota do Juno) |
 
 ## 5. Estratégia de testes
@@ -172,7 +176,7 @@ e o item da lista do design é riscado com data e motivo → mesmo aviso da últ
 - **Erros de cada critério** (não há HTTP: o "erro" é a saída do script ou do validador e o exit 1):
   - CA-01, 02, 03 → `validate_task.py`, códigos de subseção e de eixo; CA-20 → `create_task.py` e validador.
   - CA-04, 23 a 28, 30 → governança (CA-30 também por busca: nenhuma instrução cita o verificador antigo).
-  - CA-29 → teste da comparação com base em arquivo, mais a rodada da oficina na task 01.
+  - CA-29 → teste da comparação com base em arquivo, mais a rodada da oficina na task 09.
   - CA-05 a 13, 36 → `start_task.py`, um teste por recusa, conferindo que nada mudou (arquivo e branches).
   - CA-14 → texto da skill `task` (eval da task 06: o fechar não muda o status).
   - CA-15 a 17, 34, 37, 38 → `finish_task.py`; CA-18 → formato no `commits.md`, conferido no eval da task 06.
@@ -185,17 +189,18 @@ e o item da lista do design é riscado com data e motivo → mesmo aviso da últ
 
 ## 6. Tasks
 
-- 01 — Skill de governança — bloqueada por: nenhuma — cobre: CA-04, CA-23, CA-24,
-  CA-25, CA-26, CA-27, CA-28, CA-29, CA-30
+- [01 — Skill de governança](tasks/01-governanca.md) — bloqueada por: nenhuma — cobre: CA-04, CA-23,
+  CA-24, CA-25, CA-26, CA-27, CA-30
 - 02 — Modelo e validador de task — bloqueada por: 01 — cobre: CA-01, CA-02,
   CA-03, CA-20
 - 03 — Modelos e validador de spec e design — bloqueada por: 01 — cobre: CA-31,
   CA-32, CA-33
 - 04 — Status da spec por script — bloqueada por: 03 — cobre: CA-19, CA-35
-- 05 — Iniciar — bloqueada por: 02, 03 — cobre: CA-05, CA-06, CA-07, CA-08, CA-09, CA-10,
+- 05 — Iniciar — bloqueada por: 02, 03, 09 — cobre: CA-05, CA-06, CA-07, CA-08, CA-09, CA-10,
   CA-11, CA-12, CA-13, CA-36
 - 06 — Encerrar, cancelar e texto do merge — bloqueada por: 04, 05 — cobre: CA-14, CA-15,
   CA-16, CA-17, CA-18, CA-34, CA-37, CA-38
 - 07 — Passo de leitura nas skills de task e spec — bloqueada por: 02, 03 —
   cobre: CA-21
 - 08 — Instruções gerais e guias — bloqueada por: 05, 06 — cobre: CA-22
+- 09 — Base de achados da governança — bloqueada por: 01 — cobre: CA-28, CA-29
