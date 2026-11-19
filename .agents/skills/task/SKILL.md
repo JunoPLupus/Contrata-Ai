@@ -192,7 +192,7 @@ nova):
 3. **A mudança já vem decidida?** Edite primeiro e mostre: a decisão é do usuário e acabou de ser tomada.
 4. **Edite no lugar** (nunca uma task nova ou "versão 2" ao lado):
    - substitua o texto que ficou errado nas seções 2/3/4;
-   - **"Atualizado em: AAAA-MM-DD — <motivo>"**;
+   - `Atualizado em: AAAA-MM-DD — motivo`;
    - acrescente arquivos previstos e testes que vão mudar de propósito;
    - registre a decisão em **"Decisões tomadas no caminho"** (seção 5), com o motivo;
    - **procure contradições** com "Fica fora" e "Não deve mudar": se a mudança mexe em algo que a task
@@ -242,7 +242,7 @@ nova):
    skill `encerramento`, que só roda depois da aprovação, e a lista não guarda status.
 8. **Com a aprovação explícita** ("revisei, aprovado", "pode concluir"), e só com ela:
    - mude o status para `concluída`;
-   - "Atualizado em: <data de hoje> — aprovada na revisão do <usuário>";
+   - `Atualizado em: <data de hoje> — aprovada na revisão do <usuário>`;
    - não reescreva o fechamento: ele já foi revisado como está. Se o usuário pediu ajuste junto da
      aprovação, faça o ajuste, registre-o em "Decisões tomadas no caminho" e diga o que mudou;
    - rode `validate_task.py <caminho-da-task> --fechar` (agora com `concluída`, ele exige o fechamento

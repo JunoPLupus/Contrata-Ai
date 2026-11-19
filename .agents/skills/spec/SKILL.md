@@ -266,7 +266,7 @@ critérios mudam. Quando isso acontecer:
 3. **Edite no lugar:**
    - substitua o texto que ficou errado (não acrescente uma "versão nova" ao lado da antiga);
    - registre a decisão nova com alternativas e motivo, e a data da conversa;
-   - preencha "Atualizado em: AAAA-MM-DD — <motivo>" em cada documento alterado;
+   - preencha `Atualizado em: AAAA-MM-DD — motivo` em cada documento alterado;
    - status: mudança que já veio decidida **mantém** o status; mudança que precisou de entrevista volta a
      spec para `rascunho` até o usuário aprovar de novo;
    - na lista de tasks do `design.md`: task nova entra com número e "bloqueada por"; task cancelada fica na
