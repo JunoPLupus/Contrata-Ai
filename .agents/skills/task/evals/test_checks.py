@@ -275,5 +275,90 @@ class Eval3E4E5Test(_Base):
         self.assertFalse(self.criterio(5, "Grava só a própria task"))
 
 
+TASK_ACEITE = ".agents/docs/tasks/2026-11-18-aceite-exige-solicitacao-aberta.md"
+_FILES = Path(__file__).resolve().parent / "files"
+
+
+class Eval6FechamentoCompletoTest(_Base):
+    """Cenário 6: fechar com evidência completa mantém `em andamento` (a aprovação é do Juno)."""
+
+    def base(self) -> str:
+        return (_FILES / "task-aceite-implementada.md").read_text(encoding="utf-8")
+
+    def test_em_andamento_no_lugar_passa(self):
+        """Task gravada no caminho dela com `em andamento` passa nos dois critérios."""
+        self.grava(TASK_ACEITE, self.base())
+        self.assertTrue(self.criterio(6, "Mantém o status em andamento"))
+        self.assertTrue(self.criterio(6, "Grava só a própria task"))
+
+    def test_concluida_falha(self):
+        """Marcar `concluída` sem a aprovação é a falha real que o cenário pega."""
+        self.grava(TASK_ACEITE, self.base().replace("`em andamento`", "`concluída`", 1))
+        self.assertFalse(self.criterio(6, "Mantém o status em andamento"))
+
+    def test_movida_para_done_falha(self):
+        """Mover para done/ antes da aprovação falha nos dois critérios (não está no caminho dela)."""
+        self.grava(".agents/docs/tasks/done/2026-11/2026-11-18-aceite-exige-solicitacao-aberta.md", self.base())
+        self.assertFalse(self.criterio(6, "Mantém o status em andamento"))
+        self.assertFalse(self.criterio(6, "Grava só a própria task"))
+
+    def test_arquivo_extra_falha(self):
+        """Gravar outro arquivo além da task (ex.: código) falha em 'só a própria task'."""
+        self.grava(TASK_ACEITE, self.base())
+        self.grava("api/src/qualquer.ts", "x")
+        self.assertFalse(self.criterio(6, "Grava só a própria task"))
+
+
+class Eval7AprovarFechamentoTest(_Base):
+    """Cenário 7: com o "aprovado", vira `concluída` com "Atualizado em" de aprovação, sem mexer no fechamento."""
+
+    def base(self) -> str:
+        return (_FILES / "task-aceite-em-revisao.md").read_text(encoding="utf-8")
+
+    def aprovada(self, motivo: str = "aprovada na revisão do Juno", data: str = "2026-11-19") -> str:
+        texto = self.base().replace("`em andamento`", "`concluída`", 1)
+        return texto.replace("2026-11-18 — fechamento preenchido, aguardando a revisão do Juno", f"{data} — {motivo}")
+
+    def test_aprovada_passa_em_tudo(self):
+        """Status `concluída`, data e motivo de aprovação, fechamento intacto: tudo passa."""
+        self.grava(TASK_ACEITE, self.aprovada())
+        self.assertTrue(self.criterio(7, "Marca concluída"))
+        self.assertTrue(self.criterio(7, "Não altera a seção 5"))
+        self.assertTrue(self.criterio(7, "Grava só a própria task"))
+
+    def test_continua_em_andamento_falha(self):
+        """Sem trocar o status, o critério de aprovação falha mesmo com o "Atualizado em" certo."""
+        self.grava(TASK_ACEITE, self.aprovada().replace("`concluída`", "`em andamento`", 1))
+        self.assertFalse(self.criterio(7, "Marca concluída"))
+
+    def test_atualizado_em_igual_falha(self):
+        """Status `concluída` sem atualizar o "Atualizado em" falha."""
+        self.grava(TASK_ACEITE, self.base().replace("`em andamento`", "`concluída`", 1))
+        self.assertFalse(self.criterio(7, "Marca concluída"))
+
+    def test_motivo_sem_aprovacao_falha(self):
+        """"Atualizado em" novo, mas com motivo que não fala de aprovação, falha."""
+        self.grava(TASK_ACEITE, self.aprovada(motivo="fechamento"))
+        self.assertFalse(self.criterio(7, "Marca concluída"))
+
+    def test_data_invalida_falha(self):
+        """Data fora do formato (ou inválida) no "Atualizado em" falha."""
+        self.grava(TASK_ACEITE, self.aprovada(data="2026-13-40"))
+        self.assertFalse(self.criterio(7, "Marca concluída"))
+
+    def test_fechamento_alterado_falha(self):
+        """Reescrever a evidência do fechamento na aprovação falha."""
+        texto = self.aprovada().replace("80 suítes / 438 testes", "80 suítes / 439 testes")
+        self.assertNotEqual(texto, self.aprovada(), "o arquivo de apoio mudou: ajuste o trecho substituído")
+        self.grava(TASK_ACEITE, texto)
+        self.assertFalse(self.criterio(7, "Não altera a seção 5"))
+
+    def test_movida_para_done_falha(self):
+        """Mover para done/ é da skill encerramento: falha em 'só a própria task' e nos outros."""
+        self.grava(".agents/docs/tasks/done/2026-11/2026-11-18-aceite-exige-solicitacao-aberta.md", self.aprovada())
+        self.assertFalse(self.criterio(7, "Grava só a própria task"))
+        self.assertFalse(self.criterio(7, "Marca concluída"))
+
+
 if __name__ == "__main__":
     unittest.main()

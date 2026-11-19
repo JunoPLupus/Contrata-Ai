@@ -75,6 +75,9 @@ Comandos da API (rodar dentro de `api/`):
   - Não inclua trailer de coautoria de IA (`Co-Authored-By: ...`) no texto do commit.
   - Estas duas últimas regras (staging e coautoria) também estão no `commits.md`. A repetição é de
     propósito: este arquivo está sempre no contexto, e são regras que as ferramentas quebram por padrão.
+- **Concluir:** task ou spec só vira `concluída` (e só vai para `done/`) com a **aprovação explícita do
+  Juno**, depois de ele revisar o que foi feito. Testes verdes não bastam: o agente entrega o fechamento
+  com status `em andamento` e pede a revisão.
 - **Testes:** toda mudança de comportamento vem com teste. Rode os testes antes de dizer que terminou e
   informe o resultado real (inclusive falhas). Como escrever, rodar e provar com mutação manual: guia
   [`testing.md`](.agents/docs/guides/testing.md).

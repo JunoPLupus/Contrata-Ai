@@ -233,9 +233,63 @@ def _eval_5(outputs: Path) -> Resultado:
     r[chaves[2]] = (cas_depois == cas_antes, f"original: {cas_antes}; gravada: {cas_depois}")
     return r
 
+_ALVO_ACEITE = ".agents/docs/tasks/2026-11-18-aceite-exige-solicitacao-aberta.md"
+_SO_A_TASK = "[script] Grava só a própria task, fora de done/"
+
+
+def _so_a_task(arquivos: list[str], alvo: str) -> tuple[bool, str]:
+    """Só o arquivo da task, no caminho dela (mover para done/ é da skill encerramento, depois da aprovação)."""
+    return (arquivos == [alvo], f"arquivos gravados: {arquivos}")
+
+
+def _secao_5(texto: str) -> str:
+    """Texto da seção 5 (fechamento) até o fim do arquivo, sem espaços nas pontas."""
+    inicio = texto.find("## 5. Fechamento")
+    return texto[inicio:].strip() if inicio >= 0 else ""
+
+
+def _eval_6(outputs: Path) -> Resultado:
+    arquivos = _arquivos(outputs)
+    chave = "[script] Mantém o status em andamento ao fechar com evidência completa (CA-01)"
+    r: Resultado = {_SO_A_TASK: _so_a_task(arquivos, _ALVO_ACEITE)}
+    if _ALVO_ACEITE not in arquivos:
+        r[chave] = (False, f"a task não foi gravada no caminho dela; arquivos: {arquivos}")
+        return r
+    status = _status(_ler(outputs, _ALVO_ACEITE))
+    r[chave] = (status == "em andamento", f"status: {status}")
+    return r
+
+
+def _eval_7(outputs: Path) -> Resultado:
+    arquivos = _arquivos(outputs)
+    original = (_EVALS / "files" / "task-aceite-em-revisao.md").read_text(encoding="utf-8")
+    chaves = (
+        "[script] Marca concluída com Atualizado em de aprovação (CA-02)",
+        "[script] Não altera a seção 5 (fechamento) do arquivo de apoio",
+    )
+    r: Resultado = {_SO_A_TASK: _so_a_task(arquivos, _ALVO_ACEITE)}
+    if _ALVO_ACEITE not in arquivos:
+        for chave in chaves:
+            r[chave] = (False, f"a task não foi gravada no caminho dela; arquivos: {arquivos}")
+        return r
+
+    texto = _ler(outputs, _ALVO_ACEITE)
+    status = _status(texto)
+    antes = _ATUALIZADO.search(original).group(1).strip()
+    depois_m = _ATUALIZADO.search(texto)
+    depois = depois_m.group(1).strip() if depois_m else ""
+    formato = check_updated_at(outputs / _ALVO_ACEITE, texto)
+    ok = (status == "concluída" and depois != antes and not formato
+          and "aprova" in depois.lower())
+    r[chaves[0]] = (ok, f"status: {status}; atualizado em: '{depois[:80]}'; formato: {_mensagens(formato)}")
+
+    igual = _secao_5(texto) == _secao_5(original)
+    r[chaves[1]] = (igual, "seção 5 igual à do arquivo de apoio" if igual else "seção 5 mudou")
+    return r
+
 # endregion
 
-_CENARIOS = {1: _eval_1, 2: _eval_2, 3: _eval_3, 4: _eval_4, 5: _eval_5}
+_CENARIOS = {1: _eval_1, 2: _eval_2, 3: _eval_3, 4: _eval_4, 5: _eval_5, 6: _eval_6, 7: _eval_7}
 
 
 def check(eval_id: int, outputs: Path) -> Resultado:
