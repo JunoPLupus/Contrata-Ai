@@ -73,6 +73,8 @@ Comandos da API (rodar dentro de `api/`):
   - a **lista de arquivos** de cada commit e o que muda em cada um. Se um mesmo arquivo tiver mudanças
     de commits diferentes, avise: quem commita precisa usar o staging area da IDE.
   - Não inclua trailer de coautoria de IA (`Co-Authored-By: ...`) no texto do commit.
+  - Estas duas últimas regras (staging e coautoria) também estão no `commits.md`. A repetição é de
+    propósito: este arquivo está sempre no contexto, e são regras que as ferramentas quebram por padrão.
 - **Testes:** toda mudança de comportamento vem com teste. Rode os testes antes de dizer que terminou e
   informe o resultado real (inclusive falhas). Como escrever, rodar e provar com mutação manual: guia
   [`testing.md`](.agents/docs/guides/testing.md).
