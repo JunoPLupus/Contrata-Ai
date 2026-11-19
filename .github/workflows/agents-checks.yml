@@ -9,8 +9,8 @@ jobs:
         with:
           python-version: "3.14"
       - run: pip install pyyaml
-      - name: Checagens das instruções dos agentes
-        run: python3 .agents/scripts/check_agents.py
+      - name: Governança das instruções dos agentes
+        run: python3 .agents/skills/governanca/scripts/governanca.py
       # Toda pasta com test_*.py roda sozinha (os scripts de cada skill importam do próprio diretório).
       # Pasta que é pacote (tem __init__.py) roda com a pasta de cima como raiz, para o import
       # "scripts.x" funcionar. Suíte de skill nova entra sem mexer neste arquivo.
