@@ -1,0 +1,24 @@
+name: Agents Checks
+on: [push, pull_request]
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.14"
+      - run: pip install pyyaml
+      - name: Checagens das instruções dos agentes
+        run: python3 .agents/scripts/check_agents.py
+      # Toda pasta com test_*.py roda sozinha (os scripts de cada skill importam do próprio diretório).
+      # Pasta que é pacote (tem __init__.py) roda com a pasta de cima como raiz, para o import
+      # "scripts.x" funcionar. Suíte de skill nova entra sem mexer neste arquivo.
+      - name: Testes dos scripts de .agents
+        run: |
+          for pasta in $(find .agents -name 'test_*.py' -not -path '*-workspace/*' -printf '%h\n' | sort -u); do
+            if [ -f "$pasta/__init__.py" ]; then topo=$(dirname "$pasta"); else topo="$pasta"; fi
+            echo "::group::$pasta"
+            python3 -m unittest discover -s "$pasta" -t "$topo" -p 'test_*.py'
+            echo "::endgroup::"
+          done

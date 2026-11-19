@@ -51,3 +51,12 @@ Thumbs.db
 
 # Extras
 .notes
+
+# Preferências pessoais para agentes de IA (cada pessoa tem o seu)
+CLAUDE.local.md
+
+# Área de testes das skills (gerada pela skill oficina-de-skills)
+.agents/skills/*-workspace/
+
+# Python
+__pycache__/
