@@ -1,8 +1,8 @@
 # Task: Skill de governança
 
-- **Status:** `em andamento`
+- **Status:** `concluída`
 - **Criado em:** 2026-11-19
-- **Atualizado em:** 2026-11-19 — início da implementação (aprovada pelo Juno; branch criada por ele)
+- **Atualizado em:** 2026-11-19 — aprovada na revisão do Juno (commits conferidos: 9c8d5862, 9b6d956c, 6c09b0c4, 56a391a6)
 - **Tipo:** `docs`
 - **Alcance:** `documentação`
 - **Branch:** `docs/juno/fluxo-de-trabalho-dos-agentes-01` (criada pelo Juno)
