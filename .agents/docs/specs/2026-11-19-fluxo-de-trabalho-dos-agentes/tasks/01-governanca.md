@@ -43,7 +43,8 @@ Decisões tomadas ao abrir (conversa de 2026-11-19):
      (CA-24);
    - comando sem `rtk` dentro de bloco de código `bash`/`sh` do `AGENTS.md`, das skills e dos guias, com a
      exceção marcada no próprio bloco por `# sem rtk: motivo` (CA-26);
-   - marcador de modelo esquecido nos documentos canônicos (`AGENTS.md`, `.agents/README.md`, guias e os `.md`
+   - placeholder esquecido (texto entre `<` e `>`, data `AAAA-MM-DD`, comentário do modelo) nos documentos
+     canônicos (`AGENTS.md`, `.agents/README.md`, guias e os `.md`
      das skills, fora `evals/files/`, `testes/` e `*-workspace/`), reaproveitando a detecção que os
      validadores já usam (`find_placeholders`, que ignora o que está em código); os modelos ficam de fora
      (CA-27).
@@ -106,12 +107,12 @@ fechamento. Assim, o que já estava quebrado não se confunde com o que a task q
 
 | Critério | Teste que prova |
 |---|---|
-| CA-04 | `test_governanca.py` — "task concluída em done/ com caminho inexistente não é acusada (CA-04)" |
+| CA-04 | `test_governanca.py` — "task concluída em done/ que cita arquivo que não existe mais não é acusada (CA-04)" |
 | CA-23 | `test_governanca.py` — "status que não bate com a pasta é acusado com o arquivo (CA-23)" |
-| CA-24 | `test_governanca.py` — "a mesma task aberta e concluída é acusada com os dois caminhos (CA-24)" |
+| CA-24 | `test_governanca.py` — "o mesmo arquivo de task em tasks/ e em done/ é acusado com os dois caminhos (CA-24)" |
 | CA-25 | `test_governanca.py` — "erro de conteúdo de task viva sai com a mensagem do validador (CA-25)" |
 | CA-26 | `test_governanca.py` — "comando sem rtk em bloco bash é acusado com a linha (CA-26)" |
-| CA-27 | `test_governanca.py` — "marcador de modelo em documento canônico é acusado, no modelo não (CA-27)" |
+| CA-27 | `test_governanca.py` — "placeholder esquecido numa skill ou guia é acusado; no modelo e em código não (CA-27)" |
 | CA-30 | `test_governanca.py` — "nenhuma instrução cita o verificador antigo (CA-30)" |
 
 Em Python, o nome do teste é a primeira linha da docstring (é o que o `unittest -v` mostra). CA-04 já passa
