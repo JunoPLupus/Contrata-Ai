@@ -1,11 +1,11 @@
 # Task: Skill de governança
 
-- **Status:** `aberta`
+- **Status:** `concluída`
 - **Criado em:** 2026-11-19
-- **Atualizado em:** 2026-11-19 — criação
+- **Atualizado em:** 2026-11-19 — aprovada na revisão do Juno (commits conferidos: 9c8d5862, 9b6d956c, 6c09b0c4, 56a391a6)
 - **Tipo:** `docs`
 - **Alcance:** `documentação`
-- **Branch:** `docs/juno/fluxo-de-trabalho-dos-agentes-01` (sugerida; criada pelo Juno)
+- **Branch:** `docs/juno/fluxo-de-trabalho-dos-agentes-01` (criada pelo Juno)
 
 ## 1. Vínculo com a spec (task de spec)
 
@@ -43,7 +43,8 @@ Decisões tomadas ao abrir (conversa de 2026-11-19):
      (CA-24);
    - comando sem `rtk` dentro de bloco de código `bash`/`sh` do `AGENTS.md`, das skills e dos guias, com a
      exceção marcada no próprio bloco por `# sem rtk: motivo` (CA-26);
-   - marcador de modelo esquecido nos documentos canônicos (`AGENTS.md`, `.agents/README.md`, guias e os `.md`
+   - placeholder esquecido (texto entre `<` e `>`, data `AAAA-MM-DD`, comentário do modelo) nos documentos
+     canônicos (`AGENTS.md`, `.agents/README.md`, guias e os `.md`
      das skills, fora `evals/files/`, `testes/` e `*-workspace/`), reaproveitando a detecção que os
      validadores já usam (`find_placeholders`, que ignora o que está em código); os modelos ficam de fora
      (CA-27).
@@ -60,10 +61,9 @@ Decisões tomadas ao abrir (conversa de 2026-11-19):
 
 **Ler antes de começar** (código real que serve de ponto de partida ou de modelo):
 
-- `.agents/scripts/check_agents.py` — as seis checagens, a coleta dos `.md` e o `_load` que importa scripts
-  de skill pelo caminho
-- `.agents/scripts/testes/test_check_agents.py` — o `ProjetoFalso` (projeto temporário) que os testes novos
-  seguem
+- o verificador geral `check_agents.py` e a suíte `test_check_agents.py`, em `.agents/scripts/` na `main`
+  (esta task os apaga) — as seis checagens, a coleta dos `.md`, o `_load` que importa scripts de skill pelo
+  caminho e o `ProjetoFalso` (projeto temporário) que os testes novos seguem
 - `.agents/scripts/lib/md_checks.py` — `Finding`, `erro`/`aviso`, `find_placeholders`, `read_status`
 - `.agents/skills/task/scripts/validate_task.py` — `validate()` importável (linha 344)
 - `.agents/skills/spec/scripts/validate_spec.py` — o `main()` de onde sai a função importável
@@ -106,12 +106,12 @@ fechamento. Assim, o que já estava quebrado não se confunde com o que a task q
 
 | Critério | Teste que prova |
 |---|---|
-| CA-04 | `test_governanca.py` — "task concluída em done/ com caminho inexistente não é acusada (CA-04)" |
+| CA-04 | `test_governanca.py` — "task concluída em done/ que cita arquivo que não existe mais não é acusada (CA-04)" |
 | CA-23 | `test_governanca.py` — "status que não bate com a pasta é acusado com o arquivo (CA-23)" |
-| CA-24 | `test_governanca.py` — "a mesma task aberta e concluída é acusada com os dois caminhos (CA-24)" |
+| CA-24 | `test_governanca.py` — "o mesmo arquivo de task em tasks/ e em done/ é acusado com os dois caminhos (CA-24)" |
 | CA-25 | `test_governanca.py` — "erro de conteúdo de task viva sai com a mensagem do validador (CA-25)" |
 | CA-26 | `test_governanca.py` — "comando sem rtk em bloco bash é acusado com a linha (CA-26)" |
-| CA-27 | `test_governanca.py` — "marcador de modelo em documento canônico é acusado, no modelo não (CA-27)" |
+| CA-27 | `test_governanca.py` — "placeholder esquecido numa skill ou guia é acusado; no modelo e em código não (CA-27)" |
 | CA-30 | `test_governanca.py` — "nenhuma instrução cita o verificador antigo (CA-30)" |
 
 Em Python, o nome do teste é a primeira linha da docstring (é o que o `unittest -v` mostra). CA-04 já passa
@@ -138,12 +138,74 @@ A task só está concluída com todos os comandos passando e a evidência regist
 
 ## 5. Fechamento
 
-- **O que foi feito:**
-- **Arquivos alterados:**
+- **O que foi feito:** a skill `governanca` (`SKILL.md`, `ORIGEM.md`, script único `governanca.py`, com as checagens em
+  `scripts/checagens/`: `coleta`, `referencias`, `skills`, `instrucoes`, `registros`) substitui o verificador geral, que foi apagado
+  com a suíte dele. As seis checagens migraram sem mudar o que acusam nas instruções; entraram status × pasta,
+  task em andamento sem branch, duplicatas, `rtk` em blocos `bash`/`sh` (com a exceção `# sem rtk: motivo`),
+  placeholder em documento canônico e os validadores de task e spec nas vivas. O `validate_spec.py` ganhou
+  `validate()`/`validate_file()` importáveis, sem mudar o que acusa. CI, guia de testes e oficina chamam a
+  governança; a skill entrou na tabela do `AGENTS.md`. Os 6 placeholders e o bloco do `nohup` da oficina
+  foram corrigidos.
+- **Arquivos alterados:** os previstos, e mais nenhum. Criados em `.agents/skills/governanca/`: `SKILL.md`,
+  `ORIGEM.md`, `scripts/governanca.py`, `scripts/checagens/` (`coleta.py`, `referencias.py`, `skills.py`,
+  `instrucoes.py`, `registros.py`) e `scripts/testes/test_governanca.py`. Alterados:
+  `validate_spec.py`, `AGENTS.md`, `oficina-de-skills/SKILL.md` (chamada e marca `# sem rtk` no bloco do
+  `nohup`), `spec/SKILL.md`, `task/SKILL.md`, `commits.md`, `testing.md`, `agents-checks.yml`, esta task.
+  Apagados: o verificador geral e a pasta `testes/` dele em `.agents/scripts/`. Nenhuma fixture nova em
+  arquivo: os testes montam o projeto falso no próprio teste, como a suíte antiga.
 - **Decisões tomadas no caminho:**
-- **Testes antes de começar:**
-- **Testes no fim:**
-- **Evidência por critério:**
-- **Checagens não feitas:**
-- **Ficou para depois:**
-- **Commits entregues:**
+  - **Tasks e specs saem de todas as checagens de instrução**, não só as fechadas (links, caminhos, comandos
+    `python3`, skills citadas, placeholder, `rtk`): o conteúdo das vivas é do validador da skill dona (CA-25,
+    "sem regra de conteúdo própria"), e o das fechadas de ninguém (CA-04). Rodar as duas coisas nas vivas
+    daria o mesmo link quebrado duas vezes e acusaria o link da lista do design para task ainda não criada e
+    os caminhos de "Arquivos previstos" que a task vai criar. Consequência: task viva que cita uma skill que
+    ainda não existe deixa de gerar aviso (o validador de task não tem essa regra). Aprovada pelo Juno em
+    2026-11-19 (mudava o que é acusado além do previsto no passo 2); se o aviso fizer falta, a regra vai para
+    o validador de task, não para a governança.
+  - Os testes `test_registro_fechado_nao_gera_aviso` e `test_task_aberta_continua_gerando_aviso` saíram da
+    suíte migrada (a decisão acima): o primeiro virou o teste do CA-04; o segundo deixou de valer.
+  - "Ler antes de começar" desta task deixou de citar o caminho do verificador e da suíte dele, que esta task
+    apaga (o validador acusaria caminho inexistente): agora aponta a versão da `main`.
+  - O bloco do `nohup` da tela de comparação da oficina é processo longo: ganhou `# sem rtk: …` em vez de
+    `rtk` (exceção do `AGENTS.md`).
+  - As checagens ficam numa subpasta `scripts/checagens/`, e o `governanca.py` fica sozinho em `scripts/`,
+    como ponto de entrada — pedido do Juno na revisão (2026-11-19), para não confundir qual arquivo se roda;
+    descartadas: deixar tudo solto em `scripts/` (seis arquivos sem dizer qual é a entrada) e prefixo no nome
+    (a lista continuaria misturada). O nome não é `utils`: os módulos são as regras, não funções de apoio.
+  - Os exemplos da `SKILL.md` usam caminhos que existem: a checagem de caminhos também olha dentro de código.
+  - Spec `concluída` ainda fora de `specs/done/` não é acusada: não é caso do CA-23 (o encerramento da spec
+    é da task 04).
+- **Testes antes de começar:** suíte do verificador geral 40 testes OK; scripts da `task` 47 OK; scripts da
+  `spec` 8 OK; critérios `[script]` dos evals da `task` 42 OK; `apply_checks` da oficina OK; verificador geral
+  no repositório: 0 erros, 10 avisos.
+- **Testes no fim:** governança 59 testes OK; scripts da `task` 47 OK; scripts da `spec` 8 OK (sem
+  alteração); evals da `task` 42 OK; oficina 5 OK (o laço do CI, rodado localmente com Python 3.14.5);
+  governança no repositório: 0 erros, 5 avisos (skills `adr` e `encerramento` citadas, ainda não existem);
+  `quick_validate ../governanca`: válida. Mutação manual: 8 mutantes, 8 mortos (aceitar qualquer status em
+  `done/`; não pular tasks e specs; duplicata pelo caminho inteiro; ignorar `# sem rtk`; placeholder dentro
+  de código; validar também as fechadas; aceitar avulsa fechada fora de `done/`; aceitar em andamento sem
+  branch). Checagem manual: com uma cópia de task concluída fora de `done/`, uma task avulsa `concluída`
+  plantada e um placeholder e um `npm test` sem `rtk` no guia de commits, a governança deu os 5 erros
+  esperados; desfeito, voltou a 0 erros.
+- **Evidência por critério:** CA-04 → teste "task concluída em done/ que cita arquivo que não existe mais não
+  é acusada (CA-04)" passando, e a mutação "não pular tasks e specs" morta; CA-23 → "status que não bate com a
+  pasta é acusado com o arquivo (CA-23)"; CA-24 → "o mesmo arquivo de task em tasks/ e em done/ é acusado com
+  os dois caminhos (CA-24)"; CA-25 → "erro de conteúdo de task viva sai com a mensagem do validador (CA-25)"
+  e "O validador é chamado para cada task e spec viva, e para nenhuma fechada"; CA-26 → "comando sem rtk em
+  bloco bash é acusado com a linha (CA-26)"; CA-27 → "placeholder esquecido numa skill ou guia é acusado; no
+  modelo e em código não (CA-27)"; CA-30 → "nenhuma instrução cita o verificador antigo (CA-30)" e "O
+  workflow das instruções roda o script da governança, sem filtro" — todos passando.
+- **Checagens não feitas:** o CI no GitHub (só o laço equivalente, localmente: roda no push da branch); a
+  rodada com e sem a skill na oficina (decisão de 2026-11-19, ver seção 3).
+- **Ficou para depois:** o `create_task.py` corta a lista de CAs quando o item da lista do design quebra
+  linha (CAs desta task preenchidos à mão) → task 03; os avisos de skill `encerramento` citada → tasks 06 e
+  08; o código da regra no `Finding` e a base de achados → task 09.
+- **Commits entregues:** quatro, nesta ordem (cada um deixa a governança e os testes verdes), todos com o
+  rodapé `Task: 2026-11-19-fluxo-de-trabalho-dos-agentes/tasks/01-governanca.md`:
+  1. `refactor(agents): Expõe a validação da spec como função importável` — `validate_spec.py`;
+  2. `docs(agents): Corrige placeholders esquecidos nas skills e guias` — `commits.md`, `spec/SKILL.md`,
+     `task/SKILL.md`;
+  3. `feat(agents): Adiciona a skill de governança no lugar do check_agents` — a pasta `governanca/` inteira,
+     o verificador geral e a suíte dele (apagados), `AGENTS.md`, `oficina-de-skills/SKILL.md`, `testing.md`,
+     `agents-checks.yml`;
+  4. `docs(agents): Registra a implementação da task 01 do fluxo de trabalho` — esta task.

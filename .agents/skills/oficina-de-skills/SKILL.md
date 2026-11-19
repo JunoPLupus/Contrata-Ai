@@ -266,6 +266,7 @@ Quando cada subagente termina, a notificação traz `total_tokens` e `duration_m
 4. **Mostrar ao usuário.** Resuma no chat, por cenário: o que mudou com a skill, o que falhou e o que os
    números não mostram. Se ele quiser ver as respostas lado a lado, abra a tela de comparação:
    ```bash
+   # sem rtk: servidor da tela de comparação, fica rodando em segundo plano
    nohup python3 <pasta-desta-skill>/eval-viewer/generate_review.py \
      <workspace>/iteration-N \
      --skill-name "<nome>" \
@@ -326,10 +327,11 @@ qual é qual e peça que julgue. Detalhes em `agents/comparator.md` e `agents/an
    está ambígua nesse ponto: volte ao passo 5.
 2. **Registrar na tabela de roteamento do `AGENTS.md`** ("Situação → Skill"). Sem isso a skill nunca
    é lida.
-3. **Conferir o conjunto** com o script da raiz, que roda o `quick_validate` em todas as skills e confere
-   a linha da tabela, os links e caminhos citados e os comandos `python3` da skill nova:
+3. **Conferir o conjunto** com a governança (skill `governanca`), que roda o `quick_validate` em todas
+   as skills e confere a linha da tabela, os links e caminhos citados, os comandos `python3` e o prefixo
+   `rtk` dos blocos de comando e os placeholders esquecidos da skill nova:
    ```bash
-   rtk python3 .agents/scripts/check_agents.py
+   rtk python3 .agents/skills/governanca/scripts/governanca.py
    ```
    Corrija até sair sem erro (exit 0). Aviso de skill citada que ainda não existe é pendência, não erro.
 4. **`ORIGEM.md`** (se veio de fonte externa): repositório, commit, licença e o que foi mudado.

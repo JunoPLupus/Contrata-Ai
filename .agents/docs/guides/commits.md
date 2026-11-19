@@ -1,11 +1,9 @@
 # Commits: como escrever a mensagem
 
-<!--
 Modelo e regras da mensagem de commit. O agente não commita: ele entrega o texto pronto (num bloco
 de código, para colar) e a lista de arquivos de cada commit (AGENTS.md, "Regras de trabalho").
 Base: Conventional Commits 1.0.0, regra 50/72 (Chris Beams), adaptada ao que o histórico já pratica,
 e o commits.md do doe-palmas.
--->
 
 ```
 tipo(escopo): Descrição no presente, com a primeira letra maiúscula

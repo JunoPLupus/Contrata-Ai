@@ -51,9 +51,10 @@ Skills e scripts de `.agents/` (a partir da raiz do projeto):
 | `rtk python3 -m unittest discover -s .agents/skills/task/scripts/testes` | scripts da `task` |
 | `rtk python3 -m unittest discover -s .agents/skills/task/evals -p "test_*.py"` | critérios `[script]` dos evals da `task` |
 | `cd .agents/skills/oficina-de-skills && rtk python3 -m unittest scripts.test_apply_checks` | `apply_checks` da oficina |
-| `rtk python3 -m unittest discover -s .agents/scripts/testes` | `check_agents` (checagens das instruções dos agentes) |
+| `rtk python3 -m unittest discover -s .agents/skills/governanca/scripts/testes` | script da `governanca` (checagens do conjunto de instruções) |
+| `rtk python3 .agents/skills/governanca/scripts/governanca.py` | a própria governança, no repositório inteiro |
 
-O CI (`.github/workflows/agents-checks.yml`) roda o `check_agents` e cada pasta de `.agents/` com
+O CI (`.github/workflows/agents-checks.yml`) roda a governança (skill `governanca`) e cada pasta de `.agents/` com
 `test_*.py` a cada push e PR. Suíte nova de skill entra sozinha, sem mexer no workflow (pasta com
 `__init__.py`, como a `scripts/` da oficina, roda a partir da pasta de cima).
 
