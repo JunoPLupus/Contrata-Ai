@@ -7,6 +7,7 @@ Verifica:
 - [x] Tabela de skills do AGENTS.md × pastas .agents/skills/*/SKILL.md (nos dois sentidos)
 - [x] Comandos `python3 <script>.py` e `python3 -m unittest discover -s <pasta>` apontam para algo real
 - [x] Seções que os validadores (validate_spec, validate_task) esperam existem nos modelos
+- [x] Cabeçalho YAML de cada SKILL.md passa no quick_validate da oficina-de-skills (precisa de pyyaml)
 - [x] Skills citadas que ainda não existem viram AVISO (pendência conhecida), não erro; registros fechados
       (spec/task `concluída`, `cancelada` ou `substituída`) ficam de fora dessa checagem
 
@@ -21,6 +22,7 @@ import importlib.util
 import re
 import sys
 from pathlib import Path
+from typing import Callable
 
 sys.path.insert(0, str(Path(__file__).resolve().parent / "lib"))
 from md_checks import Finding, aviso, check_links, erro, find_paths, read_status, section_titles  # noqa: E402
@@ -241,8 +243,41 @@ def check_cited_skills(arquivo: Path, texto: str, raiz: Path) -> list[Finding]:
 # endregion
 
 
-def run(raiz: Path, esperadas: dict[str, tuple[str, ...]] | None = None) -> list[Finding]:
-    """Todas as checagens; `esperadas` (seções dos modelos) vem dos validadores se não for passado."""
+# region 6. Cabeçalho das skills
+
+Validador = Callable[[Path], tuple[bool, str]]
+
+
+def load_skill_validator(raiz: Path) -> Validador | None:
+    """validate_skill do quick_validate da oficina (fonte única das regras do cabeçalho); None sem pyyaml."""
+    try:
+        return _load(raiz / ".agents" / "skills" / "oficina-de-skills" / "scripts" / "quick_validate.py").validate_skill
+    except ImportError:
+        return None
+
+
+def check_skill_headers(raiz: Path, validar: Validador | None) -> list[Finding]:
+    """Cada .agents/skills/*/SKILL.md com cabeçalho válido. Um cabeçalho quebrado (YAML inválido, campo
+    faltando) deixa a skill invisível para ferramentas que leem a description, sem aviso nenhum."""
+    skills = sorted((raiz / ".agents" / "skills").glob("*/SKILL.md"))
+    if validar is None:
+        return [aviso(skill, 1, "cabeçalho: não conferido, falta o pyyaml (pip install pyyaml)") for skill in skills[:1]]
+    findings: list[Finding] = []
+    for skill in skills:
+        valido, mensagem = validar(skill.parent)
+        if not valido:
+            findings.append(erro(skill, 1, f"cabeçalho: {mensagem}"))
+    return findings
+
+# endregion
+
+
+_CARREGAR = object()  # marca "carregue o validador real" (None já quer dizer "sem pyyaml")
+
+
+def run(raiz: Path, esperadas: dict[str, tuple[str, ...]] | None = None, validar=_CARREGAR) -> list[Finding]:
+    """Todas as checagens. `esperadas` (seções dos modelos) e `validar` (cabeçalho das skills) vêm dos
+    scripts das skills se não forem passados."""
     findings: list[Finding] = []
     for arquivo in collect_md(raiz):
         texto = read_text(arquivo)
@@ -252,6 +287,7 @@ def run(raiz: Path, esperadas: dict[str, tuple[str, ...]] | None = None) -> list
         if arquivo == raiz / "AGENTS.md":
             findings += check_skill_table(arquivo, texto, raiz)
     findings += check_template_sections(raiz, load_expected_sections(raiz) if esperadas is None else esperadas)
+    findings += check_skill_headers(raiz, load_skill_validator(raiz) if validar is _CARREGAR else validar)
     return findings
 
 

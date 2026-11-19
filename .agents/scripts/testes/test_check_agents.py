@@ -1,4 +1,5 @@
 """Testes do check_agents: cada checagem com um caso que passa e um que falha, numa árvore de projeto falsa."""
+import importlib.util
 import sys
 import tempfile
 import unittest
@@ -17,6 +18,11 @@ TABELA_OK = """# AGENTS
 
 ## Outra
 """
+
+
+def VALIDA(pasta):
+    """Validador de cabeçalho falso que aceita tudo (os testes de run não tratam de cabeçalho)."""
+    return True, "ok"
 
 
 class ProjetoFalso(unittest.TestCase):
@@ -266,13 +272,59 @@ class SkillsCitadasTest(ProjetoFalso):
         self.assertEqual(self.checar("(skill nova) ou skill existente\n"), [])
 
 
+class CabecalhoSkillsTest(ProjetoFalso):
+    """Checagem 6: cabeçalho YAML das skills, pelo quick_validate da oficina."""
+
+    def test_cabecalho_valido_passa(self):
+        """Validador que aceita a skill: sem achado."""
+        self.assertEqual(ca.check_skill_headers(self.raiz, VALIDA), [])
+
+    def test_cabecalho_invalido_e_erro_na_skill_certa(self):
+        """Só a skill recusada vira erro, na linha 1 do SKILL.md dela, com a mensagem do validador."""
+        self.escrever(".agents/skills/task/SKILL.md", "x")
+        recusa_task = lambda pasta: (pasta.name != "task", "YAML inválido")
+        achados = ca.check_skill_headers(self.raiz, recusa_task)
+        self.assertEqual([(f.arquivo.parent.name, f.linha_inicio, f.severidade) for f in achados], [("task", 1, "erro")])
+        self.assertIn("cabeçalho: YAML inválido", achados[0].mensagem)
+
+    def test_sem_pyyaml_e_um_aviso(self):
+        """Sem validador (falta pyyaml): um aviso só, não erro nem um por skill."""
+        self.escrever(".agents/skills/task/SKILL.md", "x")
+        achados = ca.check_skill_headers(self.raiz, None)
+        self.assertEqual([f.severidade for f in achados], ["aviso"])
+        self.assertIn("pyyaml", achados[0].mensagem)
+
+    def test_sem_pyyaml_o_carregamento_devolve_none(self):
+        """Se o import do yaml falha, load_skill_validator devolve None em vez de quebrar o script."""
+        raiz_real = Path(__file__).resolve().parents[3]
+        original = sys.modules.get("yaml")
+        sys.modules["yaml"] = None  # faz o 'import yaml' falhar
+        try:
+            self.assertIsNone(ca.load_skill_validator(raiz_real))
+        finally:
+            if original is None:
+                del sys.modules["yaml"]
+            else:
+                sys.modules["yaml"] = original
+
+    @unittest.skipUnless(importlib.util.find_spec("yaml"), "pyyaml não instalado")
+    def test_validador_real_pega_dois_pontos_na_description(self):
+        """Com o quick_validate real: ': ' numa description sem aspas quebra o YAML (caso da rodada 3)."""
+        validar = ca.load_skill_validator(Path(__file__).resolve().parents[3])
+        self.escrever(".agents/skills/spec/SKILL.md", "---\nname: spec\ndescription: Faz specs.\n---\n# Spec\n")
+        self.escrever(".agents/skills/task/SKILL.md", "---\nname: task\ndescription: Fecha (skill x, futura: ainda não existe).\n---\n")
+        achados = ca.check_skill_headers(self.raiz, validar)
+        self.assertEqual([f.arquivo.parent.name for f in achados], ["task"])
+        self.assertIn("Invalid YAML", achados[0].mensagem)
+
+
 class ExecucaoTest(ProjetoFalso):
     """run, exit_code e formato da saída."""
 
     def test_so_avisos_sai_com_zero(self):
         """Pendências (avisos) não falham a checagem."""
         self.escrever("AGENTS.md", TABELA_OK + "\nskill `encerramento`\n")
-        achados = ca.run(self.raiz, esperadas={})
+        achados = ca.run(self.raiz, esperadas={}, validar=VALIDA)
         self.assertEqual([f.severidade for f in achados], ["aviso"])
         self.assertEqual(ca.exit_code(achados), 0)
 
@@ -280,7 +332,13 @@ class ExecucaoTest(ProjetoFalso):
         """Qualquer erro (aqui, link quebrado num guia) faz o exit ser 1."""
         self.escrever("AGENTS.md", TABELA_OK)
         self.escrever(".agents/docs/guides/g.md", "[x](nada.md)\n")
-        achados = ca.run(self.raiz, esperadas={})
+        achados = ca.run(self.raiz, esperadas={}, validar=VALIDA)
+        self.assertEqual(ca.exit_code(achados), 1)
+
+    def test_cabecalho_invalido_entra_no_run(self):
+        """run aplica o validador de cabeçalho: skill recusada faz o exit ser 1."""
+        self.escrever("AGENTS.md", TABELA_OK)
+        achados = ca.run(self.raiz, esperadas={}, validar=lambda pasta: (False, "quebrado"))
         self.assertEqual(ca.exit_code(achados), 1)
 
     def test_formato_com_caminho_relativo(self):
