@@ -53,6 +53,10 @@ Skills e scripts de `.agents/` (a partir da raiz do projeto):
 | `cd .agents/skills/oficina-de-skills && rtk python3 -m unittest scripts.test_apply_checks` | `apply_checks` da oficina |
 | `rtk python3 -m unittest discover -s .agents/scripts/testes` | `check_agents` (checagens das instruções dos agentes) |
 
+O CI (`.github/workflows/agents-checks.yml`) roda o `check_agents` e cada pasta de `.agents/` com
+`test_*.py` a cada push e PR. Suíte nova de skill entra sozinha, sem mexer no workflow (pasta com
+`__init__.py`, como a `scripts/` da oficina, roda a partir da pasta de cima).
+
 Informe o resultado real (suítes e testes, inclusive falhas), nunca "passou tudo".
 
 ## 4. Regras
