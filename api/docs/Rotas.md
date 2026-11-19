@@ -13,7 +13,7 @@
 
 ```typescript
   [X] GET '/clientes' # retorna o cliente logado (dados completos)
-  [X] GET '/clientes/{id}' # retorna um cliente (dados parciais)
+  [X] GET '/clientes/{id}' # retorna um cliente (dados parciais: nome e reputação, sem contato; só prestador logado)
 
   [X] POST '/clientes' # cadastra um cliente
   [X] PUT '/clientes' # atualiza dados de um cliente

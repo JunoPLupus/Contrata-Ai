@@ -1,5 +1,6 @@
 import { clienteController, avaliacaoController } from "../../../../shared/container";
 import { exigeAutenticacao } from "../../../middlewares/exige-autenticacao/exige-autenticacao.middleware";
+import { exigePerfilPrestador } from "../../../middlewares/exige-perfil-prestador/exige-perfil-prestador.middleware";
 import { Router } from "express";
 
 const clienteRouter = Router()
@@ -112,7 +113,9 @@ clienteRouter.put('/clientes', exigeAutenticacao, (req, res) => clienteControlle
  *   get:
  *     tags: [Clientes]
  *     summary: Retorna os dados públicos de um cliente
- *     description: Retorna o perfil público/parcial de um cliente pelo seu ID.
+ *     description: >
+ *       Retorna o perfil público/parcial de um cliente pelo seu ID (nome e reputação, sem contato).
+ *       Acesso restrito a prestadores logados; o próprio cliente usa `GET /clientes`.
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -130,13 +133,13 @@ clienteRouter.put('/clientes', exigeAutenticacao, (req, res) => clienteControlle
  *             schema:
  *               $ref: '#/components/schemas/ClientePerfilPublico'
  *       403:
- *         $ref: '#/components/responses/Erro403Autenticacao'
+ *         $ref: '#/components/responses/Erro403Prestador'
  *       404:
  *         $ref: '#/components/responses/Erro404Cliente'
  *       500:
  *         $ref: '#/components/responses/Erro500'
  */
-clienteRouter.get('/clientes/:id', exigeAutenticacao, (req, res) => clienteController.buscarPorId(req, res))
+clienteRouter.get('/clientes/:id', exigeAutenticacao, exigePerfilPrestador, (req, res) => clienteController.buscarPorId(req, res))
 //#endregion
 
 //#region Documentação - GET /clientes/{idCliente}/avaliacoes
