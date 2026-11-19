@@ -121,9 +121,9 @@ def _check_design_ca_refs(arquivo: Path) -> list[Finding]:
     return check_ca_refs_exist(arquivo, read_text(arquivo), existentes, "spec.md")
 
 
-def _check_links(arquivo: Path) -> list[Finding]:
+def _check_links(arquivo: Path, raiz: Path) -> list[Finding]:
     """Links relativos; link para tasks/ ainda não criada é aceito (a task nasce depois)."""
-    return check_links(arquivo, read_text(arquivo), get_project_root(), ignorar=lambda alvo: alvo.startswith("tasks/"))
+    return check_links(arquivo, read_text(arquivo), raiz, ignorar=lambda alvo: alvo.startswith("tasks/"))
 
 # endregion
 
@@ -134,8 +134,28 @@ _CHECKS = (
     _check_sections,
     _check_acceptance_criteria,
     _check_design_ca_refs,
-    _check_links,
 )
+
+
+def files(pasta: Path) -> list[Path]:
+    """spec.md e, se existir, design.md da pasta. Falha (SystemExit) sem spec.md."""
+    spec = pasta / "spec.md"
+    if not spec.exists():
+        raise SystemExit(f"Erro: O arquivo 'spec.md' não foi encontrado em '{pasta}'.")
+    design = pasta / "design.md"
+    return [spec, design] if design.exists() else [spec]
+
+
+def validate_file(arquivo: Path, raiz: Path | None = None) -> list[Finding]:
+    """Todas as checagens de um arquivo da spec (spec.md ou design.md), em ordem de linha."""
+    raiz = raiz or get_project_root()
+    findings = [f for check in _CHECKS for f in check(arquivo)] + _check_links(arquivo, raiz)
+    return sorted(findings, key=lambda f: f.linha_inicio)
+
+
+def validate(pasta: Path, raiz: Path | None = None) -> list[Finding]:
+    """Todas as checagens da pasta da spec (importada pela governança). `raiz` permite validar fora do lugar."""
+    return [f for arquivo in files(pasta) for f in validate_file(arquivo, raiz)]
 
 
 def main():
@@ -144,27 +164,12 @@ def main():
     args = parser.parse_args()
 
     pasta: Path = args.pasta_spec
-    spec = pasta / "spec.md"
-    design = pasta / "design.md"
-
-    if not spec.exists():
-        raise SystemExit(f"Erro: O arquivo 'spec.md' não foi encontrado em '{pasta}'.")
-
-    arquivos = [spec]
-    if design.exists():
-        arquivos.append(design)
-
     todos: list[Finding] = []
     blocos: list[str] = []
 
-    for arquivo in arquivos:
-        problemas_encontrados: list[Finding] = []
-
-        for check in _CHECKS:
-            problemas_encontrados.extend(check(arquivo))
-
+    for arquivo in files(pasta):
+        problemas_encontrados = validate_file(arquivo)
         if problemas_encontrados:
-            problemas_encontrados.sort(key=lambda f: f.linha_inicio)
             todos.extend(problemas_encontrados)
             blocos.append("\n".join(str(a) for a in problemas_encontrados))
 
