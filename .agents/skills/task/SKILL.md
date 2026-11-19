@@ -1,6 +1,6 @@
 ---
 name: task
-description: Abre, atualiza e fecha o arquivo de uma task (avulsa em .agents/docs/tasks/ ou de spec em .agents/docs/specs/(pasta da spec)/tasks/). Abrir = escrever a task a partir do modelo, lendo o código real; atualizar = registrar uma mudança de escopo no meio da implementação; fechar = preencher o fechamento com evidência verificada. Use quando o usuário pedir para criar ou detalhar uma task, quando o escopo de uma task em andamento mudar, ou quando ele disser que terminou uma task. Não use para implementar o código, para escrever ou alterar spec e design (skill spec), para quebrar uma spec em tasks (é a lista do design.md) nem para mover a task para done/ (skill encerramento).
+description: Abre, atualiza e fecha o arquivo de uma task (avulsa em .agents/docs/tasks/ ou de spec em .agents/docs/specs/(pasta da spec)/tasks/). Abrir = escrever a task a partir do modelo, lendo o código real; atualizar = registrar uma mudança de escopo no meio da implementação; fechar = preencher o fechamento com evidência verificada. Use quando o usuário pedir para criar ou detalhar uma task, quando o escopo de uma task em andamento mudar, ou quando ele disser que terminou uma task. Não use para implementar o código, para escrever ou alterar spec e design (skill spec), para quebrar uma spec em tasks (é a lista do design.md) nem para mover a task para done/ (skill encerramento, futura — ainda não existe, e por ora o usuário move à mão).
 license: MIT (ver ORIGEM.md)
 ---
 

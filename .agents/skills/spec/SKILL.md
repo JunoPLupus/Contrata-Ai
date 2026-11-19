@@ -13,7 +13,7 @@ spec que já existe quando a implementação ensina algo novo.
 Origem e licenças: [ORIGEM.md](ORIGEM.md).
 
 **Não use esta skill para:** mudança pequena e já entendida (é task: diga isso e espere, ver passo 0);
-os arquivos `tasks/NN-*.md` (skill `task`); ADR (skill `adr`; aqui ele só é identificado e vira uma task
+os arquivos `tasks/NN-*.md` (skill `task`); ADR (skill `adr`, futura: ainda não existe; aqui ele só é identificado e vira uma task
 da lista); código.
 
 ## Por que a ordem importa
@@ -206,7 +206,7 @@ Escrevi o rascunho em `.agents/docs/specs/<pasta>/spec.md`.
 - **Em aberto:** <itens e o que bloqueiam, ou "nada">
 
 O que está errado ou faltando? Com a aprovação, sigo para o `design.md`.
-(Opcional: posso preparar o pedido para uma sessão nova do Claude, sem esta conversa e com acesso ao
+(Opcional: posso preparar o pedido para uma sessão nova de agente, sem esta conversa e com acesso ao
 repositório, revisar se a spec se sustenta sozinha.)
 ```
 

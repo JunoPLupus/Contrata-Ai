@@ -29,9 +29,8 @@ completo:** foi ele que pegou os problemas que o modo leve deixaria passar.
 
 ## Falando com o usuário
 
-O usuário deste projeto está aprendendo o assunto. Evite jargão; quando um termo técnico for
-necessário (avaliação, cenário, critério de verificação, JSON), explique em uma frase na primeira
-vez. Decisões em rodadas, pela seção "Decisões em rodadas" do `AGENTS.md`.
+Os termos de avaliação de skill (cenário, critério de verificação, linha de base, JSON…) não são
+conhecidos de todos: evite jargão e explique cada termo em uma frase na primeira vez. Decisões em rodadas, pela seção "Decisões em rodadas" do `AGENTS.md`.
 
 ---
 
@@ -141,7 +140,7 @@ tempo/tokens.
 └── assets/           (opcional: modelos e arquivos usados na saída)
 ```
 
-Nome da pasta: o **substantivo do assunto** (`spec`, `task`, `adr`), não um verbo — regra do
+Nome da pasta: o **substantivo do assunto** (`spec`, `task` e a futura `adr`), não um verbo — regra do
 `.agents/README.md`.
 
 Cabeçalho YAML:

@@ -83,7 +83,7 @@ A task só está concluída com todos os comandos passando e a evidência regist
 
 ## 5. Fechamento
 
-<!-- Preencher ao terminar. É o que a skill de encerramento lê. -->
+<!-- Preencher ao terminar. É o que a futura skill de encerramento vai ler. -->
 
 - **O que foi feito:** <resumo>
 - **Arquivos alterados:** <lista; compare com os previstos e explique os que ficaram fora da lista>
