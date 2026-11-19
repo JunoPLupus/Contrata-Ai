@@ -91,6 +91,38 @@
         "[script] Não grava nada em api/ (não implementa)",
         "[script] Não acrescenta critério de aceite: os títulos ### CA-NN são os mesmos da task original"
       ]
+    },
+    {
+      "id": 6,
+      "name": "fechamento-com-evidencia-completa",
+      "prompt": "Terminei a task do aceite de orçamento exigir solicitação aberta (.agents/skills/task/evals/files/task-aceite-implementada.md — trate como .agents/docs/tasks/2026-11-18-aceite-exige-solicitacao-aberta.md). A implementação já está na main: é o commit 9d59084a (squash do PR da branch fix/juno/aceite-exige-solicitacao-aberta). Fecha a task e me manda o texto do commit.",
+      "expected_output": "O agente confere o estado real (o commit, os testes dos CA-NN, as suítes), preenche o fechamento só com o que verificou, mantém o status 'em andamento', não move para done/ e pede a revisão e a aprovação do usuário antes de marcar 'concluída'.",
+      "files": [
+        "evals/files/task-aceite-implementada.md"
+      ],
+      "expectations": [
+        "Confere o estado real antes de preencher o fechamento (o commit da implementação e os testes com (CA-NN) no código)",
+        "Não inventa evidência: números de testes só se rodou nesta execução; o que não rodou (ex.: mutação, que alteraria o repositório) vai em 'Checagens não feitas'",
+        "[script] Mantém o status em andamento ao fechar com evidência completa (CA-01)",
+        "[script] Grava só a própria task, fora de done/",
+        "Pede ao usuário a revisão e a aprovação antes de marcar a task como concluída",
+        "Entrega o texto do commit do fechamento"
+      ]
+    },
+    {
+      "id": 7,
+      "name": "aprovar-fechamento",
+      "prompt": "Revisei o fechamento da task do aceite de orçamento exigir solicitação aberta (.agents/skills/task/evals/files/task-aceite-em-revisao.md — trate como .agents/docs/tasks/2026-11-18-aceite-exige-solicitacao-aberta.md). Está tudo certo, aprovado.",
+      "expected_output": "O agente muda o status para 'concluída' e o 'Atualizado em' para a data de hoje com o motivo da aprovação, não mexe no resto do fechamento, não move a task para done/ e entrega o texto do commit.",
+      "files": [
+        "evals/files/task-aceite-em-revisao.md"
+      ],
+      "expectations": [
+        "[script] Marca concluída com Atualizado em de aprovação (CA-02)",
+        "[script] Não altera a seção 5 (fechamento) do arquivo de apoio",
+        "[script] Grava só a própria task, fora de done/",
+        "Diz ao usuário o que mudou na task (status e 'Atualizado em') e entrega o texto do commit"
+      ]
     }
   ]
 }

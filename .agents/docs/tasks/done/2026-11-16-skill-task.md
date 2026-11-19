@@ -27,7 +27,7 @@
   - mover a task para `done/` → skill `encerramento`.
 - **Referências:**
   - `AGENTS.md`, seção "Spec ou task?";
-  - modelo `.agents/docs/templates/task.md` e a task real `.agents/docs/tasks/2026-11-13-skill-spec.md`;
+  - modelo `.agents/docs/templates/task.md` e a task real `2026-11-13-skill-spec.md`;
   - fontes externas (lidas inteiras; registradas no `ORIGEM.md`): mattpocock `to-tickets`, `implement`,
     `implement-spec` (`5863806`, MIT), spec-kit `tasks`/`implement` (`2ee2b1e`, MIT).
 
@@ -77,7 +77,7 @@
 
 - `.agents/skills/oficina-de-skills/SKILL.md` (procedimento de criar e testar skill)
 - `.agents/docs/templates/task.md` (o que a skill produz)
-- `.agents/docs/tasks/2026-11-13-skill-spec.md` (task real que serviu de padrão)
+- task `2026-11-13-skill-spec.md` (task real que serviu de padrão)
 
 **Arquivos previstos:**
 
