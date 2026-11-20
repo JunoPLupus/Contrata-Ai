@@ -27,6 +27,14 @@ trecho), sugira ao usuário o modo leve — ele decide: 1 cenário que exercite 
 versão antiga e com a nova, e a comparação resumida no chat (sem tela). **Skill nova usa sempre o ciclo
 completo:** foi ele que pegou os problemas que o modo leve deixaria passar.
 
+**Base de achados, antes da primeira edição** (em qualquer modo, inclusive o leve): salve o que a
+governança acusa hoje no workspace da skill, para no fim separar o que a sua mudança causou do que já
+existia (passo 6.3). Não confunda com a "linha de base" dos cenários (a rodada sem a skill, passo 2).
+
+```bash
+rtk python3 .agents/skills/governanca/scripts/governanca.py --salvar-base .agents/skills/<nome>-workspace/base-de-achados.txt
+```
+
 ## Falando com o usuário
 
 Os termos de avaliação de skill (cenário, critério de verificação, linha de base, JSON…) não são
@@ -329,11 +337,15 @@ qual é qual e peça que julgue. Detalhes em `agents/comparator.md` e `agents/an
    é lida.
 3. **Conferir o conjunto** com a governança (skill `governanca`), que roda o `quick_validate` em todas
    as skills e confere a linha da tabela, os links e caminhos citados, os comandos `python3` e o prefixo
-   `rtk` dos blocos de comando e os placeholders esquecidos da skill nova:
+   `rtk` dos blocos de comando e os placeholders esquecidos da skill nova. Compare com a base de achados
+   salva antes da primeira edição:
    ```bash
-   rtk python3 .agents/skills/governanca/scripts/governanca.py
+   rtk python3 .agents/skills/governanca/scripts/governanca.py --comparar .agents/skills/<nome>-workspace/base-de-achados.txt
    ```
-   Corrija até sair sem erro (exit 0). Aviso de skill citada que ainda não existe é pendência, não erro.
+   Com **erro novo**, a skill não está pronta: corrija até a comparação sair com 0. Erro que já existia é
+   só informado; os corrigidos aparecem em grupo próprio (confira se foram de propósito). Aviso novo não
+   bloqueia, mas diga ao usuário. Sem a base salva (você esqueceu, ou entrou no meio do ciclo), rode a
+   governança sem `--comparar` e corrija até sair sem erro.
 4. **`ORIGEM.md`** (se veio de fonte externa): repositório, commit, licença e o que foi mudado.
    Licenças que exigem a mesma licença na obra derivada (ex.: CC BY-SA) precisam ser respeitadas.
 5. **Não commitar.** Entregue o texto do commit e a lista de arquivos, conforme o `AGENTS.md`. O

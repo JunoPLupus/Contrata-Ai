@@ -185,8 +185,9 @@ muitas respostas já estão na conversa ou no código):
    ```
    Ele confere comentários, `<placeholders>` e datas do modelo que sobraram, seções obrigatórias (título
    exato do modelo, não vazias), status, critérios `CA-NN` (formato, repetidos, Dado/Quando/Então) e links
-   relativos, e lista cada problema como `arquivo:linha [ERRO|AVISO] mensagem`. Corrija e rode de novo até
-   sair sem erro (exit 0); o que for genuinamente desconhecido vai para "Em aberto", não para o texto.
+   relativos, e lista cada problema como `arquivo:linha [ERRO|AVISO] código mensagem`. Corrija e rode de
+   novo até sair sem erro (exit 0); o que for genuinamente desconhecido vai para "Em aberto", não para o
+   texto.
    Aviso de lacuna na sequência dos `CA-NN` é aceitável só quando um critério foi removido numa
    atualização (os IDs não são renumerados). O validador não substitui a varredura do passo 4: ele confere
    a forma, não o sentido.
