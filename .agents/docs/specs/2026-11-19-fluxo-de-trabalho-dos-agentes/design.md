@@ -2,8 +2,8 @@
 
 - **Spec:** [spec.md](spec.md)
 - **Criado em:** 2026-11-19
-- **Atualizado em:** 2026-11-19 — base da oficina vira ponte até a 05/06; depois, a oficina usa a base da
-  task (decisões do Juno ao abrir a 09)
+- **Atualizado em:** 2026-11-20 — link da task 03 na lista e notas do modelo do doe-palmas para a 04 e a 07
+  (decisões do Juno ao abrir a 03)
 
 ## Referências técnicas
 
@@ -200,8 +200,7 @@ e o item da lista do design é riscado com data e motivo → mesmo aviso da últ
 - [01 — Skill de governança](tasks/01-governanca.md) — bloqueada por: nenhuma — cobre: CA-04, CA-23,
   CA-24, CA-25, CA-26, CA-27, CA-30
 - [02 — Modelo e validador de task](tasks/02-modelo-e-validador-de-task.md) — bloqueada por: 01 — cobre: CA-01, CA-02, CA-03, CA-20
-- 03 — Modelos e validador de spec e design — bloqueada por: 01 — cobre: CA-31,
-  CA-32, CA-33
+- [03 — Modelos e validador de spec e design](tasks/03-modelos-e-validador-de-spec-e-design.md) — bloqueada por: 01 — cobre: CA-31, CA-32, CA-33
 - 04 — Status da spec por script — bloqueada por: 03 — cobre: CA-19, CA-35
 - 05 — Iniciar — bloqueada por: 02, 03, 09 — cobre: CA-05, CA-06, CA-07, CA-08, CA-09, CA-10,
   CA-11, CA-12, CA-13, CA-36
@@ -211,3 +210,9 @@ e o item da lista do design é riscado com data e motivo → mesmo aviso da últ
   cobre: CA-21
 - 08 — Instruções gerais e guias — bloqueada por: 05, 06 — cobre: CA-22
 - [09 — Base de achados da governança](tasks/09-base-de-achados.md) — bloqueada por: 01 — cobre: CA-28, CA-29
+
+Notas para abrir as tasks (do modelo de spec do doe-palmas, avaliado ao abrir a 03; cada task decide):
+
+- **04:** bloco de encerramento no topo da spec concluída (data, task que encerrou e o que ficou fora).
+- **07:** "fonte dos fatos" (o que foi lido, com a data) e a marca "[a verificar]" para o que não foi
+  confirmado, no passo de leitura.
