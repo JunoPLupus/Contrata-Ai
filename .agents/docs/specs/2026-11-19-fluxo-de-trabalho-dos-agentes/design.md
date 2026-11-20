@@ -203,4 +203,4 @@ e o item da lista do design é riscado com data e motivo → mesmo aviso da últ
 - 07 — Passo de leitura nas skills de task e spec — bloqueada por: 02, 03 —
   cobre: CA-21
 - 08 — Instruções gerais e guias — bloqueada por: 05, 06 — cobre: CA-22
-- 09 — Base de achados da governança — bloqueada por: 01 — cobre: CA-28, CA-29
+- [09 — Base de achados da governança](tasks/09-base-de-achados.md) — bloqueada por: 01 — cobre: CA-28, CA-29
