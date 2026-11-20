@@ -255,7 +255,7 @@ class SecoesModelosTest(ProjetoFalso):
         esperadas = skills.load_expected_sections(RAIZ_REAL)
         self.assertIn("6. Tasks", esperadas["design.md"])
         self.assertIn("4. Critérios de aceite", esperadas["spec.md"])
-        self.assertIn("1. Vínculo com a spec", esperadas["task.md"])
+        self.assertIn("1. Contexto e critérios", esperadas["task.md"])
         self.assertIn("5. Fechamento", esperadas["task.md"])
 
 

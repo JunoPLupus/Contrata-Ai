@@ -24,9 +24,11 @@ AVULSA_OK = f"""# Task: Restringir o perfil do cliente
 
 - **Status:** `aberta`
 - **Atualizado em:** 2026-11-18 — criação
+- **Spec:** não se aplica
+- **Bloqueada por:** não se aplica
 - **Branch:** `fix/juno/restringir-perfil-cliente`
 
-## 2. Contexto e critérios
+## 1. Contexto e critérios
 
 ### CA-01: prestador vê
 
@@ -34,23 +36,29 @@ AVULSA_OK = f"""# Task: Restringir o perfil do cliente
 - **Quando** pede o perfil
 - **Então** recebe o perfil
 
-## 3. O que fazer nesta tarefa
+## 2. O que fazer nesta tarefa
 
-**Ler antes de começar**:
+### Ler antes de começar
 
 - `{USE_CASE}`
 - regra em buscar-avaliacoes-do-cliente e o cliente.controller
 
-**Arquivos previstos:** `api/src/novo/arquivo-que-ainda-nao-existe.ts`
+### Arquivos previstos
+
+`api/src/novo/arquivo-que-ainda-nao-existe.ts`
 """
 
 TASK_02_OK = f"""# Task: Rotas
 
 - **Status:** `bloqueada`
+- **Spec:** [spec.md](../spec.md) · [design.md](../design.md)
+- **Bloqueada por:** 01-nucleo.md
 
-## 1. Vínculo com a spec
+## 1. Contexto e critérios
 
-- Cobre CA-04 a CA-08.
+### Critérios de aceite
+
+CA-04 a CA-08.
 
 | Critério | Teste |
 |---|---|
@@ -60,11 +68,15 @@ TASK_02_OK = f"""# Task: Rotas
 | CA-07 | "deve recusar outro perfil (CA-07)" |
 | CA-08 | "deve excluir lidas (CA-08)" |
 
-**Ler antes de começar**:
+## 2. O que fazer nesta tarefa
+
+### Ler antes de começar
 
 - `{USE_CASE}`
 
-**Arquivos previstos:** `api/src/domain/use-cases/notificacao/novo.ts`
+### Arquivos previstos
+
+`api/src/domain/use-cases/notificacao/novo.ts`
 """
 
 
@@ -130,9 +142,11 @@ class Eval1AvulsaTest(_Base):
         self.grava(TASK_AVULSA, AVULSA_OK.replace("cliente.controller", "controller"))
         self.assertFalse(self.criterio(1, "A task cita"))
 
-    def test_secao_1_presente(self):
-        """Avulsa com a seção 1 reprova o critério do modelo."""
-        self.grava(TASK_AVULSA, AVULSA_OK.replace("## 2. Contexto", "## 1. Vínculo com a spec\n\n## 2. Contexto"))
+    def test_avulsa_com_partes_da_task_de_spec(self):
+        """Avulsa com '### Critérios de aceite' ou com a Spec preenchida reprova o critério do modelo."""
+        self.grava(TASK_AVULSA, AVULSA_OK.replace("### CA-01:", "### Critérios de aceite\n\nCA-01\n\n### CA-01:"))
+        self.assertFalse(self.criterio(1, "Segue o modelo"))
+        self.grava(TASK_AVULSA, AVULSA_OK.replace("- **Spec:** não se aplica", "- **Spec:** [spec.md](../spec.md)"))
         self.assertFalse(self.criterio(1, "Segue o modelo"))
 
     def test_arquivo_extra_e_codigo_em_api(self):
@@ -182,9 +196,11 @@ class Eval2Task02Test(_Base):
         self.grava(TASK_02, TASK_02_OK + "\n- **Dado** um cliente\n")
         self.assertFalse(self.criterio(2, "Se escreve o arquivo: não copia"))
 
-    def test_secao_2_ou_lugar_errado(self):
-        """Task 02 com a seção 2 reprova o critério de local e seção."""
-        self.grava(TASK_02, TASK_02_OK + "\n## 2. Contexto e critérios\n")
+    def test_sem_criterios_de_aceite_ou_sem_link_da_spec(self):
+        """Task 02 sem '### Critérios de aceite', ou sem o link do spec.md, reprova o critério de local e seção."""
+        self.grava(TASK_02, TASK_02_OK.replace("### Critérios de aceite\n\nCA-04 a CA-08.\n", "Cobre CA-04 a CA-08.\n"))
+        self.assertFalse(self.criterio(2, "Se escreve o arquivo: só em"))
+        self.grava(TASK_02, TASK_02_OK.replace("[spec.md](../spec.md) · ", ""))
         self.assertFalse(self.criterio(2, "Se escreve o arquivo: só em"))
 
     def test_status_diferente_de_bloqueada(self):

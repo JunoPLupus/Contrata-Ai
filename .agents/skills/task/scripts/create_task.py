@@ -1,16 +1,24 @@
 """Cria o arquivo de uma task a partir do modelo .agents/docs/templates/task.md.
 
-- avulsa: .agents/docs/tasks/AAAA-MM-DD-<assunto>.md, status `aberta`, só com a seção 2;
-- de spec: <pasta da spec>/tasks/NN-<assunto>.md, com número, título e arquivo do link da lista do
-  design.md ("## 6. Tasks"), só com a seção 1 ("Bloqueada por" e CA-NN da linha). Status `bloqueada` se
-  alguma dependência não está `concluída` (task em tasks/done/ conta como concluída).
+O corpo é o mesmo nos dois tipos; muda o que o script preenche:
 
-Preenche título, datas, status, tipo e branch sugerida; o resto do modelo fica para quem escreve a task
-(depois, confira com validate_task.py).
+- avulsa: .agents/docs/tasks/AAAA-MM-DD-<assunto>.md, status `aberta`, Spec e Bloqueada por com
+  "não se aplica", critérios como '### CA-NN' (sem a subseção "Critérios de aceite");
+- de spec: <pasta da spec>/tasks/NN-<assunto>.md, com número, título e arquivo do link da lista do
+  design.md ("## 6. Tasks"); Spec com os links, Bloqueada por e os CA-NN da linha (em "Critérios de
+  aceite", sem o exemplo '### CA-01'). Status `bloqueada` se alguma dependência não está `concluída` (task
+  em tasks/done/ conta como concluída).
+
+Preenche título, datas, status, tipo, Modo e branch sugerida (task de spec: `<tipo>/juno/<assunto da
+spec>-NN`, salvo branch no design.md); o fechamento (seção 5) nasce só com os rótulos. O resto do modelo
+fica para quem escreve a task (depois, confira com validate_task.py).
+
+Modo: `--modo agente` (padrão) grava "agente implementa, Juno revisa"; `--modo juno`, quando o Juno já disse
+que vai implementar, grava "Juno implementa, agente guia e revisa".
 
 Uso:
-    python create_task.py avulsa "<assunto>" --tipo fix [--titulo "Título"] [--data AAAA-MM-DD]
-    python create_task.py spec <pasta da spec> <NN> --tipo feat [--data AAAA-MM-DD]
+    python create_task.py avulsa "<assunto>" --tipo fix [--titulo "Título"] [--modo agente|juno] [--data AAAA-MM-DD]
+    python create_task.py spec <pasta da spec> <NN> --tipo feat [--modo agente|juno] [--data AAAA-MM-DD]
 """
 
 import argparse
@@ -24,9 +32,13 @@ from md_checks import read_status, section_body  # noqa: E402  (precisa do sys.p
 from projeto import fill_template, get_project_root, read_text, relative_to_root, slugify  # noqa: E402
 
 TIPOS_COMMIT = ("feat", "fix", "refactor", "test", "docs", "chore")
+# Valor do --modo → texto do campo **Modo:** (os mesmos do validate_task.MODOS).
+MODOS = {"agente": "agente implementa, Juno revisa", "juno": "Juno implementa, agente guia e revisa"}
 
-_SECAO_1 = re.compile(r"^## 1\. [\s\S]*?(?=^## 2\. )", re.MULTILINE)
-_SECAO_2 = re.compile(r"^## 2\. [\s\S]*?(?=^## 3\. )", re.MULTILINE)
+# Partes do modelo que só um dos tipos usa: a avulsa define os '### CA-NN'; a de spec cita os do spec.md.
+_EXEMPLO_CA = re.compile(r"^### CA-01: [\s\S]*?(?=^## )", re.MULTILINE)
+_SUBSECAO_CRITERIOS = re.compile(r"^### Critérios de aceite\n[\s\S]*?(?=^### )", re.MULTILINE)
+LINKS_SPEC = "[spec.md](../spec.md) · [design.md](../design.md)"
 _ITEM_LISTA = re.compile(r"^\s*-\s*(?:\[[ xX]\]\s*)?(~~)?\[(\d{2})\s*[—–-]\s*([^\]]+)\]\((tasks/[^)\s]+\.md)\)(.*)$",
                          re.MULTILINE)
 _BLOQUEADA_POR = re.compile(r"bloqueada por:\s*([^—]+)")
@@ -62,22 +74,25 @@ def _limpar_fechamento(conteudo: str) -> str:
 
 
 def montar(titulo: str, data: date, status: str, tipo: str, branch: str, tipo_task: str,
-           bloqueada_por: str = "", criterios: str = "") -> str:
+           bloqueada_por: str = "", criterios: str = "", modo: str = "agente") -> str:
     conteudo = fill_template("task.md", titulo, data, status=status)
     conteudo = _trocar(conteudo, r"^(- \*\*Atualizado em:\*\* \S+ — )<[^>\n]+>$",
                        f"- **Atualizado em:** {data.isoformat()} — criação", "'Atualizado em'")
     conteudo = _trocar(conteudo, r"^- \*\*Tipo:\*\*.*$", f"- **Tipo:** `{tipo}`", "'- **Tipo:**'")
+    conteudo = _trocar(conteudo, r"^- \*\*Modo:\*\*.*$", f"- **Modo:** `{MODOS[modo]}`", "'- **Modo:**'")
     conteudo = _trocar(conteudo, r"^- \*\*Branch:\*\*.*$",
                        f"- **Branch:** `{branch}` (sugerida; criada pelo Juno)", "'- **Branch:**'")
 
-    if tipo_task == "avulsa":
-        conteudo = _remover_secao(conteudo, _SECAO_1, "seção '## 1.'")
+    avulsa = tipo_task == "avulsa"
+    conteudo = _trocar(conteudo, r"^- \*\*Spec:\*\*.*$",
+                       f"- **Spec:** {'não se aplica' if avulsa else LINKS_SPEC}", "'- **Spec:**'")
+    conteudo = _trocar(conteudo, r"^- \*\*Bloqueada por:\*\*.*$",
+                       f"- **Bloqueada por:** {'não se aplica' if avulsa else bloqueada_por}", "'- **Bloqueada por:**'")
+    if avulsa:
+        conteudo = _remover_secao(conteudo, _SUBSECAO_CRITERIOS, "subseção '### Critérios de aceite'")
     else:
-        conteudo = _remover_secao(conteudo, _SECAO_2, "seção '## 2.'")
-        conteudo = _trocar(conteudo, r"^- \*\*Bloqueada por:\*\*.*$",
-                           f"- **Bloqueada por:** {bloqueada_por}", "'- **Bloqueada por:**'")
-        conteudo = _trocar(conteudo, r"^- \*\*Critérios de aceite cobertos:\*\*.*$",
-                           f"- **Critérios de aceite cobertos:** {criterios}", "'- **Critérios de aceite cobertos:**'")
+        conteudo = _remover_secao(conteudo, _EXEMPLO_CA, "exemplo '### CA-01'")
+        conteudo = _trocar(conteudo, r"^<CA-01, CA-02 do spec\.md>$", criterios, "'<CA-01, CA-02 do spec.md>'")
 
     return _limpar_fechamento(conteudo)
 
@@ -133,7 +148,7 @@ def criar_avulsa(args: argparse.Namespace) -> None:
     data = args.data or date.today()
     titulo = args.titulo or slug.replace("-", " ").capitalize()
 
-    conteudo = montar(titulo, data, "aberta", args.tipo, f"{args.tipo}/juno/{slug}", "avulsa")
+    conteudo = montar(titulo, data, "aberta", args.tipo, f"{args.tipo}/juno/{slug}", "avulsa", modo=args.modo)
     destino = get_project_root() / ".agents" / "docs" / "tasks" / f"{data.isoformat()}-{slug}.md"
     _gravar(destino, conteudo)
     print(f"Task criada em: {relative_to_root(destino)} (status `aberta`)")
@@ -167,11 +182,11 @@ def criar_de_spec(args: argparse.Namespace) -> None:
 
     branch_design = _BRANCH_DESIGN.search(read_text(design))
     slug_spec = re.sub(r"^\d{4}-\d{2}-\d{2}-", "", pasta.resolve().name)
-    branch = branch_design.group(1) if branch_design else f"{args.tipo}/juno/{slug_spec}"
+    branch = branch_design.group(1) if branch_design else f"{args.tipo}/juno/{slug_spec}-{numero}"
 
     status = "bloqueada" if pendentes else "aberta"
     conteudo = montar(item["titulo"], args.data or date.today(), status, args.tipo, branch, "spec",
-                      bloqueada_por=", ".join(nomes) or "nenhuma", criterios=item["criterios"])
+                      bloqueada_por=", ".join(nomes) or "nenhuma", criterios=item["criterios"], modo=args.modo)
     destino = pasta_tasks / item["arquivo"]
     _gravar(destino, conteudo)
 
@@ -182,7 +197,7 @@ def criar_de_spec(args: argparse.Namespace) -> None:
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Cria o arquivo de uma task a partir do modelo.")
-    sub = parser.add_subparsers(dest="modo", required=True)
+    sub = parser.add_subparsers(dest="tipo_task", required=True)
 
     avulsa = sub.add_parser("avulsa", help="Task avulsa em .agents/docs/tasks/")
     avulsa.add_argument("assunto", help="Assunto curto; vira o nome do arquivo (ex.: 'restringir perfil cliente')")
@@ -195,9 +210,11 @@ def main() -> None:
     for p in (avulsa, spec):
         p.add_argument("--tipo", required=True, choices=TIPOS_COMMIT, help="Tipo do commit principal")
         p.add_argument("--data", type=date.fromisoformat, default=None, help="AAAA-MM-DD (padrão: hoje)")
+        p.add_argument("--modo", choices=tuple(MODOS), default="agente",
+                       help="agente (padrão): agente implementa, Juno revisa; juno: Juno implementa, agente guia e revisa")
 
     args = parser.parse_args()
-    criar_avulsa(args) if args.modo == "avulsa" else criar_de_spec(args)
+    criar_avulsa(args) if args.tipo_task == "avulsa" else criar_de_spec(args)
 
 
 if __name__ == "__main__":
