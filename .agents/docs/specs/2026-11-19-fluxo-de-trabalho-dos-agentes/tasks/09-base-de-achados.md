@@ -2,7 +2,7 @@
 
 - **Status:** `aberta`
 - **Criado em:** 2026-11-19
-- **Atualizado em:** 2026-11-19 — rodada de abertura respondida (Q1 a Q5, "sigo as recomendações")
+- **Atualizado em:** 2026-11-19 — rodadas de abertura respondidas (Q1 a Q5; base da oficina como ponte até a 05/06)
 - **Tipo:** `docs`
 - **Alcance:** `documentação`
 - **Branch:** `docs/juno/fluxo-de-trabalho-dos-agentes-09` (sugerida; criada pelo Juno)
@@ -35,6 +35,10 @@ Decisões desta abertura (rodada de 2026-11-19, "sigo as recomendações"):
 - Na oficina, a base fica em `.agents/skills/<nome>-workspace/base-de-achados.txt` — descartadas: pasta
   temporária do sistema (some num reboot, muda de agente para agente) e arquivo na raiz (uma oficina sobrescreve
   a de outra).
+- O arquivo da oficina é uma ponte até a 05/06, para as tasks que mexem em skills antes delas (02, 03, 07);
+  depois, a oficina dentro de uma task usa a base do Andamento, e isso é da task 08 (rodada 2 da abertura,
+  registrada no design) — descartada: tirar a oficina daqui e passar o CA-29 para a 05 (essas tasks ficariam
+  sem base).
 - Avisos entram na base; aviso novo é informado e não falha — descartada: só erros (o "diga se criou aviso
   novo" da skill `governanca` continuaria dependendo da memória do agente).
 - O código é obrigatório em `erro()` e `aviso()`, no formato `<dono>.<regra>` (`md.` para a lib comum, `task.`,

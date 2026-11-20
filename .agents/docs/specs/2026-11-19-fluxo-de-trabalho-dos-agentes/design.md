@@ -2,8 +2,8 @@
 
 - **Spec:** [spec.md](spec.md)
 - **Criado em:** 2026-11-19
-- **Atualizado em:** 2026-11-19 — task 01 dividida: a base de achados virou a task 09 (decisão do Juno ao
-  abrir a 01)
+- **Atualizado em:** 2026-11-19 — base da oficina vira ponte até a 05/06; depois, a oficina usa a base da
+  task (decisões do Juno ao abrir a 09)
 
 ## Referências técnicas
 
@@ -37,6 +37,14 @@
     oficina de skills (sem task), a base vai para um arquivo temporário indicado na própria rodada — descartadas:
     arquivo JSON fora do git (perde-se ao trocar de máquina) e os dois juntos (a mesma informação em dois
     lugares) — rodada 1 do design.
+  - O arquivo da oficina é uma ponte até o "iniciar" e o "encerrar" (tasks 05 e 06): fica em
+    `.agents/skills/<nome>-workspace/base-de-achados.txt` e cobre as tasks que mexem em skills antes da 05
+    (02, 03, 07) — descartada: tirar a oficina da 09 e passar o CA-29 para a 05 (essas tasks ficariam sem
+    base) — conversa de 2026-11-19, ao abrir a 09 (todo ajuste de skill que importa acontece dentro de uma task).
+  - Depois da 05 e da 06, a oficina dentro de uma task usa a base do Andamento e não cria o arquivo; sem task,
+    roda a governança simples (0 erros), como antes da base. Entra na task 08 — descartada: manter o arquivo
+    para a oficina sem task (um parágrafo a mais na skill para um caso raro, em geral ajuste que nem passa pela
+    oficina) — conversa de 2026-11-19, ao abrir a 09.
   - A conferência dos commits é feita por script: "Commits entregues" ganha formato fixo e é comparado com
     `git log main..HEAD --name-only` — descartada: o agente comparar lendo o log (é a parte objetiva que se quer
     tirar dele) — rodada 1 do design.
@@ -131,7 +139,7 @@ e o item da lista do design é riscado com data e motivo → mesmo aviso da últ
 | skill `governanca` | não existe | dona das checagens do conjunto; entra na tabela de skills do `AGENTS.md` |
 | skill `task` | abrir, atualizar, fechar (o fechar marca `concluída`) | + iniciar e encerrar, curtos, chamando os scripts; o fechar só preenche e pede revisão; passo 1.2 com levantamento dos mecanismos e checklist de alcance |
 | skill `spec` | aprovação à mão | aprovar e encerrar por script; leitura com levantamento antes das rodadas |
-| skill `oficina-de-skills` | chama o `check_agents.py` | salva a base no começo e compara no fim |
+| skill `oficina-de-skills` | chama o `check_agents.py` | salva a base no começo e compara no fim (task 09, arquivo no workspace); depois da 05, dentro de uma task, usa a base do Andamento (task 08) |
 | `AGENTS.md` | agente não cria branch | exceção restrita ao script do "iniciar"; fluxo novo; governança na tabela |
 | `.agents/README.md` | `tasks/done/AAAA-MM/` | `tasks/done/` numa pasta só (concluídas e canceladas) |
 | `guides/commits.md` | sem texto do merge | formato do texto do merge (modelo: squash do `9d59084a`) |
