@@ -42,7 +42,7 @@ def check_rtk(arquivo: Path, texto: str) -> list[Finding]:
             comando = linha.strip()
             eh_continuacao, continuacao = continuacao, comando.endswith("\\")
             if comando and not comando.startswith("#") and not eh_continuacao and not comando.startswith("rtk "):
-                findings.append(erro(arquivo, line_of(texto, inicio),
+                findings.append(erro(arquivo, line_of(texto, inicio), "governanca.rtk",
                                      f"rtk: comando sem o prefixo `rtk`: {comando.rstrip(chr(92)).strip()}"))
             inicio += len(linha)
     return findings

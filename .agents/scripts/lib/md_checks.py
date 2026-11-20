@@ -15,31 +15,47 @@ from links import broken_links
 from md_utils import COMENTARIO_PATTERN, find_placeholders, line_of, mask_code_and_comments
 
 
+# Código da regra: `<dono>.<regra>`, com o dono sendo quem define a regra (`md` para as checagens desta lib,
+# `task`, `spec`, `governanca`) e a regra em minúsculas com hífen (ex.: `md.secao-vazia`).
+CODIGO_VALIDO = re.compile(r"^[a-z]+\.[a-z0-9]+(?:-[a-z0-9]+)*$")
+
+
 @dataclass(frozen=True)
 class Finding:
-    """Um problema encontrado na validação de um documento."""
+    """Um problema encontrado na validação de um documento.
+
+    A identidade do achado na base da governança é arquivo + código + mensagem (sem as linhas): por isso a
+    mensagem não cita número de linha, e o código é obrigatório."""
 
     arquivo: Path
     linha_inicio: int
     linha_fim: int
     severidade: Literal["aviso", "erro"]
+    codigo: str
     mensagem: str
 
-    def __str__(self) -> str:
-        linhas = (
+    def __post_init__(self) -> None:
+        if not CODIGO_VALIDO.match(self.codigo):
+            raise ValueError(f"código de regra fora do formato '<dono>.<regra>': {self.codigo!r}")
+
+    @property
+    def linhas(self) -> str:
+        return (
             f"{self.linha_inicio}-{self.linha_fim}"
             if self.linha_inicio != self.linha_fim
             else f"{self.linha_inicio}"
         )
-        return f"{self.arquivo.name}:{linhas} [{self.severidade.upper()}] {self.mensagem}"
+
+    def __str__(self) -> str:
+        return f"{self.arquivo.name}:{self.linhas} [{self.severidade.upper()}] {self.codigo} {self.mensagem}"
 
 
-def erro(arquivo: Path, linha: int, mensagem: str, linha_fim: int | None = None) -> Finding:
-    return Finding(arquivo, linha, linha_fim or linha, "erro", mensagem)
+def erro(arquivo: Path, linha: int, codigo: str, mensagem: str, linha_fim: int | None = None) -> Finding:
+    return Finding(arquivo, linha, linha_fim or linha, "erro", codigo, mensagem)
 
 
-def aviso(arquivo: Path, linha: int, mensagem: str) -> Finding:
-    return Finding(arquivo, linha, linha, "aviso", mensagem)
+def aviso(arquivo: Path, linha: int, codigo: str, mensagem: str) -> Finding:
+    return Finding(arquivo, linha, linha, "aviso", codigo, mensagem)
 
 
 def format_preview(texto: str, max_len: int = 80) -> str:
@@ -57,7 +73,7 @@ def format_preview(texto: str, max_len: int = 80) -> str:
 def check_placeholders(arquivo: Path, texto: str) -> list[Finding]:
     """Comentários do modelo, <placeholders> e datas AAAA-MM-DD que sobraram fora de código."""
     return [
-        erro(arquivo, inicio, f"{tipo}: {format_preview(trecho, 80)}", linha_fim=fim)
+        erro(arquivo, inicio, "md.placeholder", f"{tipo}: {format_preview(trecho, 80)}", linha_fim=fim)
         for inicio, fim, tipo, trecho in find_placeholders(texto)
     ]
 
@@ -82,15 +98,15 @@ def check_status(arquivo: Path, texto: str, opcoes: tuple[str, ...]) -> list[Fin
     """Linha **Status:** presente, com um só valor (não a lista do modelo) e dentro do conjunto."""
     linha = _STATUS_LINHA.search(texto)
     if linha is None:
-        return [erro(arquivo, 1, "status: linha **Status:** não encontrada")]
+        return [erro(arquivo, 1, "md.status-ausente", "status: linha **Status:** não encontrada")]
 
     numero = line_of(texto, linha.start())
     if "|" in linha.group(1):
-        return [erro(arquivo, numero, "status: lista de opções do modelo; escolha um valor")]
+        return [erro(arquivo, numero, "md.status-opcoes-do-modelo", "status: lista de opções do modelo; escolha um valor")]
 
     status, _ = read_status(texto)
     if status not in opcoes:
-        return [erro(arquivo, numero, f"status: valor '{status}' inválido (opções: {', '.join(opcoes)})")]
+        return [erro(arquivo, numero, "md.status-invalido", f"status: valor '{status}' inválido (opções: {', '.join(opcoes)})")]
     return []
 
 
@@ -110,7 +126,7 @@ def check_updated_at(arquivo: Path, texto: str) -> list[Finding]:
     """"**Atualizado em:** AAAA-MM-DD — motivo" com data real e motivo; não anterior ao "Criado em"."""
     linha = _ATUALIZADO_LINHA.search(texto)
     if linha is None:
-        return [erro(arquivo, 1, "atualizado em: linha **Atualizado em:** não encontrada")]
+        return [erro(arquivo, 1, "md.atualizado-ausente", "atualizado em: linha **Atualizado em:** não encontrada")]
 
     numero = line_of(texto, linha.start())
     valor = linha.group(1)
@@ -120,12 +136,12 @@ def check_updated_at(arquivo: Path, texto: str) -> list[Finding]:
     formato = _DATA_E_MOTIVO.match(valor)
     atualizado = _data(formato.group(1)) if formato else None
     if atualizado is None:
-        return [erro(arquivo, numero, "atualizado em: use 'AAAA-MM-DD — motivo' (data válida e motivo)")]
+        return [erro(arquivo, numero, "md.atualizado-formato", "atualizado em: use 'AAAA-MM-DD — motivo' (data válida e motivo)")]
 
     criado_m = _CRIADO_LINHA.search(texto)
     criado = _data(criado_m.group(1)) if criado_m else None
     if criado and atualizado < criado:
-        return [erro(arquivo, numero, f"atualizado em: {atualizado} é anterior ao 'Criado em' ({criado})")]
+        return [erro(arquivo, numero, "md.atualizado-antes-da-criacao", f"atualizado em: {atualizado} é anterior ao 'Criado em' ({criado})")]
     return []
 
 # endregion
@@ -162,7 +178,7 @@ def check_sections(arquivo: Path, texto: str, esperadas: tuple[str, ...], prefix
 
     for esperada in esperadas:
         if not any(casa(t, esperada) for t in titulos):
-            findings.append(erro(arquivo, 1, f"seção: obrigatória ausente: ## {esperada}"))
+            findings.append(erro(arquivo, 1, "md.secao-ausente", f"seção: obrigatória ausente: ## {esperada}"))
 
     for i, secao in enumerate(secoes):
         if not any(casa(secao.group(1), e) for e in esperadas):
@@ -170,7 +186,7 @@ def check_sections(arquivo: Path, texto: str, esperadas: tuple[str, ...], prefix
         fim = secoes[i + 1].start() if i + 1 < len(secoes) else len(texto)
         corpo = texto[secao.end():fim]  # recorte no original: bloco de código conta como conteúdo
         if not COMENTARIO_PATTERN.sub("", corpo).strip():
-            findings.append(erro(arquivo, line_of(texto, secao.start()), f"seção: vazia: ## {secao.group(1)}"))
+            findings.append(erro(arquivo, line_of(texto, secao.start()), "md.secao-vazia", f"seção: vazia: ## {secao.group(1)}"))
 
     return findings
 
@@ -219,7 +235,7 @@ def check_acceptance_criteria(arquivo: Path, texto: str) -> list[Finding]:
     criterios = ca_titles(texto)
 
     if not criterios:
-        return [erro(arquivo, 1, "critério: nenhum '### CA-NN' encontrado")]
+        return [erro(arquivo, 1, "md.criterio-nenhum", "critério: nenhum '### CA-NN' encontrado")]
 
     titulos = list(_TITULO_QUALQUER.finditer(mascarado))
     vistos: dict[int, int] = {}
@@ -229,11 +245,11 @@ def check_acceptance_criteria(arquivo: Path, texto: str) -> list[Finding]:
         valido = CA_ID_VALIDO.match(ca_id)
 
         if not valido:
-            findings.append(erro(arquivo, linha, f"critério: ID '{ca_id}' fora do formato CA-NN"))
+            findings.append(erro(arquivo, linha, "md.criterio-id-invalido", f"critério: ID '{ca_id}' fora do formato CA-NN"))
         else:
             numero = int(valido.group(1))
             if numero in vistos:
-                findings.append(erro(arquivo, linha, f"critério: {ca_id} repetido (já na linha {vistos[numero]})"))
+                findings.append(erro(arquivo, linha, "md.criterio-repetido", f"critério: {ca_id} repetido"))
             else:
                 vistos[numero] = linha
 
@@ -242,14 +258,14 @@ def check_acceptance_criteria(arquivo: Path, texto: str) -> list[Finding]:
         corpo = mascarado[match.end():fim]
         faltando = [p for p in _CA_PASSOS if not re.search(rf"^\s*-\s*\*\*{p}\*\*", corpo, re.MULTILINE)]
         if faltando:
-            findings.append(erro(arquivo, linha, f"critério: {ca_id} sem {', '.join(faltando)}"))
+            findings.append(erro(arquivo, linha, "md.criterio-sem-passo", f"critério: {ca_id} sem {', '.join(faltando)}"))
 
     if vistos:
         lacunas = [n for n in range(1, max(vistos) + 1) if n not in vistos]
         if lacunas:
             ausentes = ", ".join(f"CA-{n:02d}" for n in lacunas)
             findings.append(
-                aviso(arquivo, vistos[max(vistos)],
+                aviso(arquivo, vistos[max(vistos)], "md.criterio-lacuna",
                       f"critério: sequência com lacuna ({ausentes}); ok se foi removido numa atualização")
             )
 
@@ -259,7 +275,7 @@ def check_acceptance_criteria(arquivo: Path, texto: str) -> list[Finding]:
 def check_ca_refs_exist(arquivo: Path, texto: str, existentes: set[int], origem: str) -> list[Finding]:
     """Todo CA-NN citado em `texto` existe em `existentes` (os definidos em `origem`, ex.: 'spec.md')."""
     return [
-        erro(arquivo, line_of(texto, pos), f"critério: CA-{n:02d} citado mas não existe no {origem}")
+        erro(arquivo, line_of(texto, pos), "md.criterio-inexistente", f"critério: CA-{n:02d} citado mas não existe no {origem}")
         for n, pos in sorted(ca_numbers_cited(texto), key=lambda c: c[1])
         if n not in existentes
     ]
@@ -278,20 +294,22 @@ def find_paths(texto: str) -> list[tuple[str, int]]:
     return [(m.group(1), m.start(1)) for m in _CAMINHO.finditer(texto)]
 
 
-def check_paths_exist(arquivo: Path, texto: str, inicio: int, fim: int, raiz: Path, rotulo: str) -> list[Finding]:
-    """Todo caminho citado em texto[inicio:fim] existe. Relativo à raiz; './' e '../', relativo ao arquivo."""
+def check_paths_exist(arquivo: Path, texto: str, inicio: int, fim: int, raiz: Path, rotulo: str,
+                      codigo: str) -> list[Finding]:
+    """Todo caminho citado em texto[inicio:fim] existe. Relativo à raiz; './' e '../', relativo ao arquivo.
+    `codigo` é o da regra de quem chama (a regra é dele; a lib só sabe procurar)."""
     findings: list[Finding] = []
     for caminho, pos in find_paths(texto[inicio:fim]):
         base = arquivo.parent if caminho.split("/")[0] in (".", "..") else raiz
         if not (base / caminho).exists():
-            findings.append(erro(arquivo, line_of(texto, inicio + pos), f"{rotulo}: caminho não existe: {caminho}"))
+            findings.append(erro(arquivo, line_of(texto, inicio + pos), codigo, f"{rotulo}: caminho não existe: {caminho}"))
     return findings
 
 
 def check_links(arquivo: Path, texto: str, raiz: Path, ignorar: Callable[[str], bool] = lambda alvo: False) -> list[Finding]:
     """Links relativos cujo destino não existe; `ignorar(alvo)` aceita destinos que ainda vão nascer."""
     return [
-        erro(arquivo, linha, f"link: destino não existe: {alvo}")
+        erro(arquivo, linha, "md.link-quebrado", f"link: destino não existe: {alvo}")
         for linha, alvo in broken_links(arquivo, mask_code_and_comments(texto), raiz=raiz)
         if not ignorar(alvo)
     ]
@@ -300,7 +318,7 @@ def check_links(arquivo: Path, texto: str, raiz: Path, ignorar: Callable[[str], 
 
 
 __all__ = [
-    "CA_ID_VALIDO", "CA_PASSO_LINHA", "Finding", "aviso", "ca_numbers_cited", "ca_numbers_defined", "ca_titles",
+    "CA_ID_VALIDO", "CA_PASSO_LINHA", "CODIGO_VALIDO", "Finding", "aviso", "ca_numbers_cited", "ca_numbers_defined", "ca_titles",
     "check_acceptance_criteria", "check_ca_refs_exist", "check_links", "check_paths_exist", "check_placeholders",
     "check_sections", "check_status", "check_updated_at", "erro", "find_paths", "format_preview",
     "read_status", "section_body", "section_titles",

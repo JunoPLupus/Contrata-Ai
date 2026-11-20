@@ -33,7 +33,7 @@ def check_skill_table(arquivo: Path, texto: str, raiz: Path) -> list[Finding]:
     """Toda skill com SKILL.md tem linha na tabela de '## Skills' e toda linha aponta para um SKILL.md real."""
     secao = re.search(r"^## Skills\s*$([\s\S]*?)(?=^## |\Z)", texto, re.MULTILINE)
     if secao is None:
-        return [erro(arquivo, 1, "skills: seção '## Skills' não encontrada")]
+        return [erro(arquivo, 1, "governanca.skills-secao-ausente", "skills: seção '## Skills' não encontrada")]
 
     findings: list[Finding] = []
     na_tabela: set[str] = set()
@@ -42,12 +42,12 @@ def check_skill_table(arquivo: Path, texto: str, raiz: Path) -> list[Finding]:
         destino = (arquivo.parent / alvo).resolve()
         numero = line_of(texto, linha.start())
         if destino.name != "SKILL.md" or not destino.exists():
-            findings.append(erro(arquivo, numero, f"skills: linha '{nome}' não aponta para um SKILL.md existente: {alvo}"))
+            findings.append(erro(arquivo, numero, "governanca.skills-linha-invalida", f"skills: linha '{nome}' não aponta para um SKILL.md existente: {alvo}"))
         else:
             na_tabela.add(destino.parent.name)
 
     for faltando in sorted(existing_skills(raiz) - na_tabela):
-        findings.append(erro(arquivo, line_of(texto, secao.start()),
+        findings.append(erro(arquivo, line_of(texto, secao.start()), "governanca.skills-sem-linha",
                              f"skills: .agents/skills/{faltando}/SKILL.md sem linha na tabela"))
     return findings
 
@@ -73,12 +73,12 @@ def check_template_sections(raiz: Path, esperadas: dict[str, tuple[str, ...]]) -
     for nome, titulos in esperadas.items():
         modelo = pasta / nome
         if not modelo.exists():
-            findings.append(erro(modelo, 1, "modelo: arquivo não existe"))
+            findings.append(erro(modelo, 1, "governanca.modelo-ausente", "modelo: arquivo não existe"))
             continue
         presentes = [m.group(1) for m in section_titles(read_text(modelo))]
         for titulo in titulos:
             if not any(p.startswith(titulo) for p in presentes):
-                findings.append(erro(modelo, 1, f"modelo: falta a seção '## {titulo}' que o validador espera"))
+                findings.append(erro(modelo, 1, "governanca.modelo-secao-ausente", f"modelo: falta a seção '## {titulo}' que o validador espera"))
     return findings
 
 # endregion
@@ -101,12 +101,12 @@ def check_skill_headers(raiz: Path, validar: Validador | None) -> list[Finding]:
     faltando) deixa a skill invisível para ferramentas que leem a description, sem aviso nenhum."""
     skills = sorted((raiz / ".agents" / "skills").glob("*/SKILL.md"))
     if validar is None:
-        return [aviso(skill, 1, "cabeçalho: não conferido, falta o pyyaml (pip install pyyaml)") for skill in skills[:1]]
+        return [aviso(skill, 1, "governanca.cabecalho-sem-pyyaml", "cabeçalho: não conferido, falta o pyyaml (pip install pyyaml)") for skill in skills[:1]]
     findings: list[Finding] = []
     for skill in skills:
         valido, mensagem = validar(skill.parent)
         if not valido:
-            findings.append(erro(skill, 1, f"cabeçalho: {mensagem}"))
+            findings.append(erro(skill, 1, "governanca.cabecalho-invalido", f"cabeçalho: {mensagem}"))
     return findings
 
 # endregion

@@ -13,7 +13,7 @@ Verifica:
 
 As checagens comuns com a skill task moram na lib global (.agents/scripts/lib/md_checks.py).
 
-Saída: `arquivo:linha [SEVERIDADE] mensagem`; exit 1 se houver erro.
+Saída: `arquivo:linha [SEVERIDADE] código mensagem`; exit 1 se houver erro.
 
 Uso: python validate_spec.py <pasta da spec>
 """
@@ -87,7 +87,7 @@ def _check_status(arquivo: Path) -> list[Finding]:
     if status == "aprovada":
         for bloqueio in _BLOQUEIA_APROVACAO_PATTERN.finditer(conteudo):
             findings.append(
-                erro(arquivo, line_of(conteudo, bloqueio.start()),
+                erro(arquivo, line_of(conteudo, bloqueio.start()), "spec.aprovada-com-bloqueio",
                      "status: spec aprovada com item 'Em aberto' que bloqueia a aprovação")
             )
 

@@ -22,7 +22,7 @@ Verifica:
 As checagens comuns com a skill spec moram na lib global (.agents/scripts/lib/md_checks.py). As funções
 públicas daqui são reaproveitadas pelos critérios dos evals (../evals/checks.py).
 
-Saída: `arquivo:linha [SEVERIDADE] mensagem`; exit 1 se houver erro.
+Saída: `arquivo:linha [SEVERIDADE] código mensagem`; exit 1 se houver erro.
 
 Uso: python validate_task.py <arquivo da task> [--fechar]
 """
@@ -172,16 +172,16 @@ def check_metadata_options(arquivo: Path, texto: str) -> list[Finding]:
     for nome, padrao in (("tipo", _TIPO), ("alcance", _ALCANCE)):
         linha = padrao.search(texto)
         if linha is None:
-            findings.append(erro(arquivo, 1, f"{nome}: linha **{nome.capitalize()}:** não encontrada"))
+            findings.append(erro(arquivo, 1, f"task.{nome}-ausente", f"{nome}: linha **{nome.capitalize()}:** não encontrada"))
             continue
         numero = line_of(texto, linha.start())
         if "|" in linha.group(1):
-            findings.append(erro(arquivo, numero, f"{nome}: lista de opções do modelo; escolha um valor"))
+            findings.append(erro(arquivo, numero, f"task.{nome}-opcoes-do-modelo", f"{nome}: lista de opções do modelo; escolha um valor"))
         elif nome == "tipo":
             valor = _PRIMEIRO_CODIGO.search(linha.group(1))
             if valor is None or valor.group(1) not in TIPOS_COMMIT:
                 atual = valor.group(1) if valor else linha.group(1).strip()
-                findings.append(erro(arquivo, numero, f"tipo: '{atual}' inválido (opções: {', '.join(TIPOS_COMMIT)})"))
+                findings.append(erro(arquivo, numero, "task.tipo-invalido", f"tipo: '{atual}' inválido (opções: {', '.join(TIPOS_COMMIT)})"))
     return findings
 
 
@@ -190,7 +190,7 @@ def check_type_sections(arquivo: Path, texto: str, tipo: Tipo) -> list[Finding]:
     usa, nao_usa = (SECAO_AVULSA, SECAO_SPEC) if tipo == "avulsa" else (SECAO_SPEC, SECAO_AVULSA)
     findings = check_sections(arquivo, texto, (usa,), prefixo=True)
     if section_body(texto, nao_usa) is not None:
-        findings.append(erro(arquivo, 1, f"seção: task {'avulsa' if tipo == 'avulsa' else 'de spec'} "
+        findings.append(erro(arquivo, 1, "task.secao-do-outro-tipo", f"seção: task {'avulsa' if tipo == 'avulsa' else 'de spec'} "
                                          f"não usa a seção '## {nao_usa}'"))
     return findings
 
@@ -201,10 +201,10 @@ def check_spec_criteria(arquivo: Path, texto: str) -> list[Finding]:
     mascarado = mask_code_and_comments(texto)
 
     for passo in CA_PASSO_LINHA.finditer(mascarado):
-        findings.append(erro(arquivo, line_of(texto, passo.start()),
+        findings.append(erro(arquivo, line_of(texto, passo.start()), "task.criterio-copiado",
                              "critério: task de spec cita os CA-NN do spec.md, não copia Dado / Quando / Então"))
     for ca_id, titulo in ca_titles(texto):
-        findings.append(erro(arquivo, line_of(texto, titulo.start()),
+        findings.append(erro(arquivo, line_of(texto, titulo.start()), "task.criterio-definido",
                              f"critério: task de spec não define '### {ca_id}'; cite o critério do spec.md"))
 
     secao = section_body(texto, SECAO_SPEC)
@@ -212,7 +212,7 @@ def check_spec_criteria(arquivo: Path, texto: str) -> list[Finding]:
         corpo, inicio = secao
         for ref in _CA_QUALQUER.finditer(mask_code_and_comments(corpo)):
             if not re.fullmatch(r"\d{2,}", ref.group(1)):
-                findings.append(erro(arquivo, line_of(texto, inicio + ref.start()),
+                findings.append(erro(arquivo, line_of(texto, inicio + ref.start()), "task.criterio-id-invalido",
                                      f"critério: '{ref.group(0)}' fora do formato CA-NN"))
 
     pasta = spec_dir(arquivo)
@@ -220,7 +220,7 @@ def check_spec_criteria(arquivo: Path, texto: str) -> list[Finding]:
         existentes = ca_numbers_defined(read_text(pasta / "spec.md"))
         corpo, inicio = secao
         findings.extend(
-            erro(arquivo, line_of(texto, inicio) + f.linha_inicio - 1, f.mensagem)
+            erro(arquivo, line_of(texto, inicio) + f.linha_inicio - 1, f.codigo, f.mensagem)
             for f in check_ca_refs_exist(arquivo, corpo, existentes, "spec.md")
         )
     return findings
@@ -250,19 +250,19 @@ def check_branch(arquivo: Path, texto: str, branch_design: str | None = None) ->
     """Branch `<tipo>/juno/<assunto>`; com branch no design.md da spec, a task usa a mesma."""
     linha = _BRANCH.search(texto)
     if linha is None:
-        return [erro(arquivo, 1, "branch: linha **Branch:** não encontrada")]
+        return [erro(arquivo, 1, "task.branch-ausente", "branch: linha **Branch:** não encontrada")]
     numero = line_of(texto, linha.start())
 
     if branch_design is not None:
         if branch_design not in linha.group(1):
-            return [erro(arquivo, numero, f"branch: task de spec usa a branch do design.md ({branch_design})")]
+            return [erro(arquivo, numero, "task.branch-diferente-do-design", f"branch: task de spec usa a branch do design.md ({branch_design})")]
         return []
 
     branch = task_branch(texto)
     if branch is None:
-        return [erro(arquivo, numero, "branch: use '<tipo>/juno/<assunto>' logo depois do rótulo")]
+        return [erro(arquivo, numero, "task.branch-formato", "branch: use '<tipo>/juno/<assunto>' logo depois do rótulo")]
     if branch.split("/")[0] not in TIPOS_COMMIT:
-        return [erro(arquivo, numero, f"branch: tipo '{branch.split('/')[0]}' fora de {', '.join(TIPOS_COMMIT)}")]
+        return [erro(arquivo, numero, "task.branch-tipo-invalido", f"branch: tipo '{branch.split('/')[0]}' fora de {', '.join(TIPOS_COMMIT)}")]
     return []
 
 
@@ -270,10 +270,10 @@ def check_read_first(arquivo: Path, texto: str, raiz: Path) -> list[Finding]:
     """"Ler antes de começar" presente e com caminhos que existem."""
     bloco = ler_antes(texto)
     if bloco is None:
-        return [aviso(arquivo, 1, "ler antes: rótulo **Ler antes de começar** não encontrado")]
+        return [aviso(arquivo, 1, "task.ler-antes-ausente", "ler antes: rótulo **Ler antes de começar** não encontrado")]
     if not find_paths(texto[bloco[0]:bloco[1]]):
-        return [aviso(arquivo, line_of(texto, bloco[0]), "ler antes: nenhum caminho de arquivo citado")]
-    return check_paths_exist(arquivo, texto, bloco[0], bloco[1], raiz, "ler antes")
+        return [aviso(arquivo, line_of(texto, bloco[0]), "task.ler-antes-sem-caminho", "ler antes: nenhum caminho de arquivo citado")]
+    return check_paths_exist(arquivo, texto, bloco[0], bloco[1], raiz, "ler antes", "task.ler-antes-caminho-inexistente")
 
 
 def is_documentation(texto: str) -> bool:
@@ -292,13 +292,13 @@ def check_criteria_table(arquivo: Path, texto: str, cas: set[int]) -> list[Findi
     for ca, linhas in sorted(tabela.items()):
         for numero, tem_nome in linhas:
             if not tem_nome:
-                findings.append(sem_nome(arquivo, numero, f'tabela: CA-{ca:02d} sem nome de teste entre aspas '
+                findings.append(sem_nome(arquivo, numero, "task.tabela-sem-nome-de-teste", f'tabela: CA-{ca:02d} sem nome de teste entre aspas '
                                                           f'terminando em "(CA-{ca:02d})"'))
         if cas and ca not in cas:
-            findings.append(erro(arquivo, linhas[0][0], f"tabela: CA-{ca:02d} não é critério desta task"))
+            findings.append(erro(arquivo, linhas[0][0], "task.tabela-ca-de-fora", f"tabela: CA-{ca:02d} não é critério desta task"))
 
     for ca in sorted(cas - tabela.keys()):
-        findings.append(erro(arquivo, 1, f"tabela: CA-{ca:02d} sem linha na tabela critério → teste"))
+        findings.append(erro(arquivo, 1, "task.tabela-ca-sem-linha", f"tabela: CA-{ca:02d} sem linha na tabela critério → teste"))
     return findings
 
 
@@ -309,32 +309,32 @@ def check_closing(arquivo: Path, texto: str, cas: set[int]) -> list[Finding]:
     linha_status = line_of(texto, pos) if pos >= 0 else 1
 
     if status not in ("concluída", "em andamento"):
-        findings.append(erro(arquivo, linha_status,
+        findings.append(erro(arquivo, linha_status, "task.fechamento-status",
                              f"fechamento: status '{status}' ao fechar; use `concluída` ou `em andamento`"))
 
     rotulos = closing_labels(texto)
     checagens = rotulos.get("Checagens não feitas")
     if checagens is None or not checagens[1]:
         linha = checagens[0] if checagens else 1
-        findings.append(erro(arquivo, linha, "fechamento: preencha 'Checagens não feitas' (o que não rodou, ou 'nenhuma')"))
+        findings.append(erro(arquivo, linha, "task.fechamento-checagens-vazia", "fechamento: preencha 'Checagens não feitas' (o que não rodou, ou 'nenhuma')"))
 
     if status != "concluída":
         return findings
 
     for rotulo in ROTULOS_FECHAMENTO:
         if rotulo not in rotulos:
-            findings.append(erro(arquivo, 1, f"fechamento: rótulo '{rotulo}' ausente"))
+            findings.append(erro(arquivo, 1, "task.fechamento-rotulo-ausente", f"fechamento: rótulo '{rotulo}' ausente"))
         elif not rotulos[rotulo][1] and rotulo != "Checagens não feitas":
-            findings.append(erro(arquivo, rotulos[rotulo][0], f"fechamento: '{rotulo}' vazio com status `concluída`"))
+            findings.append(erro(arquivo, rotulos[rotulo][0], "task.fechamento-rotulo-vazio", f"fechamento: '{rotulo}' vazio com status `concluída`"))
 
     evidencia = rotulos.get("Evidência por critério")
     if evidencia is not None and evidencia[1]:
         citados = {n for n, _ in ca_numbers_cited(evidencia[1])}
         for ca in sorted(cas - citados):
-            findings.append(erro(arquivo, evidencia[0], f"fechamento: CA-{ca:02d} sem evidência com status `concluída`"))
+            findings.append(erro(arquivo, evidencia[0], "task.fechamento-sem-evidencia", f"fechamento: CA-{ca:02d} sem evidência com status `concluída`"))
 
     if checagens is not None and checagens[1] and not re.match(r"nenhuma\b", checagens[1], re.IGNORECASE):
-        findings.append(aviso(arquivo, checagens[0],
+        findings.append(aviso(arquivo, checagens[0], "task.fechamento-checagens-pendentes",
                               "fechamento: há checagens não feitas com status `concluída`; confira se não impedem"))
     return findings
 

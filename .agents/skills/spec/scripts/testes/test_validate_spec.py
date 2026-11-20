@@ -36,7 +36,7 @@ class ValidateSpecTest(unittest.TestCase):
         """<tipo> em código e "x < 5" não são placeholder; AAAA-MM-DD fora de código é."""
         codigo, saida = validar("falsos-positivos")
         self.assertEqual(codigo, 1)
-        self.assertIn("spec.md:11 [ERRO] data: AAAA-MM-DD", saida)
+        self.assertIn("spec.md:11 [ERRO] md.placeholder data: AAAA-MM-DD", saida)
         for falso in ("<void>", "<Solicitacao>", "< 5"):
             self.assertNotIn(falso, saida)
 
@@ -44,7 +44,7 @@ class ValidateSpecTest(unittest.TestCase):
         """Spec aprovada acusa só o item "bloqueia: aprovação", não o que bloqueia o design."""
         codigo, saida = validar("aprovada-com-bloqueio")
         self.assertEqual(codigo, 1)
-        self.assertIn("spec.md:94 [ERRO] status: spec aprovada com item 'Em aberto'", saida)
+        self.assertIn("spec.md:94 [ERRO] spec.aprovada-com-bloqueio status: spec aprovada com item 'Em aberto'", saida)
         self.assertNotIn("spec.md:93", saida)  # "bloqueia: design" é permitido
 
     def test_secao_ausente_e_vazia(self):
@@ -61,21 +61,21 @@ class ValidateSpecTest(unittest.TestCase):
         self.assertIn("critério: CA-01 sem Quando", saida)
         self.assertIn("critério: CA-02 repetido", saida)
         self.assertIn("critério: ID 'CA-5' fora do formato CA-NN", saida)
-        self.assertIn("[AVISO] critério: sequência com lacuna (CA-03, CA-05)", saida)
+        self.assertIn("[AVISO] md.criterio-lacuna critério: sequência com lacuna (CA-03, CA-05)", saida)
 
     def test_status_com_lista_do_modelo_e_atualizado_sem_motivo(self):
         """Status com a lista do modelo e "Atualizado em" sem motivo são erro."""
         codigo, saida = validar("metadados-com-problemas")
         self.assertEqual(codigo, 1)
-        self.assertIn("spec.md:7 [ERRO] status: lista de opções do modelo; escolha um valor", saida)
-        self.assertIn("spec.md:9 [ERRO] atualizado em: use 'AAAA-MM-DD — motivo'", saida)
+        self.assertIn("spec.md:7 [ERRO] md.status-opcoes-do-modelo status: lista de opções do modelo; escolha um valor", saida)
+        self.assertIn("spec.md:9 [ERRO] md.atualizado-formato atualizado em: use 'AAAA-MM-DD — motivo'", saida)
 
     def test_design_cita_ca_inexistente_e_link_quebrado(self):
         """design.md citando CA inexistente e link quebrado é erro; link para tasks/ ainda não criada não."""
         codigo, saida = validar("com-design")
         self.assertEqual(codigo, 1)
-        self.assertIn("design.md:47 [ERRO] critério: CA-11 citado mas não existe no spec.md", saida)
-        self.assertIn("design.md:47 [ERRO] link: destino não existe: ../nao-existe.md", saida)
+        self.assertIn("design.md:47 [ERRO] md.criterio-inexistente critério: CA-11 citado mas não existe no spec.md", saida)
+        self.assertIn("design.md:47 [ERRO] md.link-quebrado link: destino não existe: ../nao-existe.md", saida)
         self.assertNotIn("tasks/", saida)  # task ainda não criada não é link quebrado
         self.assertNotIn("spec.md:", saida)  # a spec da pasta está limpa
 
