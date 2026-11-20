@@ -127,8 +127,9 @@ pergunta reabre uma decisão "Fechada" do design, diga qual e por que antes de p
    alcance, "Atualizado em", seções do tipo da task, critérios `CA-NN` (avulsa: formato e
    Dado/Quando/Então; de spec: só citados, sem cópia), branch, caminhos de "Ler antes de começar" e a
    tabela critério → teste (nome entre aspas terminando em `(CA-NN)`), e lista cada problema como
-   `arquivo:linha [ERRO|AVISO] mensagem`. Corrija e rode de novo até sair sem erro (exit 0). Ele confere
-   a forma, não o sentido: "Não deve mudar" e os testes que mudam de propósito continuam com você.
+   `arquivo:linha [ERRO|AVISO] código mensagem` (o código diz qual regra quebrou). Corrija e rode de novo
+   até sair sem erro (exit 0). Ele confere a forma, não o sentido: "Não deve mudar" e os testes que mudam
+   de propósito continuam com você.
    Seção 5 (fechamento) fica com os rótulos vazios.
 4. **Não implemente.** Nem "só o teste", nem "só a assinatura".
 

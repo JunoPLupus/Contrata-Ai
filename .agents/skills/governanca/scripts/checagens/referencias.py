@@ -57,7 +57,7 @@ def check_refs(arquivo: Path, texto: str, raiz: Path) -> list[Finding]:
         if caminho.split("/")[0] not in (".", "..") and caminho.split("/")[0] not in _top_dirs(raiz):
             continue
         if not path_exists(caminho, arquivo, raiz):
-            findings.append(erro(arquivo, line_of(texto, pos), f"caminho: não existe: {caminho}"))
+            findings.append(erro(arquivo, line_of(texto, pos), "governanca.caminho-inexistente", f"caminho: não existe: {caminho}"))
     return findings
 
 # endregion
@@ -84,7 +84,7 @@ def check_python_commands(arquivo: Path, texto: str, raiz: Path) -> list[Finding
             if destino_ok is None:
                 continue
         if not destino_ok:
-            findings.append(erro(arquivo, line_of(texto, comando.start()), f"comando: alvo não existe: {caminho}"))
+            findings.append(erro(arquivo, line_of(texto, comando.start()), "governanca.comando-alvo-inexistente", f"comando: alvo não existe: {caminho}"))
     return findings
 
 # endregion
@@ -105,7 +105,7 @@ def check_cited_skills(arquivo: Path, texto: str, raiz: Path) -> list[Finding]:
     for citacao in _SKILL_CITADA.finditer(texto):
         nome = next(g for g in citacao.groups() if g)
         if nome not in existentes:
-            findings.append(aviso(arquivo, line_of(texto, citacao.start()),
+            findings.append(aviso(arquivo, line_of(texto, citacao.start()), "governanca.skill-pendente",
                                   f"pendência: skill '{nome}' citada, ainda não existe"))
     return findings
 

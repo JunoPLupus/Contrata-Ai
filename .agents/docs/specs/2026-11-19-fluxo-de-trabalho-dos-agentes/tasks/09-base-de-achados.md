@@ -1,11 +1,11 @@
 # Task: Base de achados da governança
 
-- **Status:** `aberta`
+- **Status:** `concluída`
 - **Criado em:** 2026-11-19
-- **Atualizado em:** 2026-11-19 — rodadas de abertura respondidas (Q1 a Q5; base da oficina como ponte até a 05/06)
+- **Atualizado em:** 2026-11-20 — aprovada na revisão do Juno
 - **Tipo:** `docs`
 - **Alcance:** `documentação`
-- **Branch:** `docs/juno/fluxo-de-trabalho-dos-agentes-09` (sugerida; criada pelo Juno)
+- **Branch:** `docs/juno/fluxo-de-trabalho-dos-agentes-09` (criada pelo Juno)
 
 ## 1. Vínculo com a spec (task de spec)
 
@@ -165,12 +165,66 @@ A task só está concluída com todos os comandos passando e a evidência regist
 
 ## 5. Fechamento
 
-- **O que foi feito:**
-- **Arquivos alterados:**
+- **O que foi feito:** o `Finding` ganhou o campo `codigo`, obrigatório em `erro()` e `aviso()` e conferido
+  no formato `<dono>.<regra>`; todas as checagens o informam (`md.` na lib comum, `task.`, `spec.`,
+  `governanca.`). A saída da governança e dos validadores passou a `arquivo:linha [SEVERIDADE] código
+  mensagem`; a da governança sai ordenada por arquivo e linha, com linha em branco entre arquivos. A
+  governança ganhou `--salvar-base` e `--comparar` (erros novos, avisos novos, já existiam, corrigidos; exit 1
+  só com erro novo), com as funções importáveis para a 05 e a 06. A mensagem de CA repetido deixou de citar a
+  linha. A `SKILL.md` da governança explica o código, a ordem e a base; a oficina salva a base antes da
+  primeira edição e compara no passo 6.3.
+- **Arquivos alterados:** os previstos: `md_checks.py`, `governanca.py`, os quatro módulos de
+  `governanca/scripts/checagens/` que criam achados, `validate_task.py`, `validate_spec.py`, os testes da
+  governança, da `task` e da `spec`, as `SKILL.md` da governança e da oficina, esta task. Fora dos previstos,
+  com a aprovação do Juno: as `SKILL.md` da `task` e da `spec` (ver as decisões). Nenhum arquivo criado (ver
+  a primeira decisão abaixo).
 - **Decisões tomadas no caminho:**
-- **Testes antes de começar:**
-- **Testes no fim:**
-- **Evidência por critério:**
-- **Checagens não feitas:**
-- **Ficou para depois:**
-- **Commits entregues:**
+  - As funções da base ficam no `governanca.py`, não num módulo novo em `checagens/`: a pasta guarda as
+    regras (decisão do Juno na 01), e salvar e comparar é a saída do ponto de entrada; descartado: módulo
+    `base.py` em `checagens/` (quebraria o critério da pasta).
+  - O código vai entre a severidade e a mensagem, e a mensagem mantém o assunto no começo (`status:`,
+    `rtk:`…), como decidido em Q1 (o texto das mensagens não muda).
+  - O `Finding` recusa código fora do formato (`ValueError`), além de o parâmetro ser obrigatório: um código
+    digitado errado não vira uma identidade nova em silêncio.
+  - `check_paths_exist` recebe o código de quem chama (a regra é do validador de task; a lib só procura).
+  - Com achados repetidos, os primeiros em ordem de linha contam como antigos e os seguintes como novos.
+  - Base editada à mão fora do formato é recusada com o número da linha, em vez de comparar errado (risco do
+    design).
+  - `--salvar-base` sai com 0 mesmo com erros: os erros que já existem são o que a base registra.
+  - Na oficina, sem a base salva (esqueceu ou entrou no meio do ciclo), o passo 6.3 roda a governança simples
+    e exige 0 erros, como antes.
+  - A docstring do helper de `test_validate_task.py` que descreve a linha impressa foi atualizada junto.
+  - As `SKILL.md` da `task` (passo 1.4.3) e da `spec` (passo do validador) descreviam a saída dos
+    validadores sem o código; passaram a `arquivo:linha [ERRO|AVISO] código mensagem`. Arquivos fora dos
+    previstos: aprovado pelo Juno em 2026-11-19, para o texto não contradizer a saída real.
+- **Testes antes de começar:** governança 59 testes OK; scripts da `task` 47 OK; scripts da `spec` 8 OK;
+  critérios `[script]` dos evals da `task` 42 OK; `apply_checks` da oficina 5 OK; governança no repositório:
+  0 erros, 5 avisos.
+- **Testes no fim:** governança 74 testes OK (15 novos); scripts da `task` 47 OK e da `spec` 8 OK (só os
+  textos esperados da linha impressa mudaram, como previsto); evals da `task` 42 OK; oficina 5 OK
+  (Python 3.14.5); governança no repositório: 0 erros, 5 avisos (os mesmos de antes); `quick_validate` de
+  `../governanca` e `../oficina-de-skills`: válidas. Mutação manual: 12 mutantes, 12 mortos (linha na
+  identidade; antigo tratado como novo; novo tratado como antigo; código fora da identidade; repetidos
+  contados uma vez; exit 1 só com antigos; exit 1 por aviso novo; `erro()` sem código aceito; sem ordem por
+  arquivo; sem linha em branco entre arquivos; CA repetido citando a linha; `--salvar-base` saindo com 1).
+  Checagem manual: com um link quebrado plantado na `SKILL.md` da oficina, salvei a base em
+  `.agents/skills/oficina-de-skills-workspace/base-de-achados.txt` (exit 0); desfiz o link e plantei um
+  `npm test` sem `rtk` na `SKILL.md` da governança: `--comparar` deu 1 erro novo, 5 já existiam e o link no
+  grupo dos corrigidos, exit 1; sem o erro novo, exit 0. Plantios e workspace desfeitos.
+- **Evidência por critério:** CA-28 → teste "a comparação separa erros novos, antigos e corrigidos, e só os
+  novos falham (CA-28)" passando, com os mutantes "antigo tratado como novo" e "exit 1 só com antigos"
+  mortos; CA-29 → teste "base salva em arquivo: erro antigo corrigido aparece entre os corrigidos e não falha
+  (CA-29)" e "Com um erro novo, --comparar sai com 1; o erro antigo continua só informado" passando, mais a
+  checagem manual acima e o passo 6.3 da oficina ("com erro novo, a skill não está pronta").
+- **Checagens não feitas:** o CI no GitHub (roda no push da branch; localmente rodei as mesmas suítes e a
+  governança).
+- **Ficou para depois:** a troca da base da oficina pela do Andamento → task 08.
+- **Commits entregues:** três, nesta ordem (cada um deixa a governança e os testes verdes), todos com o
+  rodapé `Task: 2026-11-19-fluxo-de-trabalho-dos-agentes/tasks/09-base-de-achados.md`:
+  1. `feat(agents): Adiciona o código da regra e a base de achados à governança` — `md_checks.py`,
+     `governanca.py`, os quatro módulos de `checagens/`, `validate_task.py`, `validate_spec.py` e os três
+     arquivos de teste;
+  2. `docs(agents): Ensina as skills a usar o código e a base de achados` — as `SKILL.md` da governança, da
+     oficina, da `task` e da `spec`;
+  3. `docs(agents): Conclui a task 09 do fluxo de trabalho` — esta task (implementação registrada e
+     aprovada).

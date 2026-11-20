@@ -2,11 +2,15 @@
 
 Rodar a partir da raiz do projeto:  rtk python3 -m unittest discover -s .agents/skills/governanca/scripts/testes
 """
+import contextlib
 import importlib.util
+import io
 import sys
 import tempfile
 import unittest
+from collections import Counter
 from pathlib import Path
+from unittest import mock
 
 _SCRIPTS = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(_SCRIPTS.parents[2] / "scripts" / "lib"))
@@ -18,7 +22,7 @@ import instrucoes  # noqa: E402
 import referencias  # noqa: E402
 import registros  # noqa: E402
 import skills  # noqa: E402
-from md_checks import erro  # noqa: E402
+from md_checks import aviso, check_acceptance_criteria, erro  # noqa: E402
 
 RAIZ_REAL = Path(__file__).resolve().parents[5]
 
@@ -348,9 +352,26 @@ class ExecucaoTest(ProjetoFalso):
         self.assertEqual(governanca.exit_code(achados), 1)
 
     def test_formato_com_caminho_relativo(self):
-        """Saída 'arquivo:linha [SEVERIDADE] mensagem', com o caminho relativo à raiz."""
-        achado = erro(self.raiz / ".agents/skills/spec/SKILL.md", 3, "msg")
-        self.assertEqual(governanca.format_finding(achado, self.raiz), ".agents/skills/spec/SKILL.md:3 [ERRO] msg")
+        """Saída 'arquivo:linha [SEVERIDADE] código mensagem', com o caminho relativo à raiz."""
+        achado = erro(self.raiz / ".agents/skills/spec/SKILL.md", 3, "md.x", "msg")
+        self.assertEqual(governanca.format_finding(achado, self.raiz), ".agents/skills/spec/SKILL.md:3 [ERRO] md.x msg")
+
+    def test_saida_ordenada_por_arquivo_com_linha_em_branco(self):
+        """Saída ordenada por arquivo e linha (não erros antes de avisos), com linha em branco entre arquivos."""
+        a, b = self.raiz / "a.md", self.raiz / "b.md"
+        achados = [erro(b, 2, "md.x", "dois"), aviso(a, 9, "md.y", "nove"), erro(a, 1, "md.x", "um")]
+        self.assertEqual(governanca.format_report(achados, self.raiz), (
+            "a.md:1 [ERRO] md.x um\n"
+            "a.md:9 [AVISO] md.y nove\n"
+            "\n"
+            "b.md:2 [ERRO] md.x dois\n"
+            "\n"
+            "2 erro(s), 1 aviso(s)"
+        ))
+
+    def test_saida_sem_achados_so_tem_o_resumo(self):
+        """Sem achados, só a linha do resumo."""
+        self.assertEqual(governanca.format_report([], self.raiz), "0 erro(s), 0 aviso(s)")
 
 TASK_VIVA = """# Task: x
 
@@ -484,7 +505,7 @@ class ValidadoresDasVivasTest(ProjetoFalso):
     def test_so_as_vivas_sao_validadas(self):
         """O validador é chamado para cada task e spec viva, e para nenhuma fechada."""
         chamados = []
-        validar_task = lambda arquivo, raiz: chamados.append(arquivo.name) or [erro(arquivo, 1, "regra nova")]
+        validar_task = lambda arquivo, raiz: chamados.append(arquivo.name) or [erro(arquivo, 1, "task.nova", "regra nova")]
         validar_spec = lambda pasta, raiz: chamados.append(pasta.name) or []
         for status in ("aberta", "bloqueada", "em andamento"):
             self.escrever(f".agents/docs/tasks/{status.replace(' ', '-')}.md", task(status))
@@ -566,6 +587,162 @@ class PlaceholderCanonicoTest(ProjetoFalso):
             self.assertIn(arquivo, canonicos)
         for arquivo in fora:
             self.assertNotIn(arquivo, canonicos)
+
+
+class CodigoDaRegraTest(unittest.TestCase):
+    """Todo achado tem o código da regra; a mensagem não cita número de linha."""
+
+    def test_erro_sem_codigo_e_recusado(self):
+        """erro() e aviso() sem o código não montam o achado."""
+        with self.assertRaises(TypeError):
+            erro(Path("a.md"), 1, "só a mensagem")
+        with self.assertRaises(TypeError):
+            aviso(Path("a.md"), 1, "só a mensagem")
+
+    def test_codigo_fora_do_formato_e_recusado(self):
+        """O código segue '<dono>.<regra>', em minúsculas com hífen."""
+        for codigo in ("sem-dono", "Task.secao", "task.Secao_Vazia", "task.", "md.x y"):
+            with self.subTest(codigo=codigo), self.assertRaises(ValueError):
+                erro(Path("a.md"), 1, codigo, "msg")
+        self.assertEqual(erro(Path("a.md"), 1, "task.subsecao-vazia", "msg").codigo, "task.subsecao-vazia")
+
+    def test_ca_repetido_nao_cita_a_linha(self):
+        """A mensagem do CA repetido não cita a linha do primeiro (mudaria a cada edição acima dele)."""
+        texto = "### CA-01: a\n- **Dado** x\n- **Quando** y\n- **Então** z\n\n" * 2
+        repetidos = [f for f in check_acceptance_criteria(Path("spec.md"), texto) if f.codigo == "md.criterio-repetido"]
+        self.assertEqual([(f.linha_inicio, f.mensagem) for f in repetidos], [(6, "critério: CA-01 repetido")])
+
+
+class BaseDeAchadosTest(ProjetoFalso):
+    """Base salva antes da mudança e comparação depois: novos, antigos e corrigidos."""
+
+    def achado(self, nome: str, linha: int, codigo: str = "md.link-quebrado", mensagem: str = "link: x",
+               severidade=erro):
+        return severidade(self.raiz / nome, linha, codigo, mensagem)
+
+    def base(self, *achados) -> Counter:
+        return governanca.read_base(governanca.format_base(list(achados), self.raiz))
+
+    def test_base_sem_numero_de_linha(self):
+        """A base tem uma linha por achado, com caminho relativo e sem número de linha; repetidos repetem."""
+        texto = governanca.format_base([
+            self.achado("b.md", 7), self.achado("a.md", 3, "md.y", "outra", aviso), self.achado("b.md", 9),
+        ], self.raiz)
+        self.assertEqual(texto, (
+            "a.md [AVISO] md.y outra\n"
+            "b.md [ERRO] md.link-quebrado link: x\n"
+            "b.md [ERRO] md.link-quebrado link: x\n"
+        ))
+
+    def test_linha_fora_do_formato_e_recusada_com_o_numero(self):
+        """Base editada à mão fora do formato é recusada, com o número da linha (não compara errado)."""
+        with self.assertRaisesRegex(ValueError, "linha 2 da base"):
+            governanca.read_base("a.md [ERRO] md.x msg\na.md:3 erro sem colchetes\n")
+
+    def test_tres_grupos_e_so_os_novos_falham(self):
+        """a comparação separa erros novos, antigos e corrigidos, e só os novos falham (CA-28)"""
+        base = self.base(self.achado("a.md", 3), self.achado("b.md", 5))
+        antigo_em_outra_linha, novo = self.achado("a.md", 40), self.achado("c.md", 1)
+        comparacao = governanca.compare(base, [novo, antigo_em_outra_linha], self.raiz)
+        self.assertEqual(comparacao.erros_novos, [novo])
+        self.assertEqual(comparacao.antigos, [antigo_em_outra_linha])
+        self.assertEqual(comparacao.corrigidos, [("b.md", "erro", "md.link-quebrado", "link: x")])
+        self.assertEqual(governanca.comparison_exit_code(comparacao), 1)
+
+        so_antigos = governanca.compare(base, [antigo_em_outra_linha], self.raiz)
+        self.assertEqual(so_antigos.novos, [])
+        self.assertEqual(governanca.comparison_exit_code(so_antigos), 0)
+
+    def test_codigo_faz_parte_da_identidade(self):
+        """Mesma mensagem com outro código é outro achado: um novo e um corrigido."""
+        base = self.base(self.achado("a.md", 3, "md.x"))
+        comparacao = governanca.compare(base, [self.achado("a.md", 3, "md.y")], self.raiz)
+        self.assertEqual(len(comparacao.erros_novos), 1)
+        self.assertEqual(len(comparacao.corrigidos), 1)
+
+    def test_repetidos_contam_pela_quantidade(self):
+        """Dois achados iguais na base e um agora: um antigo e um corrigido; três agora: um novo."""
+        base = self.base(self.achado("a.md", 3), self.achado("a.md", 8))
+        um = governanca.compare(base, [self.achado("a.md", 3)], self.raiz)
+        self.assertEqual((len(um.antigos), len(um.corrigidos), len(um.novos)), (1, 1, 0))
+        tres = governanca.compare(base, [self.achado("a.md", n) for n in (3, 8, 12)], self.raiz)
+        self.assertEqual((len(tres.antigos), len(tres.corrigidos), [f.linha_inicio for f in tres.novos]), (2, 0, [12]))
+
+    def test_aviso_novo_e_informado_e_nao_falha(self):
+        """Aviso novo vai para o grupo próprio e não faz a comparação falhar."""
+        comparacao = governanca.compare(Counter(), [self.achado("a.md", 1, "md.y", "pendência", aviso)], self.raiz)
+        self.assertEqual(len(comparacao.avisos_novos), 1)
+        self.assertEqual(comparacao.erros_novos, [])
+        self.assertEqual(governanca.comparison_exit_code(comparacao), 0)
+
+    def test_formato_da_comparacao(self):
+        """Só os grupos com achados, na ordem novos → avisos novos → já existiam → corrigidos, e o resumo."""
+        base = self.base(self.achado("a.md", 3), self.achado("b.md", 5))
+        comparacao = governanca.compare(base, [self.achado("a.md", 4), self.achado("c.md", 1)], self.raiz)
+        self.assertEqual(governanca.format_comparison(comparacao, self.raiz), (
+            "Erros novos (bloqueiam):\n"
+            "c.md:1 [ERRO] md.link-quebrado link: x\n"
+            "\n"
+            "Já existiam antes da mudança (só informados):\n"
+            "a.md:4 [ERRO] md.link-quebrado link: x\n"
+            "\n"
+            "Corrigidos:\n"
+            "b.md [ERRO] md.link-quebrado link: x\n"
+            "\n"
+            "1 erro(s) novo(s), 0 aviso(s) novo(s), 1 já existiam, 1 corrigido(s)"
+        ))
+
+
+class BaseEmArquivoTest(ProjetoFalso):
+    """--salvar-base e --comparar de ponta a ponta, num projeto falso (o caminho da oficina de skills)."""
+
+    def setUp(self):
+        super().setUp()
+        self.escrever("AGENTS.md", TABELA_OK)
+        rodar = governanca.run
+        for alvo, valor in (("get_project_root", lambda: self.raiz),
+                            ("run", lambda raiz: rodar(raiz, esperadas={}, validar=VALIDA, validadores=SEM_VALIDADORES))):
+            patcher = mock.patch.object(governanca, alvo, valor)
+            patcher.start()
+            self.addCleanup(patcher.stop)
+        self.arquivo_base = self.raiz / ".agents/skills/spec-workspace/base-de-achados.txt"
+
+    def main(self, *argv) -> tuple[int, str]:
+        saida = io.StringIO()
+        with contextlib.redirect_stdout(saida):
+            codigo = governanca.main(list(argv))
+        return codigo, saida.getvalue()
+
+    def test_erro_antigo_corrigido_aparece_entre_os_corrigidos(self):
+        """base salva em arquivo: erro antigo corrigido aparece entre os corrigidos e não falha (CA-29)"""
+        guia = self.escrever(".agents/docs/guides/g.md", "[x](nada.md)\n")
+        codigo, saida = self.main("--salvar-base", str(self.arquivo_base))
+        self.assertEqual(codigo, 0)  # salvar não falha pelos erros que já existem
+        self.assertIn("Base salva em", saida)
+        self.assertEqual(self.arquivo_base.read_text(encoding="utf-8"),
+                         ".agents/docs/guides/g.md [ERRO] md.link-quebrado link: destino não existe: nada.md\n")
+
+        guia.write_text("sem link\n", encoding="utf-8")
+        codigo, saida = self.main("--comparar", str(self.arquivo_base))
+        self.assertEqual(codigo, 0)
+        self.assertIn("Corrigidos:\n.agents/docs/guides/g.md [ERRO] md.link-quebrado link: destino não existe: nada.md", saida)
+        self.assertNotIn("Erros novos", saida)
+
+    def test_erro_novo_falha_e_o_antigo_so_e_informado(self):
+        """Com um erro novo, --comparar sai com 1; o erro antigo continua só informado."""
+        self.escrever(".agents/docs/guides/g.md", "[x](nada.md)\n")
+        self.main("--salvar-base", str(self.arquivo_base))
+        self.escrever(".agents/docs/guides/h.md", "[y](sumiu.md)\n")
+        codigo, saida = self.main("--comparar", str(self.arquivo_base))
+        self.assertEqual(codigo, 1)
+        self.assertIn("Erros novos (bloqueiam):\n.agents/docs/guides/h.md:1 [ERRO]", saida)
+        self.assertIn("Já existiam antes da mudança (só informados):\n.agents/docs/guides/g.md:1 [ERRO]", saida)
+
+    def test_comparar_sem_base_e_recusado(self):
+        """--comparar sem o arquivo da base para com a orientação de salvar antes."""
+        with self.assertRaises(SystemExit) as saida:
+            self.main("--comparar", str(self.arquivo_base))
+        self.assertIn("--salvar-base", str(saida.exception.code))
 
 
 class PontoDeEntradaTest(unittest.TestCase):

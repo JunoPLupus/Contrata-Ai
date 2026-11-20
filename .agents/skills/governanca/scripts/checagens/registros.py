@@ -53,23 +53,23 @@ def check_place_status(raiz: Path) -> list[Finding]:
     for task in done_tasks(raiz):
         status = status_of(task)
         if status not in _TASK_FECHADA:
-            findings.append(erro(task, 1, f"lugar: task em done/ com status {_status_txt(status)} "
+            findings.append(erro(task, 1, "governanca.lugar-task-em-done", f"lugar: task em done/ com status {_status_txt(status)} "
                                           f"(em done/ só `concluída` ou `cancelada`)"))
     for task in loose_tasks(raiz):
         status = status_of(task)
         if status in _TASK_FECHADA:
-            findings.append(erro(task, 1, f"lugar: task avulsa `{status}` fora de done/ "
+            findings.append(erro(task, 1, "governanca.lugar-avulsa-fechada", f"lugar: task avulsa `{status}` fora de done/ "
                                           f"(mova para .agents/docs/tasks/done/)"))
     for pasta in done_spec_dirs(raiz):
         spec = pasta / "spec.md"
         status = status_of(spec) if spec.exists() else None
         if status not in _SPEC_FECHADA:
-            findings.append(erro(spec, 1, f"lugar: spec em specs/done/ com status {_status_txt(status)} "
+            findings.append(erro(spec, 1, "governanca.lugar-spec-em-done", f"lugar: spec em specs/done/ com status {_status_txt(status)} "
                                           f"(em done/ só `concluída`, `cancelada` ou `substituída`)"))
     for task in [*all_tasks(raiz), *done_tasks(raiz)]:
         texto = read_text(task)
         if status_of(task) == "em andamento" and not has_branch(texto):
-            findings.append(erro(task, 1, "lugar: task `em andamento` sem branch preenchida"))
+            findings.append(erro(task, 1, "governanca.lugar-sem-branch", "lugar: task `em andamento` sem branch preenchida"))
     return findings
 
 # endregion
@@ -82,12 +82,12 @@ def check_duplicates(raiz: Path) -> list[Finding]:
     concluidas = {t.name: t for t in done_tasks(raiz)}
     for task in loose_tasks(raiz):
         if task.name in concluidas:
-            findings.append(erro(task, 1, f"duplicata: a mesma task está em {_rel(task, raiz)} "
+            findings.append(erro(task, 1, "governanca.duplicata-task", f"duplicata: a mesma task está em {_rel(task, raiz)} "
                                           f"e em {_rel(concluidas[task.name], raiz)}"))
     specs_concluidas = {p.name: p for p in done_spec_dirs(raiz)}
     for pasta in spec_dirs(raiz):
         if pasta.name in specs_concluidas:
-            findings.append(erro(pasta / "spec.md", 1, f"duplicata: a mesma spec está em {_rel(pasta, raiz)}/ "
+            findings.append(erro(pasta / "spec.md", 1, "governanca.duplicata-spec", f"duplicata: a mesma spec está em {_rel(pasta, raiz)}/ "
                                                        f"e em {_rel(specs_concluidas[pasta.name], raiz)}/"))
     return findings
 

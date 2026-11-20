@@ -95,7 +95,7 @@ class _Base(unittest.TestCase):
         return caminho
 
     def mensagens(self, texto: str, fechar: bool = False, relativo: str = "tasks/2026-11-18-x.md") -> list[str]:
-        """Achados como no relatório, sem o nome do arquivo: 'linha [SEVERIDADE] mensagem'."""
+        """Achados como no relatório, sem o nome do arquivo: 'linha [SEVERIDADE] código mensagem'."""
         caminho = self.gravar(texto, relativo)
         return [str(f).split(":", 1)[1] for f in vt.validate(caminho, fechar=fechar)]
 
@@ -121,7 +121,7 @@ class AvulsaTest(_Base):
         ruim = self.gravar(AVULSA_OK.replace("`aberta`", "`feito`"), "tasks/ruim.md")
         falha = subprocess.run([sys.executable, str(SCRIPT), str(ruim)], capture_output=True, text=True)
         self.assertEqual(falha.returncode, 1)
-        self.assertIn("ruim.md:3 [ERRO] status: valor 'feito' inválido", falha.stdout)
+        self.assertIn("ruim.md:3 [ERRO] md.status-invalido status: valor 'feito' inválido", falha.stdout)
 
     def test_cli_arquivo_inexistente(self):
         """Arquivo que não existe interrompe com mensagem, sem traceback."""
@@ -139,7 +139,7 @@ class AvulsaTest(_Base):
     def test_status_com_a_lista_do_modelo(self):
         """Status com a lista de opções do modelo (`a` | `b`) é erro: o primeiro valor não pode passar por escolhido."""
         texto = AVULSA_OK.replace("- **Status:** `aberta`", "- **Status:** `aberta` | `em andamento`")
-        self.assertAcusa("3 [ERRO] status: lista de opções do modelo", self.erros(texto))
+        self.assertAcusa("3 [ERRO] md.status-opcoes-do-modelo status: lista de opções do modelo", self.erros(texto))
 
     def test_status_ausente(self):
         """Task sem a linha **Status:** é erro."""
@@ -208,7 +208,7 @@ class AvulsaTest(_Base):
             "- `api/src/domain/use-cases/usuario/cliente/buscar-cliente-por-id/buscar-cliente-por-id.use-case.ts`\n"
             "- api/src/http/controllers/usuario/cliente/cliente.controller.ts:40 (método `buscarPorId`).\n",
             "- o use-case de buscar cliente\n")
-        self.assertEqual([m for m in self.mensagens(texto)], ["34 [AVISO] ler antes: nenhum caminho de arquivo citado"])
+        self.assertEqual([m for m in self.mensagens(texto)], ["34 [AVISO] task.ler-antes-sem-caminho ler antes: nenhum caminho de arquivo citado"])
 
     def test_tabela_sem_nome_sem_linha_e_ca_de_fora(self):
         """Tabela critério → teste: linha sem nome, CA sem linha e CA que não é da task são erro."""
@@ -230,7 +230,7 @@ class AvulsaTest(_Base):
                  .replace('"deve retornar o perfil para prestador (CA-01)"', "cenário avulsa"))
         mensagens = self.mensagens(texto)
         self.assertEqual(self.erros(texto), [])
-        self.assertAcusa("[AVISO] tabela: CA-01 sem nome de teste", mensagens)
+        self.assertAcusa("[AVISO] task.tabela-sem-nome-de-teste tabela: CA-01 sem nome de teste", mensagens)
 
     def test_link_quebrado(self):
         """Link relativo para arquivo que não existe é erro."""
@@ -284,7 +284,7 @@ class FechamentoTest(_Base):
         """Task concluída com checagem pendente é aviso (o agente confere se ela impede concluir)."""
         texto = self._fechada().replace("- **Checagens não feitas:** nenhuma.", "- **Checagens não feitas:** mutação manual.")
         self.assertEqual(self.erros(texto), [])
-        self.assertAcusa("[AVISO] fechamento: há checagens não feitas", self.mensagens(texto))
+        self.assertAcusa("[AVISO] task.fechamento-checagens-pendentes fechamento: há checagens não feitas", self.mensagens(texto))
 
     def test_fechar_com_status_aberta(self):
         """Fechar com status diferente de `concluída` ou `em andamento` é erro."""
@@ -331,7 +331,7 @@ class TaskDeSpecTest(_Base):
         """CA citado que não existe no spec.md, ou fora do formato CA-NN, é erro."""
         texto = TASK_SPEC_OK.replace("CA-04 a CA-06", "CA-04 a CA-06, CA-99, CA-7")
         erros = self.erros_spec(texto)
-        self.assertAcusa("14 [ERRO] critério: CA-99 citado mas não existe no spec.md", erros)
+        self.assertAcusa("14 [ERRO] md.criterio-inexistente critério: CA-99 citado mas não existe no spec.md", erros)
         self.assertAcusa("critério: 'CA-7' fora do formato CA-NN", erros)
 
     def test_intervalo_cobre_os_do_meio_na_tabela(self):
