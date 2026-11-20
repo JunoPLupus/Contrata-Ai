@@ -76,7 +76,7 @@ Não pergunte o que o padrão vigente já responde (ex.: regra de negócio mora 
   Critério escrito sobre uma suposição vira teste da suposição.
 
 Rodada: pela seção "Decisões em rodadas" do `AGENTS.md`. As respostas
-técnicas substituem o "depende de Qn" na seção 3 ("O que fazer"), com o motivo. Se uma resposta virar
+técnicas substituem o "depende de Qn" na seção 2 ("O que fazer"), com o motivo. Se uma resposta virar
 decisão de produto nova, volte ao 1.1: talvez seja spec.
 
 Task de spec: as decisões técnicas já estão no `design.md`. Pergunte só o que ele não cobre; se a
@@ -91,16 +91,22 @@ pergunta reabre uma decisão "Fechada" do design, diga qual e por que antes de p
    # de spec → <pasta da spec>/tasks/NN-<assunto>.md, a partir da linha NN da lista do design.md
    rtk python3 .agents/skills/task/scripts/create_task.py spec .agents/docs/specs/<pasta> 02 --tipo feat
    ```
-   Ele preenche título, datas, "Atualizado em — criação", tipo, branch sugerida e status, deixa só a
-   seção que o tipo usa (avulsa: 2; de spec: 1) e o fechamento com os rótulos vazios. Na task de spec,
-   número, título e nome do arquivo vêm do link da lista do `design.md`, "Bloqueada por" e os `CA-NN`
-   vêm da mesma linha, a branch é a do `design.md` (se houver), e o status sai `bloqueada` quando uma
+   Ele preenche título, datas, "Atualizado em — criação", tipo, Modo, Spec, Bloqueada por, branch sugerida e
+   status, e deixa o fechamento com os rótulos vazios. O corpo é o mesmo nos dois tipos: na avulsa, Spec e
+   Bloqueada por saem `não se aplica` e os critérios são os `### CA-NN`; na de spec, Spec traz os links e os
+   critérios ficam em `### Critérios de aceite`. O Modo nasce
+   "agente implementa, Juno revisa"; se o usuário já disse que vai implementar, acrescente `--modo juno`
+   ("Juno implementa, agente guia e revisa"). Na task de spec,
+   número, título e nome do arquivo vêm do link da lista do `design.md`, "Bloqueada por" e os `CA-NN` (em
+   "Critérios de aceite") vêm da mesma linha, a branch é a do `design.md` (se houver; senão, `<tipo>/juno/<assunto da spec>-NN`), e o status sai `bloqueada` quando uma
    dependência não está `concluída` (o script diz qual e em que status está). Se o arquivo já existir,
    ele recusa: é task existente (modo [Atualizar](#2-atualizar)).
 2. Preencha o resto pelas regras do modelo e estas:
-   - **Seção 1 ou 2:** task de spec usa só a seção 1 e **cita** os `CA-NN` (não copia os critérios: eles
-     moram no `spec.md`, e duas cópias divergem). Avulsa usa só a seção 2, com critérios Dado/Quando/Então
-     tirados do código (mensagem e erro reais, ex.: `AcessoProibidoError` → 403).
+   - **Seção 1 (Contexto e critérios):** Problema, Objetivo e Referências nos dois tipos (na de spec, o
+     recorte desta fatia; "não se aplica" vale). A task de spec **cita** os `CA-NN` em "Critérios de aceite"
+     (não copia os critérios: eles moram no `spec.md`, e duas cópias divergem). A avulsa define os
+     `### CA-NN` com Dado/Quando/Então tirados do código (mensagem e erro reais, ex.:
+     `AcessoProibidoError` → 403).
    - **Status:** `aberta` (ou `bloqueada`, se 1.2 achou bloqueio pendente; o script já decide pela
      lista do `design.md`).
    - **Branch:** o script sugere `<tipo>/juno/<assunto>` (ex.: `fix/juno/restringir-perfil-cliente`)
@@ -111,12 +117,12 @@ pergunta reabre uma decisão "Fechada" do design, diga qual e por que antes de p
      nome depende de outra task: diga isso, não invente o nome como se fosse certo.
    - **Não deve mudar:** pelo menos um item concreto (contrato, rota irmã, DTO, schema). É a cerca que
      avisa quem implementa de que saiu do escopo.
-   - **Testes existentes que vão mudar de propósito:** procure-os (`rtk grep` pelo nome da classe ou da
+   - **Impacto, eixo de testes existentes que mudam de propósito:** procure-os (`rtk grep` pelo nome da classe ou da
      rota nos `.spec.ts`). Um teste que hoje prova o comportamento antigo ("deve retornar 200 ao buscar
      outro cliente") é exatamente o que vai mudar. "Nenhum" só depois de procurar.
    - **Critério que prova algo:** para cada `CA-NN`, o teste correspondente precisa **falhar no código de
      hoje**. Critério que já passa antes da mudança não prova nada sozinho. Se o comportamento foi pedido
-     e já passa hoje (ex.: "prestador continua vendo"), ele **continua sendo CA**: diga na seção 4 que só
+     e já passa hoje (ex.: "prestador continua vendo"), ele **continua sendo CA**: diga na seção 3 que só
      prova junto da mutação manual que o quebraria. Não o mova para "Não deve mudar", que é para o que
      está fora do pedido.
 3. **Conferência** antes de mostrar:
@@ -124,7 +130,9 @@ pergunta reabre uma decisão "Fechada" do design, diga qual e por que antes de p
    rtk python3 .agents/skills/task/scripts/validate_task.py <caminho-da-task>
    ```
    Ele confere comentários, `<placeholders>` e listas de opções do modelo que sobraram, status, tipo,
-   alcance, "Atualizado em", seções do tipo da task, critérios `CA-NN` (avulsa: formato e
+   alcance, Modo, "Atualizado em", seções, Spec e Bloqueada por conforme o tipo da task, subseções `###` (ausente ou vazia é erro; "não se
+   aplica" vale), os seis eixos do Impacto ("sim — o que muda" ou "não"), as entradas datadas do Andamento,
+   critérios `CA-NN` (avulsa: formato e
    Dado/Quando/Então; de spec: só citados, sem cópia), branch, caminhos de "Ler antes de começar" e a
    tabela critério → teste (nome entre aspas terminando em `(CA-NN)`), e lista cada problema como
    `arquivo:linha [ERRO|AVISO] código mensagem` (o código diz qual regra quebrou). Corrija e rode de novo
@@ -192,10 +200,12 @@ nova):
    é mudança da spec: proponha a skill `spec` (modo atualizar). Numa avulsa, confirme com o usuário antes.
 3. **A mudança já vem decidida?** Edite primeiro e mostre: a decisão é do usuário e acabou de ser tomada.
 4. **Edite no lugar** (nunca uma task nova ou "versão 2" ao lado):
-   - substitua o texto que ficou errado nas seções 2/3/4;
+   - substitua o texto que ficou errado nas seções 1/2/3;
    - `Atualizado em: AAAA-MM-DD — motivo`;
    - acrescente arquivos previstos e testes que vão mudar de propósito;
    - registre a decisão em **"Decisões tomadas no caminho"** (seção 5), com o motivo;
+   - **trocar o Modo** no meio da task (ex.: o usuário passa a implementar): mude o campo **Modo:** e
+     registre a troca no Andamento (seção 4), numa entrada `- AAAA-MM-DD — Modo: <de> → <para> (<motivo>)`;
    - **procure contradições** com "Fica fora" e "Não deve mudar": se a mudança mexe em algo que a task
      dizia que não ia mexer, aponte e corrija esse trecho, para não ficarem as duas versões;
    - mantenha o status (`em andamento` continua `em andamento`);
@@ -215,14 +225,14 @@ nova):
    - `rtk git status` e `rtk git diff --stat <base>...HEAD` (ou o diff da working tree) contra os
      **arquivos previstos**;
    - os testes que provam cada `CA-NN` existem com o nome da tabela (`rtk grep -n "(CA-01)" api/src`).
-2. **Rode os comandos da seção 4** (sem Node na máquina: Docker `node:22`). Se não der para rodar
+2. **Rode os comandos da seção 3** (sem Node na máquina: Docker `node:22`). Se não der para rodar
    (tempo, ambiente), não preencha números: registre em "Checagens não feitas" e diga ao usuário.
 3. **Nada a fechar?** Se a branch não existe, o diff está vazio ou os testes dos critérios não existem,
    diga isso com o que você viu. Não marque `concluída`, não preencha o fechamento e não entregue commit
    como se estivesse pronto. Pressa ou "pode confiar" não muda o que o código mostra.
 4. **Preencha a seção 5** com o que foi verificado:
    - "Arquivos alterados": do diff, comparados com os previstos (explique os de fora);
-   - "Testes antes de começar": o que a seção 4 registrou;
+   - "Testes antes de começar": o que a seção 3 registrou;
    - "Testes no fim": suítes e números **da sua execução**;
    - "Evidência por critério": `CA-NN → teste "…" passando`;
    - "Checagens não feitas": o que não rodou e por quê (ex.: mutação manual), ou "nenhuma".
@@ -269,10 +279,10 @@ Com o teste do CA-02 e a integração rodada, fecho e mando o commit.
 ### Exemplo — "terminei, fecha a task" com tudo verificado
 
 Pedido: "Terminei a task do aceite de orçamento, fecha e manda o commit." O commit tem os arquivos
-previstos, os três testes com `(CA-NN)` existem e os comandos da seção 4 passam. Resposta:
+previstos, os três testes com `(CA-NN)` existem e os comandos da seção 3 passam. Resposta:
 
 ```
-Conferi o commit `9d59084a`: os 5 arquivos previstos e mais nenhum. Rodei os comandos da seção 4:
+Conferi o commit `9d59084a`: os 5 arquivos previstos e mais nenhum. Rodei os comandos da seção 3:
 `tsc` ok e `aceitar-orcamento` com 12 testes passando, incluindo CA-01, CA-02 e CA-03. Preenchi o
 fechamento com isso; nada ficou em "Checagens não feitas".
 
