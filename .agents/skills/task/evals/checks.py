@@ -15,7 +15,7 @@ _EVALS = Path(__file__).resolve().parent
 _RAIZ = next(p for p in _EVALS.parents if (p / ".agents").is_dir())
 sys.path.insert(0, str(_EVALS.parent / "scripts"))
 import validate_task as vt  # noqa: E402  (ajusta o sys.path da lib global ao ser importado)
-from md_checks import ca_numbers_cited, ca_titles, check_updated_at, read_status  # noqa: E402
+from md_checks import ca_titles, check_updated_at, read_status  # noqa: E402
 from md_utils import find_placeholders  # noqa: E402
 
 _ATUALIZADO = re.compile(r"\*\*Atualizado em:\*\*\s*(.+)")
@@ -94,7 +94,7 @@ def _eval_1(outputs: Path) -> Resultado:
     if not tasks:
         falta = (False, "nenhum arquivo de task em .agents/docs/tasks/")
         for chave in (
-            "[script] Segue o modelo task.md: tem a seção '## 2. Contexto e critérios' e não tem a seção '## 1. Vínculo com a spec'",
+            "[script] Segue o modelo task.md de task avulsa: seção '## 1. Contexto e critérios' com os '### CA-NN' e sem '### Critérios de aceite', e 'não se aplica' em **Spec:** e **Bloqueada por:**",
             "[script] A task cita buscar-cliente-por-id, cliente.controller e buscar-avaliacoes-do-cliente, e todo caminho api/... de 'Ler antes de começar' existe no repositório",
             "[script] Linha **Branch:** com um nome no padrão <tipo>/juno/<assunto>",
             "[script] Status 'aberta'",
@@ -107,7 +107,7 @@ def _eval_1(outputs: Path) -> Resultado:
     texto = _ler(outputs, tasks[0])
 
     secoes = vt.check_type_sections(arquivo, texto, "avulsa")
-    r["[script] Segue o modelo task.md: tem a seção '## 2. Contexto e critérios' e não tem a seção '## 1. Vínculo com a spec'"] = (
+    r["[script] Segue o modelo task.md de task avulsa: seção '## 1. Contexto e critérios' com os '### CA-NN' e sem '### Critérios de aceite', e 'não se aplica' em **Spec:** e **Bloqueada por:**"] = (
         not secoes, _mensagens(secoes))
 
     nomes = ("buscar-cliente-por-id", "cliente.controller", "buscar-avaliacoes-do-cliente")
@@ -143,7 +143,7 @@ def _eval_2(outputs: Path) -> Resultado:
     r["[script] Não grava o design.md (não mexe na lista de tasks)"] = (
         not design, f"gravou: {design}" if design else "design.md não gravado")
 
-    chave_local = "[script] Se escreve o arquivo: só em .agents/docs/specs/2026-11-15-notificacoes/tasks/02-<assunto>.md, com a seção '## 1. Vínculo com a spec' citando CA-04 a CA-08 e sem a seção '## 2. Contexto e critérios'"
+    chave_local = "[script] Se escreve o arquivo: só em .agents/docs/specs/2026-11-15-notificacoes/tasks/02-<assunto>.md, com '### Critérios de aceite' citando CA-04 a CA-08 e o link do spec.md em **Spec:**"
     chave_copia = "[script] Se escreve o arquivo: não copia os critérios da spec (nenhuma linha **Dado** / **Quando** / **Então**)"
     chave_tabela = "[script] Se escreve o arquivo: tabela critério → teste cobre CA-04 a CA-08, e cada linha traz um nome de teste entre aspas terminando em (CA-NN)"
 
@@ -165,7 +165,7 @@ def _eval_2(outputs: Path) -> Resultado:
         arquivo = outputs / certo[0]
         texto = _ler(outputs, certo[0])
         secoes = vt.check_type_sections(arquivo, texto, "spec")
-        cita = _CAS_TASK_02 <= {n for n, _ in ca_numbers_cited(texto)}
+        cita = _CAS_TASK_02 <= vt.task_cas(texto, "spec")
         r[chave_local] = (not secoes and cita, f"seções: {_mensagens(secoes)}; cita CA-04 a CA-08: {cita}")
 
     copia = [f for f in vt.check_spec_criteria(arquivo, texto) if "Dado / Quando / Então" in f.mensagem]
@@ -242,7 +242,7 @@ def _so_a_task(arquivos: list[str], alvo: str) -> tuple[bool, str]:
     return (arquivos == [alvo], f"arquivos gravados: {arquivos}")
 
 
-def _secao_5(texto: str) -> str:
+def _fechamento(texto: str) -> str:
     """Texto da seção 5 (fechamento) até o fim do arquivo, sem espaços nas pontas."""
     inicio = texto.find("## 5. Fechamento")
     return texto[inicio:].strip() if inicio >= 0 else ""
@@ -283,8 +283,8 @@ def _eval_7(outputs: Path) -> Resultado:
           and "aprova" in depois.lower())
     r[chaves[0]] = (ok, f"status: {status}; atualizado em: '{depois[:80]}'; formato: {_mensagens(formato)}")
 
-    igual = _secao_5(texto) == _secao_5(original)
-    r[chaves[1]] = (igual, "seção 5 igual à do arquivo de apoio" if igual else "seção 5 mudou")
+    igual = _fechamento(texto) == _fechamento(original)
+    r[chaves[1]] = (igual, "fechamento igual ao do arquivo de apoio" if igual else "fechamento mudou")
     return r
 
 # endregion

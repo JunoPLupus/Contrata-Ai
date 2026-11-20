@@ -9,11 +9,11 @@
       "files": [],
       "expectations": [
         "[script] Grava exatamente um arquivo em .agents/docs/tasks/ (nome AAAA-MM-DD-<assunto>.md) e nenhum outro além de resposta.md",
-        "[script] Segue o modelo task.md: tem a seção '## 2. Contexto e critérios' e não tem a seção '## 1. Vínculo com a spec'",
+        "[script] Segue o modelo task.md de task avulsa: seção '## 1. Contexto e critérios' com os '### CA-NN' e sem '### Critérios de aceite', e 'não se aplica' em **Spec:** e **Bloqueada por:**",
         "[script] Não grava nada em api/ (não implementa)",
         "Critérios CA-NN em Dado/Quando/Então cobrindo prestador, o próprio cliente e outro cliente recusado (403 / AcessoProibidoError)",
         "[script] A task cita buscar-cliente-por-id, cliente.controller e buscar-avaliacoes-do-cliente, e todo caminho api/... de 'Ler antes de começar' existe no repositório",
-        "Preenche 'Não deve mudar' e 'Testes existentes que vão mudar de propósito' com itens concretos",
+        "Preenche 'Não deve mudar' e o eixo de testes do Impacto ('Testes existentes que mudam de propósito') com itens concretos",
         "[script] Linha **Branch:** com um nome no padrão <tipo>/juno/<assunto>",
         "[script] Status 'aberta'",
         "[script] Sem placeholder do modelo sobrando (comentário, <placeholder> ou AAAA-MM-DD)",
@@ -25,7 +25,7 @@
       "id": 2,
       "name": "spec-notificacoes-task-02",
       "prompt": "Vou começar a task 02 da spec de notificações (rotas de leitura e ações). Detalha a task pra mim. A spec e o design estão em .agents/skills/task/evals/files/spec-notificacoes-aprovada.md e design-notificacoes-aprovado.md — trate como se estivessem em .agents/docs/specs/2026-11-15-notificacoes/ (spec.md e design.md). Nenhuma task dessa spec foi feita ainda.",
-      "expected_output": "O agente lê spec e design, nota que a 02 é bloqueada pela 01 (não concluída) e avisa antes de detalhar; o arquivo, se escrito, usa a seção 1 do modelo, cobre CA-04 a CA-08 com testes nomeados (CA-NN), aponta código existente análogo como 'Ler antes de começar' sem inventar arquivos do núcleo como se existissem, e não muda a lista do design.md.",
+      "expected_output": "O agente lê spec e design, nota que a 02 é bloqueada pela 01 (não concluída) e avisa antes de detalhar; o arquivo, se escrito, cita os critérios em 'Critérios de aceite' (sem copiá-los), cobre CA-04 a CA-08 com testes nomeados (CA-NN), aponta código existente análogo como 'Ler antes de começar' sem inventar arquivos do núcleo como se existissem, e não muda a lista do design.md.",
       "files": [
         "evals/files/spec-notificacoes-aprovada.md",
         "evals/files/design-notificacoes-aprovado.md"
@@ -34,7 +34,7 @@
         "Avisa logo no começo que a 02 está bloqueada pela 01 (ainda não feita) e propõe começar pela 01",
         "[script] Se grava a task 02, o status é 'bloqueada'",
         "[script] Não grava nada em api/",
-        "[script] Se escreve o arquivo: só em .agents/docs/specs/2026-11-15-notificacoes/tasks/02-<assunto>.md, com a seção '## 1. Vínculo com a spec' citando CA-04 a CA-08 e sem a seção '## 2. Contexto e critérios'",
+        "[script] Se escreve o arquivo: só em .agents/docs/specs/2026-11-15-notificacoes/tasks/02-<assunto>.md, com '### Critérios de aceite' citando CA-04 a CA-08 e o link do spec.md em **Spec:**",
         "[script] Se escreve o arquivo: não copia os critérios da spec (nenhuma linha **Dado** / **Quando** / **Então**)",
         "[script] Se grava a task 02: 'Ler antes de começar' cita pelo menos um caminho api/ e todos existem no repositório",
         "[script] Se escreve o arquivo: tabela critério → teste cobre CA-04 a CA-08, e cada linha traz um nome de teste entre aspas terminando em (CA-NN)",
@@ -86,7 +86,7 @@
         "Acrescenta aos arquivos previstos o use-case da reputação (buscar-avaliacoes-do-cliente) e o arquivo da função nova, e o buscarLogado/controller onde couber",
         "Registra a decisão de extrair a função, com o motivo",
         "Aponta que mexer na reputação contradiz o 'Fica fora' atual e ajusta esse trecho (ou pergunta), sem deixar as duas versões",
-        "Atualiza 'Testes existentes que vão mudar de propósito' (testes do buscarLogado e/ou da reputação)",
+        "Atualiza o eixo de testes do Impacto ('Testes existentes que mudam de propósito') (testes do buscarLogado e/ou da reputação)",
         "[script] Mantém o status 'em andamento'",
         "[script] Não grava nada em api/ (não implementa)",
         "[script] Não acrescenta critério de aceite: os títulos ### CA-NN são os mesmos da task original"

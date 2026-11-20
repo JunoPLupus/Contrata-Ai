@@ -8,26 +8,32 @@
 - **Atualizado em:** 2026-11-18 — início da implementação
 - **Tipo:** `fix`
 - **Alcance:** `só API`
+- **Modo:** `agente implementa, Juno revisa`
+- **Spec:** não se aplica
+- **Bloqueada por:** não se aplica
 - **Branch:** `fix/juno/aceite-exige-solicitacao-aberta` (sugerida; criada pelo Juno)
 
-## 2. Contexto e critérios (task avulsa)
+## 1. Contexto e critérios
 
-- **Problema:** `AceitarOrcamentoUseCase` confere o dono da solicitação e se o orçamento está `pendente`,
-  mas nunca o status da **solicitação**. Cancelar a solicitação não encerra os orçamentos pendentes
-  (`AtualizarSolicitacaoUseCase` só troca o status), então dá para aceitar um orçamento de solicitação
-  `cancelada`. O use-case grava o orçamento como `aceito` e os outros como `encerrado` e **só depois**
-  falha na transição `cancelada → encerrada` do `AtualizarSolicitacaoUseCase`: o cliente recebe 422,
-  o banco fica com estado parcial e nenhum contrato é criado.
-- **Objetivo:** o aceite só acontece com a solicitação `aberta`, e essa checagem é feita **antes de
-  qualquer escrita**. Fora disso: `OperacaoNaoPermitidaError` (422) e nada gravado.
-- **Fica fora:**
-  - cancelar a solicitação encerrar os orçamentos `pendente` (cascata no cancelamento — decisão 2B,
-    no estacionamento; casa com o item 5e da remodelagem);
-  - transação Mongo no aceite (estacionamento "Transações");
-  - corrigir dados já gravados em estado parcial (não há produção).
-- **Referências:** decisões 1A, 2A e 3A (2026-11-18, `.notes/CLAUDE.md`, estacionamento);
-  `api/src/domain/use-cases/orcamento/aceitar-orcamento/aceitar-orcamento.use-case.ts`;
-  transições em `api/src/domain/use-cases/solicitacao/atualizar-solicitacao/atualizar-solicitacao.use-case.ts`.
+### Problema
+
+`AceitarOrcamentoUseCase` confere o dono da solicitação e se o orçamento está `pendente`, mas nunca o status
+da **solicitação**. Cancelar a solicitação não encerra os orçamentos pendentes (`AtualizarSolicitacaoUseCase`
+só troca o status), então dá para aceitar um orçamento de solicitação `cancelada`. O use-case grava o
+orçamento como `aceito` e os outros como `encerrado` e **só depois** falha na transição
+`cancelada → encerrada` do `AtualizarSolicitacaoUseCase`: o cliente recebe 422, o banco fica com estado
+parcial e nenhum contrato é criado.
+
+### Objetivo
+
+O aceite só acontece com a solicitação `aberta`, e essa checagem é feita **antes de qualquer escrita**. Fora
+disso: `OperacaoNaoPermitidaError` (422) e nada gravado.
+
+### Referências
+
+Decisões 1A, 2A e 3A (2026-11-18, `.notes/CLAUDE.md`, estacionamento);
+`api/src/domain/use-cases/orcamento/aceitar-orcamento/aceitar-orcamento.use-case.ts`; transições em
+`api/src/domain/use-cases/solicitacao/atualizar-solicitacao/atualizar-solicitacao.use-case.ts`.
 
 ### CA-01: Aceite em solicitação cancelada é recusado sem gravar nada
 
@@ -52,7 +58,28 @@
 - **Então** recebe `AcessoProibidoError` (403), e não o erro de status (não revela o estado da
   solicitação de outro cliente — decisão 3A)
 
-## 3. O que fazer nesta tarefa
+## 2. O que fazer nesta tarefa
+
+### Fica fora
+
+- cancelar a solicitação encerrar os orçamentos `pendente` (cascata no cancelamento — decisão 2B, no
+  estacionamento; casa com o item 5e da remodelagem);
+- transação Mongo no aceite (estacionamento "Transações");
+- corrigir dados já gravados em estado parcial (não há produção).
+
+### Decisões
+
+- A checagem da solicitação vem depois da do dono e antes da do orçamento `pendente` e de qualquer escrita
+  — descartada: antes da do dono (revelaria o estado da solicitação de outro cliente) — decisões 1A e 3A,
+  2026-11-18.
+- A regra mora num método da entidade (`Solicitacao.estaAberta()`), no padrão de `Servico.estaOfertado()`
+  — descartada: comparar o status no use-case (o item 5e repetiria a regra) — decisão 2A, 2026-11-18.
+
+### Em aberto
+
+nada
+
+### Passos
 
 1. Na entidade `Solicitacao`, criar `estaAberta(): boolean` (status `aberta`), com JSDoc, no padrão de
    `Servico.estaOfertado()`: ponto único da regra, para o item 5e reaproveitar.
@@ -66,7 +93,7 @@
 4. Documentação da rota: no Swagger de `PATCH /orcamentos/{id}/aceitar`, citar a regra na `description`
    e na resposta 422; em `api/docs/Rotas.md`, a linha do aceite passa a citar "solicitação `aberta`".
 
-**Ler antes de começar** (código real que serve de ponto de partida ou de modelo):
+### Ler antes de começar
 
 - `api/src/domain/use-cases/orcamento/aceitar-orcamento/aceitar-orcamento.use-case.ts`
 - `api/src/domain/use-cases/orcamento/aceitar-orcamento/aceitar-orcamento.use-case.unit.spec.ts` (modelo dos testes; o de "não pendente" é o mais próximo)
@@ -75,7 +102,7 @@
 - `api/src/test-helpers/solicitacao.mother.ts` (aceita `status`; o padrão é `aberta`)
 - `api/src/http/routes/orcamento/orcamento.routes.ts`
 
-**Arquivos previstos:**
+### Arquivos previstos
 
 - alterados: `api/src/domain/entities/solicitacao/solicitacao.entity.ts`,
   `api/src/domain/use-cases/orcamento/aceitar-orcamento/aceitar-orcamento.use-case.ts`,
@@ -84,7 +111,9 @@
   `api/docs/Rotas.md`
 - criados: nenhum
 
-**Não deve mudar:** a rota e o contrato de `PATCH /orcamentos/:id/aceitar` (entrada, resposta 200,
+### Não deve mudar
+
+A rota e o contrato de `PATCH /orcamentos/:id/aceitar` (entrada, resposta 200,
 códigos); `AtualizarSolicitacaoUseCase` e a tabela de transições; o cancelamento da solicitação; o
 `errorHandler`; o schema/model da solicitação e do orçamento; a cascata do aceite feliz (encerrar os
 outros pendentes, encerrar a solicitação, criar o contrato com o prazo em horas).
@@ -92,11 +121,20 @@ outros pendentes, encerrar a solicitação, criar o contrato com o prazo em hora
 Precisou alterar um arquivo fora dos previstos, uma dependência, um schema ou um contrato da API?
 Pare e avise antes: isso é mudança de escopo e precisa ser aprovada (e registrada nesta task).
 
-**Testes existentes que vão mudar de propósito:** nenhum. Procurado `aceitar` nos `.spec.ts`: os do
-use-case usam `SolicitacaoMother.criarValido` com status padrão `aberta` e continuam valendo; o do
-controller (`orcamento.controller.unit.spec.ts`) só confere a delegação ao use-case.
+### Impacto
 
-## 4. Como validar o que foi feito
+- **Contrato da API:** não — a rota, a entrada e os códigos continuam; muda só quando o 422 acontece
+- **Banco:** não
+- **Front:** não
+- **Permissões e segurança:** não — a checagem do dono continua a primeira (CA-03)
+- **Testes existentes que mudam de propósito:** não — procurado `aceitar` nos `.spec.ts`: os do use-case
+  usam `SolicitacaoMother.criarValido` com status padrão `aberta` e continuam valendo; o do controller
+  (`orcamento.controller.unit.spec.ts`) só confere a delegação ao use-case
+- **Documentação:** sim — Swagger de `PATCH /orcamentos/{id}/aceitar` e a linha do aceite em `api/docs/Rotas.md`
+
+Teste que quebrar e não estiver no eixo de testes é regressão até prova em contrário.
+
+## 3. Como validar o que foi feito
 
 **Antes de começar:** rode as suítes que a task afeta (lista abaixo) e anote o resultado no
 fechamento. Assim, o que já estava quebrado não se confunde com o que a task quebrou.
@@ -121,6 +159,11 @@ roda só o que a mudança afeta):
 
 A task só está concluída com todos os comandos passando e a evidência registrada no fechamento.
 "Terminei" sem evidência não conta: se uma checagem não pôde ser feita, diga qual e por quê.
+
+## 4. Andamento
+
+- 2026-11-18 — início da implementação; antes de começar: `npx tsc --noEmit` ok, `aceitar-orcamento` 1
+  suíte / 9 testes passando (Docker `node:22`).
 
 ## 5. Fechamento
 

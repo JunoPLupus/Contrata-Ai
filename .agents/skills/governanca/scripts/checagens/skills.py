@@ -62,7 +62,7 @@ def load_expected_sections(raiz: Path) -> dict[str, tuple[str, ...]]:
     task = load_script(skills / "task" / "scripts" / "validate_task.py")
     return {
         **spec._SECOES_OBRIGATORIAS,
-        "task.md": (task.SECAO_SPEC, task.SECAO_AVULSA, *task._SECOES_SEMPRE),
+        "task.md": task._SECOES_SEMPRE,
     }
 
 
