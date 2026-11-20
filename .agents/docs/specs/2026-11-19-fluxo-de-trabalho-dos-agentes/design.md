@@ -199,8 +199,7 @@ e o item da lista do design é riscado com data e motivo → mesmo aviso da últ
 
 - [01 — Skill de governança](tasks/01-governanca.md) — bloqueada por: nenhuma — cobre: CA-04, CA-23,
   CA-24, CA-25, CA-26, CA-27, CA-30
-- 02 — Modelo e validador de task — bloqueada por: 01 — cobre: CA-01, CA-02,
-  CA-03, CA-20
+- [02 — Modelo e validador de task](tasks/02-modelo-e-validador-de-task.md) — bloqueada por: 01 — cobre: CA-01, CA-02, CA-03, CA-20
 - 03 — Modelos e validador de spec e design — bloqueada por: 01 — cobre: CA-31,
   CA-32, CA-33
 - 04 — Status da spec por script — bloqueada por: 03 — cobre: CA-19, CA-35
