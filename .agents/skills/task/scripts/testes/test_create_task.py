@@ -137,7 +137,7 @@ class DeSpecTest(unittest.TestCase):
         self.assertIn("- **Bloqueada por:** 01-nucleo.md\n", texto)
         self.assertIn("- **Spec:** [spec.md](../spec.md) · [design.md](../design.md)\n", texto)
         self.assertIn("### Critérios de aceite\n\nCA-04 a CA-08\n", texto)
-        self.assertIn("- **Branch:** `feature/notificacoes` (sugerida; criada pelo Juno)\n", texto)  # a do design
+        self.assertIn("- **Branch:** `feat/juno/notificacoes-02` (sugerida; criada pelo Juno)\n", texto)
         self.assertIn("- **Modo:** `agente implementa, Juno revisa`\n", texto)
         self.assertIn("## 1. Contexto e critérios", texto)
         self.assertNotRegex(texto, r"(?m)^### CA-01")  # a de spec cita os critérios do spec.md
@@ -175,22 +175,49 @@ class DeSpecTest(unittest.TestCase):
         self.assertIn("- **Status:** `bloqueada`\n", texto)
 
     def test_sem_dependencia_e_sem_criterio(self):
-        """Task sem dependência e sem critério nasce `aberta`, com "nenhuma" e "nenhum"."""
+        """Task sem dependência e com "cobre: nenhum" nasce `aberta`, com "nenhuma" e "nenhum"."""
         _, texto = self.criar_task("07")
         self.assertIn("- **Status:** `aberta`\n", texto)
         self.assertIn("- **Bloqueada por:** nenhuma\n", texto)
         self.assertIn("### Critérios de aceite\n\nnenhum\n", texto)
 
-    def test_criterios_com_dois_pontos_do_modelo_e_branch_sem_design(self):
-        """Aceita "cobre:" do modelo e, sem branch no design, sugere <tipo>/juno/<assunto da spec>-NN."""
+    def test_criterios_com_dois_pontos_e_branch_mesmo_com_branch_no_design(self):
+        """Aceita "cobre:" do modelo e sugere <tipo>/juno/<assunto da spec>-NN, mesmo num design antigo com
+        **Branch:** (o campo saiu do design)."""
         design = self.pasta / "design.md"
         texto = design.read_text(encoding="utf-8")
-        texto = re.sub(r"- \*\*Branch:\*\*.*", "- **Branch:** <nome da branch, criada pelo Juno>", texto)
+        texto = texto.replace("- **Atualizado em:**", "- **Branch:** `feature/notificacoes`\n- **Atualizado em:**", 1)
         texto = texto.replace("— cobre CA-03, CA-09", "— cobre: CA-03, CA-09")
         design.write_text(texto, encoding="utf-8")
         _, task = self.criar_task("01")
         self.assertIn("### Critérios de aceite\n\nCA-03, CA-09\n", task)
         self.assertIn("- **Branch:** `feat/juno/notificacoes-01` (sugerida; criada pelo Juno)\n", task)
+
+    def test_item_sem_cobre_e_recusado(self):
+        """Item da lista sem "cobre" é recusado com a linha do design, sem criar a task (não vira "nenhum")."""
+        design = self.pasta / "design.md"
+        design.write_text(design.read_text(encoding="utf-8").replace(" — cobre: nenhum", "", 1), encoding="utf-8")
+        r, _ = self.criar_task("07")
+        self.assertNotEqual(r.returncode, 0)
+        self.assertIn("A task 07 não diz o que cobre na lista do design.md (linha 71)", r.stderr)
+        self.assertFalse((self.pasta / "tasks" / "07-requisitos-uc14.md").exists())
+
+    def test_item_que_quebra_linha_e_lido_inteiro(self):
+        """Item da lista que quebra linha é lido inteiro: o "cobre" da linha de baixo entra na task."""
+        design = self.pasta / "design.md"
+        design.write_text(design.read_text(encoding="utf-8").replace(
+            "— cobre CA-03, CA-09", "— cobre: CA-03,\n  CA-09"), encoding="utf-8")
+        _, task = self.criar_task("01")
+        self.assertIn("### Critérios de aceite\n\nCA-03, CA-09\n", task)
+
+    def test_item_sem_link_e_recusado(self):
+        """Item ainda sem link na lista é recusado, pedindo o link antes de criar."""
+        design = self.pasta / "design.md"
+        design.write_text(design.read_text(encoding="utf-8").replace(
+            "[06 — Evento de avaliação recebida](tasks/06-evento-avaliacao.md)", "06 — Evento de avaliação recebida"),
+            encoding="utf-8")
+        r, _ = self.criar_task("06")
+        self.assertIn("A task 06 não tem link na lista do design.md", r.stderr)
 
     def test_numero_fora_da_lista_cancelada_ou_sem_design(self):
         """Recusa número fora da lista, task riscada (cancelada) e pasta sem design.md."""

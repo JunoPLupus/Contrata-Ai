@@ -19,11 +19,16 @@
 
 ## 1. Problema e objetivo
 
-- **Problema:** cliente e prestador só ficam sabendo do que aconteceu com solicitações, orçamentos,
-  contratos e avaliações abrindo cada tela. Os requisitos pedem aviso em vários pontos, e nada disso existe.
-- **Objetivo:** cada perfil (cliente ou prestador) recebe dentro da plataforma um aviso curto, pronto para
-  ler, quando algo que o envolve acontece; vê a lista com o total de não lidas, marca como lida (uma ou
-  todas) e limpa as lidas. Avisos lidos somem sozinhos depois de um tempo.
+### Problema
+
+Cliente e prestador só ficam sabendo do que aconteceu com solicitações, orçamentos,
+contratos e avaliações abrindo cada tela. Os requisitos pedem aviso em vários pontos, e nada disso existe.
+
+### Objetivo
+
+Cada perfil (cliente ou prestador) recebe dentro da plataforma um aviso curto, pronto para
+ler, quando algo que o envolve acontece; vê a lista com o total de não lidas, marca como lida (uma ou
+todas) e limpa as lidas. Avisos lidos somem sozinhos depois de um tempo.
 
 Ao final, isto é verdade:
 
@@ -36,59 +41,65 @@ Ao final, isto é verdade:
 
 ## 2. Escopo
 
-- **Entra:**
-  - Eventos do MVP (tabela abaixo), com texto pronto montado pela API.
-  - Listar as notificações do usuário logado (as 50 mais recentes) com o total de não lidas.
-  - Marcar uma notificação como lida; marcar todas como lidas.
-  - Excluir as notificações lidas do usuário logado.
-  - Expiração automática das lidas 30 dias após a leitura.
-  - Atualizar o UC14 E01 nos requisitos para "melhor esforço" (task desta spec).
+### Entra
 
-  | Evento | Quem recebe | Requisito |
-  |---|---|---|
-  | Solicitação direta recebida | prestador escolhido | UC10 |
-  | Orçamento recebido | cliente da solicitação | UC11 |
-  | Orçamento aceito | prestador do orçamento aceito | UC12 |
-  | Orçamento encerrado (outro foi aceito) | demais prestadores com orçamento pendente | RF14, UC14 |
-  | Solicitação cancelada | prestadores com orçamento pendente | RN06, UC17 |
-  | Contrato cancelado | a outra parte do contrato | UC18 |
-  | Status do contrato atualizado | cliente do contrato | UC19 |
-  | Extensão de prazo pedida | cliente do contrato | UC20 |
-  | Extensão de prazo aprovada / recusada | as duas partes / o prestador | UC20 |
-  | Contrato concluído | as duas partes | UC21 |
-  | Avaliação recebida | o avaliado | UC23 (sem passo de notificação; incluído na conversa de 2026-11-15) |
+- Eventos do MVP (tabela abaixo), com texto pronto montado pela API.
+- Listar as notificações do usuário logado (as 50 mais recentes) com o total de não lidas.
+- Marcar uma notificação como lida; marcar todas como lidas.
+- Excluir as notificações lidas do usuário logado.
+- Expiração automática das lidas 30 dias após a leitura.
+- Atualizar o UC14 E01 nos requisitos para "melhor esforço" (task desta spec).
 
-- **Fica fora:**
-  - Email, push ou WhatsApp: o MVP é só in-app.
-  - Reenvio ou agendamento de notificação que falhou.
-  - Eventos de UCs sem use-case implementado (ex.: conclusão automática do contrato).
-  - Paginação completa da lista (só o limite de 50).
-  - Expiração das não lidas.
-  - Tempo real (websocket): o front consulta a API.
+| Evento | Quem recebe | Requisito |
+|---|---|---|
+| Solicitação direta recebida | prestador escolhido | UC10 |
+| Orçamento recebido | cliente da solicitação | UC11 |
+| Orçamento aceito | prestador do orçamento aceito | UC12 |
+| Orçamento encerrado (outro foi aceito) | demais prestadores com orçamento pendente | RF14, UC14 |
+| Solicitação cancelada | prestadores com orçamento pendente | RN06, UC17 |
+| Contrato cancelado | a outra parte do contrato | UC18 |
+| Status do contrato atualizado | cliente do contrato | UC19 |
+| Extensão de prazo pedida | cliente do contrato | UC20 |
+| Extensão de prazo aprovada / recusada | as duas partes / o prestador | UC20 |
+| Contrato concluído | as duas partes | UC21 |
+| Avaliação recebida | o avaliado | UC23 (sem passo de notificação; incluído na conversa de 2026-11-15) |
+
+### Fica fora
+
+- Email, push ou WhatsApp: o MVP é só in-app.
+- Reenvio ou agendamento de notificação que falhou.
+- Eventos de UCs sem use-case implementado (ex.: conclusão automática do contrato).
+- Paginação completa da lista (só o limite de 50).
+- Expiração das não lidas.
+- Tempo real (websocket): o front consulta a API.
 
 ## 3. Decisões de produto
 
-- **Fechadas** (não se rediscutem nesta spec):
-  - A notificação é endereçada a um perfil (cliente ou prestador) — descartadas: endereçar à conta
-    (misturava os papéis) e guardar o tipo do perfil (nenhuma consulta precisa) — 8a, 2026-10-13.
-  - O tipo é o evento (ex.: orçamento recebido) — descartada: tipo misturando canal e evento — 8b-i.
-  - O texto é montado pela API no momento do evento e guardado pronto — descartadas: montar no front (uma
-    consulta extra por notificação) e guardar dados soltos (campo sem formato fixo) — 8b-ii.
-  - A notificação aponta opcionalmente para um recurso; para onde o front leva é decisão do front — 8c.
-  - Lida = tem data de leitura; lidas expiram 30 dias depois — descartado: campo "lida" sim/não (não
-    permite expirar pela data) — 8d-i, 8d-iii.
-  - Notificar é melhor esforço: depois da operação principal gravada, nunca a faz falhar, falha vai para o
-    log — descartados: propagar o erro (a pessoa veria erro de algo que deu certo) e transação (invasivo)
-    — 8e, 8e-ii.
-  - Eventos do MVP = os dos UCs com use-case implementado (tabela da seção 2) — descartados: só os
-    obrigatórios RF14/RN06 (sino quase vazio) e incluir UCs sem use-case (puxa agendador) — 2026-11-15.
-  - Ações: listar, marcar uma, marcar todas, contador de não lidas, excluir lidas — descartada: sem
-    "marcar todas" e sem contador (cliques um a um; front contando a lista) — 2026-11-15.
-  - Lista limitada às 50 mais recentes, com o contador — descartadas: sem limite (não lidas acumulam) e
-    paginação completa (padrão novo na API) — 2026-11-15.
-  - UC14 E01 ("agenda reenvio") deixa de valer; vale o melhor esforço da 8e-ii; atualizar o requisito é
-    task desta spec — descartado: reabrir a 8e-ii (exige fila) — 2026-11-15.
-- **Em aberto:** nenhuma.
+### Fechadas
+
+- A notificação é endereçada a um perfil (cliente ou prestador) — descartadas: endereçar à conta
+  (misturava os papéis) e guardar o tipo do perfil (nenhuma consulta precisa) — 8a, 2026-10-13.
+- O tipo é o evento (ex.: orçamento recebido) — descartada: tipo misturando canal e evento — 8b-i.
+- O texto é montado pela API no momento do evento e guardado pronto — descartadas: montar no front (uma
+  consulta extra por notificação) e guardar dados soltos (campo sem formato fixo) — 8b-ii.
+- A notificação aponta opcionalmente para um recurso; para onde o front leva é decisão do front — 8c.
+- Lida = tem data de leitura; lidas expiram 30 dias depois — descartado: campo "lida" sim/não (não
+  permite expirar pela data) — 8d-i, 8d-iii.
+- Notificar é melhor esforço: depois da operação principal gravada, nunca a faz falhar, falha vai para o
+  log — descartados: propagar o erro (a pessoa veria erro de algo que deu certo) e transação (invasivo)
+  — 8e, 8e-ii.
+- Eventos do MVP = os dos UCs com use-case implementado (tabela da seção 2) — descartados: só os
+  obrigatórios RF14/RN06 (sino quase vazio) e incluir UCs sem use-case (puxa agendador) — 2026-11-15.
+- Ações: listar, marcar uma, marcar todas, contador de não lidas, excluir lidas — descartada: sem
+  "marcar todas" e sem contador (cliques um a um; front contando a lista) — 2026-11-15.
+- Lista limitada às 50 mais recentes, com o contador — descartadas: sem limite (não lidas acumulam) e
+  paginação completa (padrão novo na API) — 2026-11-15.
+- UC14 E01 ("agenda reenvio") deixa de valer; vale o melhor esforço da 8e-ii; atualizar o requisito é
+  task desta spec — descartado: reabrir a 8e-ii (exige fila) — 2026-11-15.
+
+### Em aberto
+
+nada
 
 ## 4. Critérios de aceite
 

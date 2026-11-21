@@ -1,6 +1,7 @@
 """Cria o design.md numa pasta de spec existente (fase 3, depois da spec aprovada).
 
-O título vem da primeira linha do spec.md ("# Spec: <título>").
+O título vem da primeira linha do spec.md ("# Spec: <título>"). Recusa a spec que não está `aprovada` ou cujo
+"Em aberto" não diz "nada" (lista os itens, com a linha), sem criar nada.
 
 Uso: python create_design.py <pasta da spec> [--data AAAA-MM-DD]
 """
@@ -11,6 +12,7 @@ from datetime import date
 from pathlib import Path
 
 from utils import fill_template, read_text, relative_to_root
+from validate_spec import open_items
 
 
 _TITULO_SPEC = re.compile(r"^# Spec: (.+)$", re.MULTILINE)
@@ -43,6 +45,13 @@ def main() -> None:
     if status is None or status.group(1) != "aprovada":
         atual = status.group(1) if status else "ausente"
         raise SystemExit(f"A spec precisa estar 'aprovada' para criar o design (status atual: {atual}).")
+
+    itens = open_items(conteudo_spec)
+    if itens is None:
+        raise SystemExit(f"'{relative_to_root(spec)}' sem a subseção '### Em aberto' (rode o validate_spec.py).")
+    if itens:
+        lista = "\n".join(f"- spec.md:{linha} {item}" for linha, item in itens)
+        raise SystemExit(f"A spec tem item em aberto; resolva antes de criar o design:\n{lista}")
 
     conteudo = fill_template("design.md", titulo.group(1).strip(), args.data or date.today())
     design.write_text(conteudo, encoding="utf-8")

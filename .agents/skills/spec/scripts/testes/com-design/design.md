@@ -7,7 +7,6 @@
 - **Spec:** [spec.md](spec.md)
 - **Criado em:** 2026-11-15
 - **Atualizado em:** 2026-11-15 — aprovação
-- **Branch:** `feature/notificacoes`
 
 ## Referências técnicas
 
@@ -17,18 +16,25 @@
 
 ## 1. Decisões técnicas
 
-- **Fechadas:**
-  - Coleção `notificacoes { id_destinatario, tipo, mensagem, id_referencia?, data_criacao, data_leitura? }`
-    — 8a, 8b-i, 8b-ii, 8c, 8d-i, 8d-ii.
-  - Índices `{ id_destinatario: 1, data_criacao: -1 }` e TTL em `{ data_leitura: 1 }` com 30 dias numa
-    constante nomeada — descartado: índice incluindo o tipo do destinatário (ObjectId é único) — 8d-ii, 8d-iii.
-  - Serviço `INotificador` no domínio (classe abstrata) com implementação injetada pelo container; texto
-    montado por modelo por `tipo` — descartados: repositório direto em cada use-case (texto espalhado) e
-    EventEmitter (exagero no MVP) — 8e.
-  - `notificar` nunca lança; try/catch na implementação, chamado depois da operação gravada, falha vai
-    para `ILogger` (classe abstrata, console no MVP) — descartados: propagar e transação — 8e-ii.
-- **Em aberto:** nenhuma.
-- **ADR novo?** sim: "efeitos colaterais de melhor esforço e abstração de logger" (task 08).
+### Fechadas
+
+- Coleção `notificacoes { id_destinatario, tipo, mensagem, id_referencia?, data_criacao, data_leitura? }`
+  — 8a, 8b-i, 8b-ii, 8c, 8d-i, 8d-ii.
+- Índices `{ id_destinatario: 1, data_criacao: -1 }` e TTL em `{ data_leitura: 1 }` com 30 dias numa
+  constante nomeada — descartado: índice incluindo o tipo do destinatário (ObjectId é único) — 8d-ii, 8d-iii.
+- Serviço `INotificador` no domínio (classe abstrata) com implementação injetada pelo container; texto
+  montado por modelo por `tipo` — descartados: repositório direto em cada use-case (texto espalhado) e
+  EventEmitter (exagero no MVP) — 8e.
+- `notificar` nunca lança; try/catch na implementação, chamado depois da operação gravada, falha vai
+  para `ILogger` (classe abstrata, console no MVP) — descartados: propagar e transação — 8e-ii.
+
+### Em aberto
+
+nada
+
+### ADR novo?
+
+sim: "efeitos colaterais de melhor esforço e abstração de logger" (task 08).
 
 ## 2. Mudanças no modelo e na API (antes → depois)
 
@@ -40,7 +46,14 @@
 
 ## 3. Impacto
 
-- nenhum
+### Impacto
+
+- **Contrato da API:** sim — quatro rotas novas em `/notificacoes`, todas compatíveis
+- **Banco:** sim — coleção `notificacoes` com os índices e o TTL acima
+- **Front:** não — consome as rotas depois, fora desta spec
+- **Permissões e segurança:** sim — cada pessoa só lê, marca e exclui as próprias notificações (CA-07)
+- **Testes existentes que mudam de propósito:** não
+- **Documentação:** sim — `api/docs/Rotas.md`, o UC14 E01 nos requisitos e o ADR novo
 
 ## 4. Riscos
 
@@ -59,5 +72,5 @@
 - [ ] [04 — Eventos de contrato (cancelado, status, concluído)](tasks/04-eventos-contrato.md) — bloqueada por: 01 — cobre CA-10
 - [ ] [05 — Eventos de extensão de prazo](tasks/05-eventos-extensao.md) — bloqueada por: 01 — cobre CA-10
 - [ ] [06 — Evento de avaliação recebida](tasks/06-evento-avaliacao.md) — bloqueada por: 01 — cobre CA-10
-- [ ] [07 — Atualizar UC14 E01 nos requisitos (melhor esforço)](tasks/07-requisitos-uc14.md) — bloqueada por: nenhuma
-- [ ] [08 — ADR: efeitos colaterais de melhor esforço e logger](tasks/08-adr-melhor-esforco.md) — bloqueada por: 01
+- [ ] [07 — Atualizar UC14 E01 nos requisitos (melhor esforço)](tasks/07-requisitos-uc14.md) — bloqueada por: nenhuma — cobre: nenhum
+- [ ] [08 — ADR: efeitos colaterais de melhor esforço e logger](tasks/08-adr-melhor-esforco.md) — bloqueada por: 01 — cobre: nenhum

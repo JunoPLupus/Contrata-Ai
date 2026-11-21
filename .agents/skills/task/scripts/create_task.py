@@ -6,11 +6,12 @@ O corpo é o mesmo nos dois tipos; muda o que o script preenche:
   "não se aplica", critérios como '### CA-NN' (sem a subseção "Critérios de aceite");
 - de spec: <pasta da spec>/tasks/NN-<assunto>.md, com número, título e arquivo do link da lista do
   design.md ("## 6. Tasks"); Spec com os links, Bloqueada por e os CA-NN da linha (em "Critérios de
-  aceite", sem o exemplo '### CA-01'). Status `bloqueada` se alguma dependência não está `concluída` (task
+  aceite", sem o exemplo '### CA-01'). O item precisa dizer o que cobre ("cobre: nenhum" quando não cobre
+  critério): sem "cobre", o script recusa. Status `bloqueada` se alguma dependência não está `concluída` (task
   em tasks/done/ conta como concluída).
 
 Preenche título, datas, status, tipo, Modo e branch sugerida (task de spec: `<tipo>/juno/<assunto da
-spec>-NN`, salvo branch no design.md); o fechamento (seção 5) nasce só com os rótulos. O resto do modelo
+spec>-NN`); o fechamento (seção 5) nasce só com os rótulos. O resto do modelo
 fica para quem escreve a task (depois, confira com validate_task.py).
 
 Modo: `--modo agente` (padrão) grava "agente implementa, Juno revisa"; `--modo juno`, quando o Juno já disse
@@ -28,7 +29,7 @@ from datetime import date
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "scripts" / "lib"))
-from md_checks import read_status, section_body  # noqa: E402  (precisa do sys.path ajustado acima)
+from md_checks import read_status, section_body, task_list_items  # noqa: E402  (precisa do sys.path ajustado acima)
 from projeto import fill_template, get_project_root, read_text, relative_to_root, slugify  # noqa: E402
 
 TIPOS_COMMIT = ("feat", "fix", "refactor", "test", "docs", "chore")
@@ -39,11 +40,6 @@ MODOS = {"agente": "agente implementa, Juno revisa", "juno": "Juno implementa, a
 _EXEMPLO_CA = re.compile(r"^### CA-01: [\s\S]*?(?=^## )", re.MULTILINE)
 _SUBSECAO_CRITERIOS = re.compile(r"^### Critérios de aceite\n[\s\S]*?(?=^### )", re.MULTILINE)
 LINKS_SPEC = "[spec.md](../spec.md) · [design.md](../design.md)"
-_ITEM_LISTA = re.compile(r"^\s*-\s*(?:\[[ xX]\]\s*)?(~~)?\[(\d{2})\s*[—–-]\s*([^\]]+)\]\((tasks/[^)\s]+\.md)\)(.*)$",
-                         re.MULTILINE)
-_BLOQUEADA_POR = re.compile(r"bloqueada por:\s*([^—]+)")
-_COBRE = re.compile(r"cobre:?\s*(.+)$")
-_BRANCH_DESIGN = re.compile(r"\*\*Branch:\*\*\s*`?([^`\s<]+)`?")
 
 
 # region Montagem do conteúdo
@@ -101,28 +97,30 @@ def montar(titulo: str, data: date, status: str, tipo: str, branch: str, tipo_ta
 # region Lista de tasks do design.md
 
 def ler_lista(design: Path) -> dict[str, dict]:
-    """NN → {titulo, arquivo, dependencias, criterios, cancelada} da lista "## 6. Tasks" do design.md."""
-    secao = section_body(read_text(design), "6. Tasks")
-    if secao is None:
+    """NN → {titulo, arquivo, dependencias, criterios, cancelada, linha} da lista "## 6. Tasks" do design.md
+    (leitura da lib, a mesma do validate_spec). `arquivo` é None no item ainda sem link; `criterios` é None
+    no item sem "cobre"."""
+    texto = read_text(design)
+    if section_body(texto, "6. Tasks") is None:
         raise SystemExit(f"'{relative_to_root(design)}' sem a seção '## 6. Tasks'.")
 
-    itens: dict[str, dict] = {}
-    for item in _ITEM_LISTA.finditer(secao[0]):
-        riscada, numero, titulo, alvo, resto = item.groups()
-        bloqueio = _BLOQUEADA_POR.search(resto)
-        cobre = _COBRE.search(resto)
-        itens[numero] = {
-            "titulo": titulo.strip(),
-            "arquivo": Path(alvo).name,
-            "dependencias": re.findall(r"\b\d{2}\b", bloqueio.group(1)) if bloqueio else [],
-            "criterios": cobre.group(1).strip().rstrip(".") if cobre else "nenhum",
-            "cancelada": bool(riscada),
+    return {
+        item.numero: {
+            "titulo": item.titulo,
+            "arquivo": Path(item.alvo).name if item.alvo else None,
+            "dependencias": re.findall(r"\b\d{2}\b", item.bloqueada_por or ""),
+            "criterios": item.cobre,
+            "cancelada": item.riscada,
+            "linha": item.linha,
         }
-    return itens
+        for item in task_list_items(texto)
+    }
 
 
-def status_da_task(pasta_tasks: Path, arquivo: str) -> str:
+def status_da_task(pasta_tasks: Path, arquivo: str | None) -> str:
     """Status atual de uma task da spec: lido do arquivo; em done/ é concluída; sem arquivo, 'não criada'."""
+    if arquivo is None:
+        return "não criada"
     if (pasta_tasks / "done" / arquivo).exists():
         return "concluída"
     caminho = pasta_tasks / arquivo
@@ -167,6 +165,12 @@ def criar_de_spec(args: argparse.Namespace) -> None:
     item = lista[numero]
     if item["cancelada"]:
         raise SystemExit(f"A task {numero} está riscada (cancelada) na lista do design.md.")
+    if item["arquivo"] is None:
+        raise SystemExit(f"A task {numero} não tem link na lista do design.md (linha {item['linha']}): "
+                         f"ponha o link '[{numero} — título](tasks/{numero}-<assunto>.md)' antes de criar.")
+    if item["criterios"] is None:
+        raise SystemExit(f"A task {numero} não diz o que cobre na lista do design.md (linha {item['linha']}): "
+                         "acrescente '— cobre: CA-NN' (ou 'cobre: nenhum').")
 
     pasta_tasks = pasta / "tasks"
     pendentes = []
@@ -175,14 +179,13 @@ def criar_de_spec(args: argparse.Namespace) -> None:
         if dep not in lista:
             raise SystemExit(f"A task {numero} depende da {dep}, que não está na lista do design.md.")
         nome = lista[dep]["arquivo"]
-        nomes.append(nome)
+        nomes.append(nome or dep)
         status = status_da_task(pasta_tasks, nome)
         if status != "concluída":
-            pendentes.append(f"{nome} ({status})")
+            pendentes.append(f"{nome or dep} ({status})")
 
-    branch_design = _BRANCH_DESIGN.search(read_text(design))
     slug_spec = re.sub(r"^\d{4}-\d{2}-\d{2}-", "", pasta.resolve().name)
-    branch = branch_design.group(1) if branch_design else f"{args.tipo}/juno/{slug_spec}-{numero}"
+    branch = f"{args.tipo}/juno/{slug_spec}-{numero}"
 
     status = "bloqueada" if pendentes else "aberta"
     conteudo = montar(item["titulo"], args.data or date.today(), status, args.tipo, branch, "spec",

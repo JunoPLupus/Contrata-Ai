@@ -78,7 +78,7 @@ TASK_SPEC_OK = """# Task: Rotas de leitura e ações
 - **Modo:** `Juno implementa, agente guia e revisa`
 - **Spec:** [spec.md](../spec.md) · [design.md](../design.md)
 - **Bloqueada por:** [01-nucleo.md](01-nucleo.md)
-- **Branch:** `feature/notificacoes` (sugerida; criada pelo Juno)
+- **Branch:** `feat/juno/notificacoes-02` (sugerida; criada pelo Juno)
 
 ## 1. Contexto e critérios
 
@@ -194,6 +194,7 @@ class AvulsaTest(_Base):
         falha = subprocess.run([sys.executable, str(SCRIPT), str(ruim)], capture_output=True, text=True)
         self.assertEqual(falha.returncode, 1)
         self.assertIn("ruim.md:3 [ERRO] md.status-invalido status: valor 'feito' inválido", falha.stdout)
+        self.assertEqual(falha.stdout.strip().splitlines()[-1], "1 erro(s), 0 aviso(s)")  # linha de resumo no fim
 
     def test_cli_arquivo_inexistente(self):
         """Arquivo que não existe interrompe com mensagem, sem traceback."""
@@ -621,23 +622,27 @@ class TaskDeSpecTest(_Base):
         texto = TASK_SPEC_OK.replace('| CA-05 | "deve marcar como lida (CA-05)" |\n', "")
         self.assertAcusa("tabela: CA-05 sem linha na tabela", self.erros_spec(texto))
 
-    def test_branch_diferente_da_do_design(self):
-        """Task de spec usa a branch do design.md quando ele tem uma."""
-        texto = TASK_SPEC_OK.replace("`feature/notificacoes`", "`feat/juno/notificacoes`")
-        self.assertAcusa("branch: task de spec usa a branch do design.md (feature/notificacoes)", self.erros_spec(texto))
-
     def test_link_para_task_irma_nao_criada_e_aceito_mas_spec_quebrada_nao(self):
         """Link para task irmã ainda não criada é aceito; link quebrado para outro arquivo não."""
         self.assertEqual(self.erros_spec(TASK_SPEC_OK), [])
         texto = TASK_SPEC_OK.replace("(../spec.md)", "(../nao-existe.md)")
         self.assertAcusa("link: destino não existe: ../nao-existe.md", self.erros_spec(texto))
 
-    def test_sem_spec_na_pasta_pula_a_conferencia_dos_ca_e_usa_o_padrao_de_branch(self):
-        """Sem spec.md na pasta, os CA não são conferidos e a branch segue o padrão <tipo>/juno/<assunto>."""
+    def test_sem_spec_na_pasta_pula_a_conferencia_dos_ca(self):
+        """Sem spec.md na pasta, os CA não são conferidos."""
         texto = TASK_SPEC_OK.replace("CA-04 a CA-06", "CA-04 a CA-06, CA-99")
         erros = self.erros(texto, relativo="outra/specs/x/tasks/02-rotas.md")
         self.assertFalse(any("CA-99 citado" in e for e in erros), erros)
-        self.assertAcusa("branch: use '<tipo>/juno/<assunto>'", erros)
+
+    def test_branch_de_spec_segue_o_padrao_mesmo_com_branch_no_design(self):
+        """O design não tem mais Branch: a task de spec segue <tipo>/juno/<assunto>, e um design antigo com
+        **Branch:** não muda isso."""
+        design = self.tmp / "specs" / "2026-11-15-notificacoes" / "design.md"
+        design.write_text(design.read_text(encoding="utf-8").replace(
+            "- **Atualizado em:**", "- **Branch:** `feature/notificacoes`\n- **Atualizado em:**", 1), encoding="utf-8")
+        self.assertEqual(self.erros_spec(TASK_SPEC_OK), [])
+        texto = TASK_SPEC_OK.replace("`feat/juno/notificacoes-02`", "`feature/notificacoes`")
+        self.assertAcusa("branch: use '<tipo>/juno/<assunto>'", self.erros_spec(texto))
 
 
 if __name__ == "__main__":

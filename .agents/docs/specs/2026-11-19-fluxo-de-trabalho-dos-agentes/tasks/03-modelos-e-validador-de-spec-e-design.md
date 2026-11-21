@@ -1,14 +1,14 @@
 # Task: Modelos e validador de spec e design
 
-- **Status:** `aberta`
+- **Status:** `concluída`
 - **Criado em:** 2026-11-20
-- **Atualizado em:** 2026-11-20 — rodadas de abertura: Q1 A, Q4 A, Q5 A; Q2 C, Q3 A, Q6 A
+- **Atualizado em:** 2026-11-20 — aprovada na revisão do Juno
 - **Tipo:** `docs`
 - **Alcance:** `documentação`
 - **Modo:** `agente implementa, Juno revisa`
 - **Spec:** [spec.md](../spec.md) · [design.md](../design.md)
 - **Bloqueada por:** 01-governanca.md
-- **Branch:** `docs/juno/fluxo-de-trabalho-dos-agentes-03` (sugerida; criada pelo Juno)
+- **Branch:** `docs/juno/fluxo-de-trabalho-dos-agentes-03` (criada pelo Juno)
 
 ## 1. Contexto e critérios
 
@@ -186,7 +186,10 @@ nada
   moram; se não houver, criar ao lado);
 - possivelmente `.agents/skills/governanca/scripts/checagens/skills.py` e `test_governanca.py`, se a lista de
   seções esperadas mudar de forma (como na 02); conferir na implementação;
-- teste novo do `create_design.py` (hoje não tem), na pasta de testes da skill `spec`.
+- teste novo do `create_design.py` (hoje não tem), na pasta de testes da skill `spec`;
+- acrescentados na implementação, com a aprovação do Juno (2026-11-20, 1 A e 2 A): as cópias de spec e design
+  em `.agents/skills/task/evals/files/` (são as que os testes da `task` usam) e o passo 1.4 da
+  `.agents/skills/task/SKILL.md` (citava a branch do design).
 
 ### Não deve mudar
 
@@ -256,14 +259,202 @@ A task só está concluída com todos os comandos passando e a evidência regist
 
 ## 4. Andamento
 
+- 2026-11-20 — task aprovada pelo Juno (commit `3c4c6382` na `main`); branch criada por ele. Suítes antes:
+  scripts da `spec` 8 OK, scripts da `task` 73 OK, governança 74 OK, evals da `task` 42 OK;
+  `quick_validate ../spec` válida; governança no repositório 0 erros, 5 avisos. Base salva em
+  `.agents/skills/governanca-workspace/base-03.txt` (5 achados). A lib não tem testes próprios hoje.
+
+- 2026-11-20 — lib: `subsections`, `subsection_body`, `labels`, a checagem de subseções e a dos seis eixos
+  (com o dono no código) saem do `validate_task.py` para o `md_checks.py`; `summary_line`; leitura da lista de
+  tasks (`task_list_items`, item inteiro mesmo quebrando linha), usada pelo `create_task.py` e pelo
+  `validate_spec.py`; `mask_code` com a cerca só no começo da linha. Testes da lib em `.agents/scripts/lib/testes/`.
+- 2026-11-20 — decisão no caminho: a cerca aceita qualquer recuo (não só até três espaços, como dizia a Q4): a
+  `SKILL.md` da `spec` tem blocos recuados 5 espaços dentro de lista, que deixariam de ser mascarados. Continua
+  corrigindo o caso das três crases no meio da linha.
+- 2026-11-20 — achado: o `create_task.py` também lia a Branch do design (`_BRANCH_DESIGN`); saiu junto com a
+  do `validate_task.py` (arquivo já previsto).
+- 2026-11-20 — achado: a skill `task` tem cópias próprias de `spec-notificacoes-aprovada.md` e
+  `design-notificacoes-aprovado.md` em `.agents/skills/task/evals/files/` (só o cabeçalho difere das da `spec`);
+  são elas que o `test_validate_task.py` e o `test_create_task.py` usam, e não as da `spec`, como dizia o passo 9.
+  Convertidas também (fora dos previstos; os testes da `task` não passam sem isso) — pergunta ao Juno.
+- 2026-11-20 — decisões no caminho: "Em aberto" igual a "nada" vale a partir de `aprovada` (também `em
+  andamento` e `concluída`); item riscado da lista (task cancelada) fica fora do CA-33 (o exemplo da skill
+  `spec` não tem "bloqueada por" nem "cobre"); "Ao final" e a tabela "Hoje → Depois" ficam dentro de
+  `### Objetivo` (Markdown não tem como voltar ao corpo da seção depois de um `###`).
+- 2026-11-20 — modelos, `validate_spec.py`, `create_design.py`, skill `spec`, fixtures (regeneradas do par
+  convertido; `aprovada-com-bloqueio` virou `aprovada-com-aberto`), os dois pares de evals e o `spec.md` e
+  `design.md` desta spec convertidos. Suítes: lib 4, `spec` 20, `task` 76, governança 74, evals 42, todos
+  OK. Mutação: 20 mutantes, 19 mortos na primeira rodada; o vivo (`mask_code` antigo) levou a reforçar o
+  teste (crases soltas antes de uma cerca de verdade) e morreu. Checagem manual numa spec temporária ok.
+  `--comparar base-03.txt`: 0 erros novos, 0 avisos novos, 5 já existiam.
+- 2026-11-20 — achado fora do escopo: o passo 1.4 da `task/SKILL.md` ainda diz "a branch é a do `design.md`
+  (se houver…)"; não mexi (arquivo fora dos previstos) — pergunta ao Juno.
+- 2026-11-20 — fechamento preenchido; aguardando a revisão do Juno.
+- 2026-11-20 — Juno aprovou (1 A) as cópias de `task/evals/files/` convertidas e pediu (2 A) corrigir nesta
+  task o passo 1.4 da `task/SKILL.md`: branch sugerida sempre `<tipo>/juno/<assunto da spec>-NN` e recusa do
+  item sem link ou sem "cobre". `quick_validate ../task` válida; suítes e `--comparar` de novo sem mudança.
+- 2026-11-20 — revisão do Juno: "Referências técnicas" do design ficou com rótulos livres (fora da Q2); se
+  "ADRs aplicáveis" vira subseção fixa fica para a 07, anotado nas notas da lista de tasks do design.
+- 2026-11-20 — Juno perguntou pelo modo leve (não oferecido antes de editar as skills, como a oficina manda) e
+  escolheu um cenário na skill `spec`: spec em `rascunho` com um item em "Em aberto" sem marcador, pedido
+  "aprova e cria o design". Ambientes fechados em `.agents/skills/spec-workspace/modo-leve-03/` (skill,
+  scripts, lib e modelos da `HEAD` × atuais), um subagente por vez. Asserções fixadas antes: status não vira
+  `aprovada`; `design.md` não é criado; aponta o item; pede a decisão. Primeira rodada (item: email além do
+  in-app) descartada depois da antiga: o item contradizia o "Fica fora" e a antiga recusou pela regra de
+  contradição, sem separar as versões; refeita com um item que nada na spec responde (data relativa ou
+  absoluta). Antiga: 4 de 4, mas recusou por "o item não diz o que bloqueia" e ofereceu como saída marcar
+  "bloqueia: design" e aprovar com o item em aberto (a brecha que a 03 fecha). Nova: 4 de 4, citou a regra
+  "Em aberto igual a nada" e a recusa do `create_design.py`, sem caminho para aprovar com item em aberto.
+  Nenhum arquivo alterado nas duas rodadas (conferido).
+- 2026-11-20 — aprovada na revisão do Juno; status `concluída`.
+
 ## 5. Fechamento
 
-- **O que foi feito:**
-- **Arquivos alterados:**
+- **O que foi feito:** os modelos `spec.md` e `design.md` ganharam subseções fixas: no `spec.md`, Problema,
+  Objetivo, Entra, Fica fora, Fechadas e Em aberto ("nada" quando vazio, sem o "bloqueia"); no `design.md`,
+  Fechadas, Em aberto e ADR novo?, e o `### Impacto` com os seis eixos da task; o design perdeu o campo Branch e
+  o comentário da lista de tasks diz o formato do item ("cobre: nenhum" vale). O `validate_spec.py` cobra
+  subseção ausente ou vazia (`spec.subsecao-…`), os eixos do Impacto do design (`spec.impacto-…`), "Em aberto"
+  igual a "nada" a partir de `aprovada`, com um achado por item (`spec.aprovada-com-aberto`, no lugar do
+  marcador exato), e "bloqueada por"/"cobre" em cada item da lista (`spec.task-sem-…`). O `create_design.py`
+  recusa spec com item em aberto e lista as linhas. O `create_task.py` lê o item inteiro (o "cobre" que quebra
+  linha não é mais cortado), recusa item sem "cobre" ou sem link e sempre sugere `<tipo>/juno/<assunto>-NN`. A
+  lib passou a ter a leitura de subseções, rótulos, eixos e lista de tasks, a `summary_line` (os dois
+  validadores terminam com `N erro(s), M aviso(s)`) e o `mask_code` com a cerca só no começo da linha. A skill
+  `spec` descreve o modelo e o validador novos. Esta spec, este design, as fixtures e os dois pares de evals
+  foram convertidos.
+- **Arquivos alterados:** os previstos: modelos `spec.md` e `design.md`; `validate_spec.py`, `create_design.py`,
+  `test_validate_spec.py`, as pastas-fixture (com `aprovada-com-bloqueio` renomeada para `aprovada-com-aberto`)
+  e o `test_create_design.py` novo; `.agents/skills/spec/evals/files/` (spec e design); `spec/SKILL.md`;
+  `validate_task.py`, `create_task.py`, `test_validate_task.py`, `test_create_task.py`; `md_checks.py`,
+  `md_utils.py` e os testes novos da lib (`.agents/scripts/lib/testes/test_lib.py`); o `spec.md`, o `design.md`
+  e esta task. Fora dos previstos, com a aprovação do Juno: as cópias de spec e design em
+  `.agents/skills/task/evals/files/` (as que os testes da `task` usam) e o passo 1.4 da `task/SKILL.md`. Não
+  mudaram: a governança (o
+  `skills.py` não precisou de ajuste), o modelo `task.md`, `api/` e `web/`.
 - **Decisões tomadas no caminho:**
-- **Testes antes de começar:**
-- **Testes no fim:**
-- **Evidência por critério:**
-- **Checagens não feitas:**
-- **Ficou para depois:**
-- **Commits entregues:**
+  - A cerca de código aceita qualquer recuo no começo da linha, não só até três espaços: a skill `spec` tem
+    blocos recuados 5 espaços dentro de lista.
+  - "Em aberto" do `spec.md` precisa dizer "nada" a partir de `aprovada`, também em `em andamento` e
+    `concluída`: sem isso, a regra sumiria quando o "iniciar" da primeira task mudasse o status.
+  - Item do "Em aberto": cada item de lista ou, sem lista, cada parágrafo; um achado por item, com a linha e o
+    começo do texto.
+  - Item riscado da lista de tasks (cancelada) fica fora do CA-33.
+  - "Ao final" e a tabela "Hoje → Depois" ficam dentro de `### Objetivo`.
+  - A leitura da lista de tasks mora na lib (`task_list_items`), usada pelo `create_task.py` e pelo
+    `validate_spec.py`: a mesma regra de "o que é um item" nos dois. O `create_task.py` passou a enxergar item
+    sem link (dependência ainda não criada aparece como "não criada" em vez de "não está na lista") e recusa
+    criar a task de um item sem link.
+  - O `create_task.py` também deixou de ler a Branch do design; o passo 1.4 da skill `task` acompanha (2 A).
+  - A linha do achado de subseção ausente é a do começo do corpo da seção (comportamento da lib desde a 02).
+- **Testes antes de começar:** scripts da `spec` 8 OK; scripts da `task` 73 OK; governança 74 OK; evals da
+  `task` 42 OK; `quick_validate ../spec` válida; governança 0 erros, 5 avisos; base `base-03.txt` (5 achados).
+- **Testes no fim:** lib 4 OK (novos); scripts da `spec` 20 OK (12 novos ou reescritos, 3 deles do
+  `create_design`); scripts da `task` 76 OK (sai o teste da branch do design, entram 4: item sem cobre, item que
+  quebra linha, item sem link, branch de spec mesmo com Branch no design; mais a linha de resumo); governança
+  74 OK; evals da `task` 42 OK; `quick_validate` da `spec` e da `task` válidas; `validate_spec.py` nesta spec
+  sem problema; `--comparar base-03.txt`: 0 erros novos, 0 avisos novos, 5 já existiam, 0 corrigidos.
+  Mutação: 20 mutantes (subseção vazia e ausente aceitas, "não se aplica" recusado, Em aberto ignorado na
+  `aprovada`, só `aprovada` travando, qualquer texto valendo "nada", parágrafo solto ignorado, `create_design`
+  sem a recusa, item sem cobre e sem bloqueada por aceitos, riscado cobrado, Impacto do design ignorado, item
+  lido só na primeira linha, nota virando item, `create_task` gravando "nenhum", `mask_code` antigo, as duas
+  linhas de resumo, a conta do resumo, o cobre do riscado), 20 mortos; o do `mask_code` sobreviveu à primeira
+  rodada e morreu com o teste reforçado. Checagem manual: spec temporária criada pelo `create_spec.py` só com
+  placeholders acusados (34); `create_design.py` recusou com o item do modelo em aberto (linha 77) e criou o
+  design, sem Branch, com "nada"; pasta apagada. Modo leve da oficina (skill `spec`, cenário "aprova com item
+  em aberto sem marcador"): antiga e nova pararam (4 de 4 asserções), mas a antiga ofereceu aprovar com o item
+  marcado "bloqueia: design"; a nova não deixa caminho para isso (detalhes no Andamento).
+- **Evidência por critério:** CA-31 → testes "subseção obrigatória ausente ou vazia no spec.md ou no design.md
+  é acusada com o nome dela (CA-31)" e "subseção que diz só 'não se aplica' não é acusada (CA-31)" passando
+  (mutantes de subseção mortos); CA-32 → testes "spec aprovada com 'Em aberto' diferente de 'nada' é acusada
+  com os itens (CA-32)" e "create_design recusa spec com algo em aberto e lista os itens (CA-32)" passando
+  (mutantes do Em aberto e do `create_design` mortos); CA-33 → teste "item da lista de tasks sem 'bloqueada
+  por' ou sem 'cobre' é acusado com a linha (CA-33)" passando (mutantes da lista mortos).
+- **Checagens não feitas:** o CI no GitHub (roda no push; localmente rodei as mesmas suítes e a governança);
+  os cenários completos com agente dos evals da skill `spec` (rodado só o modo leve, um cenário); o passo 1.4
+  da skill `task` sem cenário (descreve o que o `create_task.py` faz, coberto pelos testes). O modo leve mede
+  "a skill + o ambiente do Juno" (as preferências locais entram nos subagentes).
+- **Ficou para depois:** a linha dos achados de subseção ausente aponta o
+  começo do corpo da seção, não o título (lib, desde a 02) → estacionamento.
+- **Commits entregues:** três, nesta ordem: a implementação, a skill `spec` e, depois da aprovação, esta
+  task concluída.
+
+  ```text
+  feat(agents): Adiciona subseções fixas e Em aberto cobrado à spec e ao design
+
+  - os modelos spec.md e design.md ganham subseções ### fixas, o
+    Impacto do design com os seis eixos da task e o design sem Branch;
+  - o validate_spec cobra subseção ausente ou vazia, os eixos do
+    design, "Em aberto" igual a "nada" a partir de aprovada e
+    "bloqueada por" e "cobre" em cada item da lista de tasks;
+  - o create_design recusa spec com item em aberto;
+  - o create_task lê o item da lista inteiro e recusa item sem
+    "cobre"; a branch da task de spec não vem mais do design;
+  - a lib reúne subseções, rótulos, eixos, lista de tasks e a linha
+    de resumo dos validadores, e o mask_code só abre bloco com a
+    cerca no começo da linha;
+  - esta spec, o design, as fixtures e os evals acompanham o modelo.
+
+  Task: 2026-11-19-fluxo-de-trabalho-dos-agentes/tasks/03-modelos-e-validador-de-spec-e-design.md
+  ```
+
+  Arquivos:
+  - `.agents/docs/templates/spec.md`
+  - `.agents/docs/templates/design.md`
+  - `.agents/scripts/lib/md_checks.py`
+  - `.agents/scripts/lib/md_utils.py`
+  - `.agents/scripts/lib/testes/test_lib.py`
+  - `.agents/skills/spec/scripts/validate_spec.py`
+  - `.agents/skills/spec/scripts/create_design.py`
+  - `.agents/skills/spec/scripts/testes/test_validate_spec.py`
+  - `.agents/skills/spec/scripts/testes/test_create_design.py`
+  - `.agents/skills/spec/scripts/testes/aprovada-com-bloqueio/spec.md` (removido)
+  - `.agents/skills/spec/scripts/testes/aprovada-com-aberto/spec.md`
+  - `.agents/skills/spec/scripts/testes/com-design/design.md`
+  - `.agents/skills/spec/scripts/testes/com-design/spec.md`
+  - `.agents/skills/spec/scripts/testes/criterios-com-problemas/spec.md`
+  - `.agents/skills/spec/scripts/testes/metadados-com-problemas/spec.md`
+  - `.agents/skills/spec/scripts/testes/secoes-ausente-e-vazia/spec.md`
+  - `.agents/skills/spec/scripts/testes/so-spec/spec.md`
+  - `.agents/skills/spec/evals/files/design-notificacoes-aprovado.md`
+  - `.agents/skills/spec/evals/files/spec-notificacoes-aprovada.md`
+  - `.agents/skills/task/evals/files/design-notificacoes-aprovado.md`
+  - `.agents/skills/task/evals/files/spec-notificacoes-aprovada.md`
+  - `.agents/skills/task/scripts/validate_task.py`
+  - `.agents/skills/task/scripts/create_task.py`
+  - `.agents/skills/task/scripts/testes/test_validate_task.py`
+  - `.agents/skills/task/scripts/testes/test_create_task.py`
+  - `.agents/docs/specs/2026-11-19-fluxo-de-trabalho-dos-agentes/spec.md`
+  - `.agents/docs/specs/2026-11-19-fluxo-de-trabalho-dos-agentes/design.md`
+
+  ```text
+  docs(agents): Ensina as skills spec e task o modelo novo de spec
+
+  - o modelo tem subseções fixas que nunca são apagadas ("não se
+    aplica" vale);
+  - "Em aberto" precisa dizer "nada" para aprovar e criar o design,
+    sem o marcador "bloqueia";
+  - o design não tem branch, o Impacto usa os seis eixos e cada item
+    da lista diz o que cobre ("cobre: nenhum" vale);
+  - na skill task, a branch da task de spec é sempre
+    <tipo>/juno/<assunto da spec>-NN, e o create_task recusa item sem
+    link ou sem "cobre".
+
+  Task: 2026-11-19-fluxo-de-trabalho-dos-agentes/tasks/03-modelos-e-validador-de-spec-e-design.md
+  ```
+
+  Arquivos:
+  - `.agents/skills/spec/SKILL.md`
+  - `.agents/skills/task/SKILL.md`
+
+  ```text
+  docs(agents): Conclui a task 03 do fluxo de trabalho
+
+  - a task registra a implementação no Andamento e no fechamento;
+  - aprovada na revisão do Juno.
+
+  Task: 2026-11-19-fluxo-de-trabalho-dos-agentes/tasks/03-modelos-e-validador-de-spec-e-design.md
+  ```
+
+  Arquivos:
+  - `.agents/docs/specs/2026-11-19-fluxo-de-trabalho-dos-agentes/tasks/03-modelos-e-validador-de-spec-e-design.md`

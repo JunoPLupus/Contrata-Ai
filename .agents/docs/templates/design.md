@@ -3,13 +3,16 @@
 <!--
 Modelo de design: o COMO da spec da mesma pasta.
 Copie para .agents/docs/specs/AAAA-MM-DD-<assunto>/design.md.
-Leia antes o spec.md, o AGENTS.md e os ADRs listados abaixo. Apague estes comentários ao preencher.
+Leia antes o spec.md, o AGENTS.md e os ADRs listados abaixo.
+Toda subseção "###" é obrigatória e nunca é apagada: "não se aplica" é resposta válida (as subseções de
+"2. Mudanças" são exemplos: use as que a spec pede).
+Sem branch aqui: cada task tem a sua.
+Apague estes comentários ao preencher.
 -->
 
 - **Spec:** [spec.md](spec.md)
 - **Criado em:** AAAA-MM-DD
 - **Atualizado em:** AAAA-MM-DD — <motivo da última mudança>
-- **Branch:** <nome da branch, criada pelo Juno>
 
 ## Referências técnicas
 
@@ -25,11 +28,19 @@ externa de bibliotecas e serviços. Arquivos de código específicos a ler ou al
 
 ## 1. Decisões técnicas
 
-- **Fechadas:**
-  - <decisão> — <motivo> — descartadas: <alternativa (motivo)> — <link para o ADR/decisão, se houver>
-- **Em aberto:**
-  - <pergunta> — bloqueia: <task NN>
-- **ADR novo?** <não | sim: título provável e o que ele registra>
+### Fechadas
+
+- <decisão> — <motivo> — descartadas: <alternativa (motivo)> — <link para o ADR/decisão, se houver>
+
+### Em aberto
+
+<!-- Decisões técnicas ainda sem resposta e o que bloqueiam; sem nenhuma: "nada". -->
+
+- <pergunta> — bloqueia: <task NN>
+
+### ADR novo?
+
+<não | sim: título provável e o que ele registra>
 
 ## 2. Mudanças no modelo e na API (antes → depois)
 
@@ -61,10 +72,19 @@ externa de bibliotecas e serviços. Arquivos de código específicos a ler ou al
 |---|---|---|
 | <ex.: interface do repositório / factory / VO / rota> | <ex.: outros use-cases, controllers, telas do `web/`> | <ex.: precisa passar o novo parâmetro; teste X vai mudar> |
 
-- **Front (`web/`):** <nenhum | o que quebra ou precisa mudar | adiado para a reconstrução>
-- **Swagger e `api/docs/Rotas.md`:** <o que atualizar>
-- **ADRs existentes:** <algum precisa de seção de atualização?>
-- **Dados existentes:** <precisa de migração? qual estratégia? (pergunte antes de executar)>
+### Impacto
+
+<!-- Os mesmos seis eixos da task. Cada um responde "sim — o que muda" ou "não" (o "não" pode levar um
+comentário depois). Banco: inclua os dados existentes (migração? qual estratégia? pergunte antes de
+executar). Contrato da API: Swagger e `api/docs/Rotas.md`. Documentação: ADRs existentes que precisam de
+seção de atualização. -->
+
+- **Contrato da API:** <sim — o que muda | não>
+- **Banco:** <sim — o que muda | não>
+- **Front:** <sim — o que muda | não>
+- **Permissões e segurança:** <sim — o que muda | não>
+- **Testes existentes que mudam de propósito:** <sim — teste e motivo | não>
+- **Documentação:** <sim — o que muda | não>
 
 ## 4. Riscos
 
@@ -87,6 +107,9 @@ Fatias verticais: cada task atravessa as camadas necessárias e pode ser testada
 Numeradas na ordem de dependência. Sem "bloqueada por" pendente = pode começar (ou rodar em paralelo,
 se não mexer nos mesmos arquivos de outra task em andamento). A lista guarda só ordem, dependências e
 critérios cobertos: o status de cada task mora no arquivo dela (tasks/NN-*.md), criado pela skill task.
+Cada item: "NN — título" (com o link quando o arquivo da task existir) — bloqueada por: <nenhuma | NN, NN>
+— cobre: <CA-NN, CA-NN | nenhum>. "cobre: nenhum" é para a task que não prova critério (ex.: refactor que a
+spec pede no meio do caminho); sem "cobre", o validador acusa e o create_task.py recusa.
 Task cancelada fica riscada, com data e motivo.
 -->
 

@@ -192,6 +192,198 @@ def check_sections(arquivo: Path, texto: str, esperadas: tuple[str, ...], prefix
 
 # endregion
 
+# region Subseções "###", rótulos e eixos do Impacto (modelos de task, spec e design)
+
+_SUBSECAO = re.compile(r"^### (.+?)[ \t]*$", re.MULTILINE)
+_ROTULO = re.compile(r"^- \*\*(.+?):\*\*[ \t]*(.*)$", re.MULTILINE)
+
+
+def subsections(texto: str, secao: str) -> dict[str, tuple[int, int, int]]:
+    """Subseções '### ' da seção cujo título começa com `secao`: título → (posição do título, início e fim
+    do corpo), com o corpo indo até o próximo '###' ou o fim da seção. Fora de código e comentários."""
+    corpo_secao = section_body(texto, secao)
+    if corpo_secao is None:
+        return {}
+    corpo, inicio = corpo_secao
+    titulos = list(_SUBSECAO.finditer(mask_code_and_comments(corpo)))
+    encontradas: dict[str, tuple[int, int, int]] = {}
+    for i, titulo in enumerate(titulos):
+        fim = titulos[i + 1].start() if i + 1 < len(titulos) else len(corpo)
+        encontradas.setdefault(titulo.group(1), (inicio + titulo.start(), inicio + titulo.end(), inicio + fim))
+    return encontradas
+
+
+def subsection_body(texto: str, secao: str, titulo: str) -> tuple[int, int] | None:
+    """(início, fim) do corpo da subseção '### <titulo>' da seção `secao`, ou None."""
+    achada = subsections(texto, secao).get(titulo)
+    return (achada[1], achada[2]) if achada else None
+
+
+def labels(texto: str, inicio: int, fim: int) -> dict[str, tuple[int, str]]:
+    """Rótulo '- **X:**' de texto[inicio:fim] → (linha, valor). O valor inclui as linhas seguintes até o
+    próximo rótulo (os rótulos são achados fora de código e comentários; o valor sai do original)."""
+    trecho = texto[inicio:fim]
+    rotulos = list(_ROTULO.finditer(mask_code_and_comments(trecho)))
+    valores: dict[str, tuple[int, str]] = {}
+    for i, rotulo in enumerate(rotulos):
+        fim_valor = rotulos[i + 1].start() if i + 1 < len(rotulos) else len(trecho)
+        valores.setdefault(rotulo.group(1), (line_of(texto, inicio + rotulo.start()),
+                                             COMENTARIO_PATTERN.sub("", trecho[rotulo.start(2):fim_valor]).strip()))
+    return valores
+
+
+def check_subsections(arquivo: Path, texto: str, exigidas: list[tuple[str, tuple[str, ...]]],
+                      dono: str) -> list[Finding]:
+    """Subseções obrigatórias presentes e não vazias (comentário não conta); "não se aplica" é resposta
+    válida. `exigidas`: [(seção, títulos)]. Seção ausente é de check_sections: aqui só o que está dentro dela.
+    `dono` é o prefixo do código (`task`, `spec`)."""
+    findings: list[Finding] = []
+    for secao, titulos in exigidas:
+        corpo_secao = section_body(texto, secao)
+        if corpo_secao is None:
+            continue
+        linha_secao = line_of(texto, corpo_secao[1])
+        presentes = subsections(texto, secao)
+        for titulo in titulos:
+            if titulo not in presentes:
+                findings.append(erro(arquivo, linha_secao, f"{dono}.subsecao-ausente",
+                                     f"subseção: obrigatória ausente: ### {titulo} (## {secao})"))
+                continue
+            posicao, inicio, fim = presentes[titulo]
+            if not COMENTARIO_PATTERN.sub("", texto[inicio:fim]).strip():
+                findings.append(erro(arquivo, line_of(texto, posicao), f"{dono}.subsecao-vazia",
+                                     f"subseção: vazia: ### {titulo} (escreva o conteúdo ou 'não se aplica')"))
+    return findings
+
+
+EIXOS_IMPACTO = ("Contrato da API", "Banco", "Front", "Permissões e segurança",
+                 "Testes existentes que mudam de propósito", "Documentação")
+
+# Eixo do Impacto: "sim — o que muda" (travessão como no "Atualizado em": —, – ou -) ou "não" (com ou sem
+# comentário depois).
+_SIM = re.compile(r"sim\b", re.IGNORECASE)
+_SIM_COM_O_QUE = re.compile(r"sim\s*[—–-]\s*\S", re.IGNORECASE)
+_NAO = re.compile(r"não\b", re.IGNORECASE)
+
+
+def check_impact_axes(arquivo: Path, texto: str, inicio: int, fim: int, dono: str) -> list[Finding]:
+    """Os seis eixos do Impacto em texto[inicio:fim], cada um "sim — o que muda" ou "não". Corpo vazio não é
+    acusado aqui (é da checagem de subseções). `dono` é o prefixo do código (`task`, `spec`)."""
+    if not COMENTARIO_PATTERN.sub("", texto[inicio:fim]).strip():
+        return []
+    findings: list[Finding] = []
+    eixos = labels(texto, inicio, fim)
+    linha_impacto = line_of(texto, inicio)
+
+    for eixo in EIXOS_IMPACTO:
+        if eixo not in eixos:
+            findings.append(erro(arquivo, linha_impacto, f"{dono}.impacto-eixo-ausente",
+                                 f"impacto: eixo '{eixo}' ausente (responda 'sim — o que muda' ou 'não')"))
+            continue
+        linha, valor = eixos[eixo]
+        if find_placeholders(valor):
+            continue  # o placeholder do modelo já é acusado por check_placeholders
+        if not valor:
+            findings.append(erro(arquivo, linha, f"{dono}.impacto-eixo-vazio",
+                                 f"impacto: eixo '{eixo}' vazio (responda 'sim — o que muda' ou 'não')"))
+        elif _SIM.match(valor):
+            if not _SIM_COM_O_QUE.match(valor):
+                findings.append(erro(arquivo, linha, f"{dono}.impacto-sim-sem-o-que",
+                                     f"impacto: eixo '{eixo}' com 'sim' sem dizer o quê (use 'sim — o que muda')"))
+        elif not _NAO.match(valor):
+            findings.append(erro(arquivo, linha, f"{dono}.impacto-eixo-sem-resposta",
+                                 f"impacto: eixo '{eixo}' sem 'sim — …' ou 'não'"))
+    return findings
+
+# endregion
+
+# region Lista de tasks do design.md ("## 6. Tasks")
+
+SECAO_TASKS = "6. Tasks"
+
+# Item: marcador de lista, caixa opcional ("[ ]"), risco opcional ("~~"), link opcional e "NN — título".
+_ITEM_TASK = re.compile(r"^[ \t]*[-*][ \t]+(?:\[[ xX]\][ \t]*)?(~~)?(\[)?(\d{2})[ \t]*[—–-][ \t]*(.*)$")
+_LINK_ITEM = re.compile(r"^([^\]]+)\]\((tasks/[^)\s]+\.md)\)(.*)$")
+_BLOQUEADA_POR_ITEM = re.compile(r"bloqueada por:?\s*(.+?)\s*(?:[—–]|$)")
+_COBRE_ITEM = re.compile(r"cobre:?\s*(.+?)\s*(?:~~|\s[—–]\s|$)")
+
+
+@dataclass(frozen=True)
+class TaskItem:
+    """Um item da lista de tasks do design.md, com as linhas de continuação juntadas."""
+
+    numero: str
+    titulo: str
+    alvo: str | None          # tasks/NN-x.md, quando o item tem link
+    linha: int
+    texto: str                # o item inteiro numa linha só
+    riscada: bool
+    bloqueada_por: str | None
+    cobre: str | None
+
+
+def task_list_items(texto: str) -> list[TaskItem]:
+    """Itens da lista "## 6. Tasks": a linha que abre o item é o marcador seguido de "NN —"; as linhas recuadas
+    logo abaixo são continuação (o item que quebra linha é lido inteiro). Outras linhas (notas) não contam."""
+    secao = section_body(texto, SECAO_TASKS)
+    if secao is None:
+        return []
+    corpo, inicio = secao
+    mascarado = COMENTARIO_PATTERN.sub(lambda m: "".join("\n" if c == "\n" else " " for c in m.group(0)), corpo)
+    linhas = mascarado.split("\n")
+    itens: list[TaskItem] = []
+    posicao = 0
+    i = 0
+    while i < len(linhas):
+        abre = _ITEM_TASK.match(linhas[i])
+        if abre is None:
+            posicao += len(linhas[i]) + 1
+            i += 1
+            continue
+        linha = line_of(texto, inicio + posicao)
+        partes = [linhas[i].strip()]
+        posicao += len(linhas[i]) + 1
+        i += 1
+        while i < len(linhas) and linhas[i][:1] in (" ", "\t") and linhas[i].strip() \
+                and not _ITEM_TASK.match(linhas[i]):
+            partes.append(linhas[i].strip())
+            posicao += len(linhas[i]) + 1
+            i += 1
+        inteiro = " ".join(partes)
+        riscada, colchete, numero, resto = abre.groups()
+        resto = " ".join([resto, *partes[1:]])
+        titulo, alvo = resto, None
+        if colchete:
+            link = _LINK_ITEM.match(resto)
+            if link:
+                titulo, alvo, resto = link.group(1), link.group(2), link.group(3)
+        else:
+            titulo = re.split(r"\s+[—–]\s+", resto, maxsplit=1)[0]
+        bloqueio = _BLOQUEADA_POR_ITEM.search(resto)
+        cobre = _COBRE_ITEM.search(resto)
+        itens.append(TaskItem(
+            numero=numero,
+            titulo=titulo.strip().strip("~").strip(),
+            alvo=alvo,
+            linha=linha,
+            texto=inteiro,
+            riscada=bool(riscada),
+            bloqueada_por=bloqueio.group(1).strip() if bloqueio else None,
+            cobre=cobre.group(1).strip().rstrip(".") if cobre else None,
+        ))
+    return itens
+
+# endregion
+
+# region Resumo da saída
+
+def summary_line(findings: list[Finding]) -> str:
+    """Última linha da saída dos validadores: 'N erro(s), M aviso(s)'."""
+    erros = sum(1 for f in findings if f.severidade == "erro")
+    return f"{erros} erro(s), {len(findings) - erros} aviso(s)"
+
+# endregion
+
 # region Critérios de aceite (CA-NN)
 
 _CA_TITULO = re.compile(r"^### (CA-\S*?):?(?:\s|$)", re.MULTILINE)

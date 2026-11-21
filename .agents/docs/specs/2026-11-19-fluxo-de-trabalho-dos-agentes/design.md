@@ -2,8 +2,9 @@
 
 - **Spec:** [spec.md](spec.md)
 - **Criado em:** 2026-11-19
-- **Atualizado em:** 2026-11-20 — link da task 03 na lista e notas do modelo do doe-palmas para a 04 e a 07
-  (decisões do Juno ao abrir a 03)
+- **Atualizado em:** 2026-11-20 — convertido ao modelo novo de design na task 03 (subseções fixas, Impacto com os
+  seis eixos); modelo de spec com Problema e Objetivo e de design com o Impacto em eixos (decisões do Juno ao abrir a
+  03)
 
 ## Referências técnicas
 
@@ -27,67 +28,73 @@
 
 ## 1. Decisões técnicas
 
-- **Fechadas:**
-  - Um script por ação, na pasta da skill dona: `start_task.py` e `finish_task.py` na skill `task`;
-    `approve_spec.py` e `finish_spec.py` na skill `spec`; o que é comum (status, "Atualizado em", entrada no
-    Andamento, comandos de git) vai para `.agents/scripts/lib/` — segue o padrão `create_*`/`validate_*` e
-    mantém cada campo com um só dono — descartada: um `fluxo.py` com subcomandos na lib (a skill deixa de ser
-    dona dos próprios scripts) — rodada 1 do design, 2026-11-19.
-  - A base de achados da governança fica num bloco fixo dentro do Andamento da task; o "encerrar" relê de lá; na
-    oficina de skills (sem task), a base vai para um arquivo temporário indicado na própria rodada — descartadas:
-    arquivo JSON fora do git (perde-se ao trocar de máquina) e os dois juntos (a mesma informação em dois
-    lugares) — rodada 1 do design.
-  - O arquivo da oficina é uma ponte até o "iniciar" e o "encerrar" (tasks 05 e 06): fica em
-    `.agents/skills/<nome>-workspace/base-de-achados.txt` e cobre as tasks que mexem em skills antes da 05
-    (02, 03, 07) — descartada: tirar a oficina da 09 e passar o CA-29 para a 05 (essas tasks ficariam sem
-    base) — conversa de 2026-11-19, ao abrir a 09 (todo ajuste de skill que importa acontece dentro de uma task).
-  - Depois da 05 e da 06, a oficina dentro de uma task usa a base do Andamento e não cria o arquivo; sem task,
-    roda a governança simples (0 erros), como antes da base. Entra na task 08 — descartada: manter o arquivo
-    para a oficina sem task (um parágrafo a mais na skill para um caso raro, em geral ajuste que nem passa pela
-    oficina) — conversa de 2026-11-19, ao abrir a 09.
-  - A conferência dos commits é feita por script: "Commits entregues" ganha formato fixo e é comparado com
-    `git log main..HEAD --name-only` — descartada: o agente comparar lendo o log (é a parte objetiva que se quer
-    tirar dele) — rodada 1 do design.
-  - O passo de leitura é provado por eval da oficina com o cenário real do perfil do cliente, nas skills `task` e
-    `spec` — descartadas: só o cenário da task (o CA-21 da spec ficaria sem prova) e revisão manual do texto —
-    rodada 1 do design.
-  - A lista de tasks começa pela governança; as tasks anteriores ao "iniciar" seguem o fluxo manual de hoje (o
-    Juno cria a branch) — descartada: modelo de task primeiro (o "iniciar" esperaria duas peças) — rodada 1 do
-    design.
-  - Um achado é identificado por arquivo + código da regra + mensagem sem números de linha; o `Finding` ganha o
-    campo do código (ex.: `task.subsecao-vazia`) — descartadas: só arquivo + mensagem (ajuste de texto vira erro
-    novo) e arquivo + mensagem + linha (qualquer edição gera falso novo) — rodada 2 do design.
-  - A governança importa o `validate()` de cada validador e junta os `Finding` — descartada: rodar como
-    subprocesso e ler o texto (parse frágil, mais lento) — rodada 2 do design.
-  - A governança valida o conteúdo só das tasks e specs vivas (task `aberta`, `bloqueada`, `em andamento`; spec
-    `rascunho`, `aprovada`, `em andamento`), em qualquer pasta; concluídas e canceladas ficam fora mesmo na pasta
-    da spec — descartada: tudo fora de `done/` (as primeiras tasks desta spec, no modelo antigo, passariam a
-    acusar erro) — rodada 2 do design.
-  - Os comandos de git do "iniciar" são testados com git real, num repositório temporário com remoto local
-    (`git init --bare`) — descartada: mock do subprocess (a causa do erro do CA-12 viraria texto inventado) —
-    rodada 2 do design.
-  - Do modelo de spec do doe-palmas entram só as subseções fixas (Entra e Fica fora como subseções) —
-    descartadas: Premissas (suposição sem dono) e Hotspots como seções do `spec.md` (já cabem no Impacto do
-    design) — rodada 2 do design.
-  - A governança procura comando sem `rtk` só nos blocos de código `bash`/`sh`; a exceção (processo longo ou
-    interativo) é marcada no próprio bloco com um comentário `# sem rtk: motivo` — descartada: também código em
-    linha (acusaria citações como `git log` e `git status` do `AGENTS.md` e dos guias) — rodada 3 do design.
-  - O aviso de possível spec segue uma regra fixa sobre os eixos de impacto: banco "sim" → critério 1;
-    contrato da API "sim" → critério 4; quatro ou mais eixos "sim" → critério 3; o aviso só pergunta e não
-    bloqueia — descartada: subseção com os seis critérios marcada pelo agente (o sinal volta a ser julgamento
-    dele) — rodada 3 do design.
-  - "Commits entregues" tem um bloco de código `text` por commit, com a mensagem completa, seguido da lista
-    "Arquivos:"; o script compara a primeira linha do bloco e a lista — descartada: só título e arquivos, com o
-    corpo apenas no chat (o texto commitado não fica registrado) — rodada 3 do design.
-  - A base de achados (código da regra no `Finding`, comparação, oficina) é uma task própria, a 09, separada
-    da governança (01); a 05 passa a depender dela — descartada: uma task só (PR grande que mistura a migração
-    do verificador com a mudança nos validadores de task e spec) — conversa de 2026-11-19, ao abrir a 01.
-  - Nome da branch montado pelo "iniciar" a partir do padrão que o validador já cobra (`tipo/juno/assunto`):
-    avulsa usa o nome do arquivo sem a data (como `fix/juno/restringir-perfil-cliente`); task de spec usa o
-    assunto da spec mais o número da task — derivado do padrão vigente no `validate_task.py`, sem rodada própria.
-- **Em aberto:**
-  - nada.
-- **ADR novo?** não: a mudança é do fluxo de trabalho com agentes, registrada nesta spec e no `AGENTS.md`.
+### Fechadas
+
+- Um script por ação, na pasta da skill dona: `start_task.py` e `finish_task.py` na skill `task`;
+  `approve_spec.py` e `finish_spec.py` na skill `spec`; o que é comum (status, "Atualizado em", entrada no
+  Andamento, comandos de git) vai para `.agents/scripts/lib/` — segue o padrão `create_*`/`validate_*` e
+  mantém cada campo com um só dono — descartada: um `fluxo.py` com subcomandos na lib (a skill deixa de ser
+  dona dos próprios scripts) — rodada 1 do design, 2026-11-19.
+- A base de achados da governança fica num bloco fixo dentro do Andamento da task; o "encerrar" relê de lá; na
+  oficina de skills (sem task), a base vai para um arquivo temporário indicado na própria rodada — descartadas:
+  arquivo JSON fora do git (perde-se ao trocar de máquina) e os dois juntos (a mesma informação em dois
+  lugares) — rodada 1 do design.
+- O arquivo da oficina é uma ponte até o "iniciar" e o "encerrar" (tasks 05 e 06): fica em
+  `.agents/skills/<nome>-workspace/base-de-achados.txt` e cobre as tasks que mexem em skills antes da 05
+  (02, 03, 07) — descartada: tirar a oficina da 09 e passar o CA-29 para a 05 (essas tasks ficariam sem
+  base) — conversa de 2026-11-19, ao abrir a 09 (todo ajuste de skill que importa acontece dentro de uma task).
+- Depois da 05 e da 06, a oficina dentro de uma task usa a base do Andamento e não cria o arquivo; sem task,
+  roda a governança simples (0 erros), como antes da base. Entra na task 08 — descartada: manter o arquivo
+  para a oficina sem task (um parágrafo a mais na skill para um caso raro, em geral ajuste que nem passa pela
+  oficina) — conversa de 2026-11-19, ao abrir a 09.
+- A conferência dos commits é feita por script: "Commits entregues" ganha formato fixo e é comparado com
+  `git log main..HEAD --name-only` — descartada: o agente comparar lendo o log (é a parte objetiva que se quer
+  tirar dele) — rodada 1 do design.
+- O passo de leitura é provado por eval da oficina com o cenário real do perfil do cliente, nas skills `task` e
+  `spec` — descartadas: só o cenário da task (o CA-21 da spec ficaria sem prova) e revisão manual do texto —
+  rodada 1 do design.
+- A lista de tasks começa pela governança; as tasks anteriores ao "iniciar" seguem o fluxo manual de hoje (o
+  Juno cria a branch) — descartada: modelo de task primeiro (o "iniciar" esperaria duas peças) — rodada 1 do
+  design.
+- Um achado é identificado por arquivo + código da regra + mensagem sem números de linha; o `Finding` ganha o
+  campo do código (ex.: `task.subsecao-vazia`) — descartadas: só arquivo + mensagem (ajuste de texto vira erro
+  novo) e arquivo + mensagem + linha (qualquer edição gera falso novo) — rodada 2 do design.
+- A governança importa o `validate()` de cada validador e junta os `Finding` — descartada: rodar como
+  subprocesso e ler o texto (parse frágil, mais lento) — rodada 2 do design.
+- A governança valida o conteúdo só das tasks e specs vivas (task `aberta`, `bloqueada`, `em andamento`; spec
+  `rascunho`, `aprovada`, `em andamento`), em qualquer pasta; concluídas e canceladas ficam fora mesmo na pasta
+  da spec — descartada: tudo fora de `done/` (as primeiras tasks desta spec, no modelo antigo, passariam a
+  acusar erro) — rodada 2 do design.
+- Os comandos de git do "iniciar" são testados com git real, num repositório temporário com remoto local
+  (`git init --bare`) — descartada: mock do subprocess (a causa do erro do CA-12 viraria texto inventado) —
+  rodada 2 do design.
+- Do modelo de spec do doe-palmas entram só as subseções fixas (Entra e Fica fora como subseções) —
+  descartadas: Premissas (suposição sem dono) e Hotspots como seções do `spec.md` (já cabem no Impacto do
+  design) — rodada 2 do design.
+- A governança procura comando sem `rtk` só nos blocos de código `bash`/`sh`; a exceção (processo longo ou
+  interativo) é marcada no próprio bloco com um comentário `# sem rtk: motivo` — descartada: também código em
+  linha (acusaria citações como `git log` e `git status` do `AGENTS.md` e dos guias) — rodada 3 do design.
+- O aviso de possível spec segue uma regra fixa sobre os eixos de impacto: banco "sim" → critério 1;
+  contrato da API "sim" → critério 4; quatro ou mais eixos "sim" → critério 3; o aviso só pergunta e não
+  bloqueia — descartada: subseção com os seis critérios marcada pelo agente (o sinal volta a ser julgamento
+  dele) — rodada 3 do design.
+- "Commits entregues" tem um bloco de código `text` por commit, com a mensagem completa, seguido da lista
+  "Arquivos:"; o script compara a primeira linha do bloco e a lista — descartada: só título e arquivos, com o
+  corpo apenas no chat (o texto commitado não fica registrado) — rodada 3 do design.
+- A base de achados (código da regra no `Finding`, comparação, oficina) é uma task própria, a 09, separada
+  da governança (01); a 05 passa a depender dela — descartada: uma task só (PR grande que mistura a migração
+  do verificador com a mudança nos validadores de task e spec) — conversa de 2026-11-19, ao abrir a 01.
+- Nome da branch montado pelo "iniciar" a partir do padrão que o validador já cobra (`tipo/juno/assunto`):
+  avulsa usa o nome do arquivo sem a data (como `fix/juno/restringir-perfil-cliente`); task de spec usa o
+  assunto da spec mais o número da task — derivado do padrão vigente no `validate_task.py`, sem rodada própria.
+
+### Em aberto
+
+nada
+
+### ADR novo?
+
+Não: a mudança é do fluxo de trabalho com agentes, registrada nesta spec e no `AGENTS.md`.
 
 ## 2. Mudanças no modelo e na API (antes → depois)
 
@@ -129,8 +136,8 @@ e o item da lista do design é riscado com data e motivo → mesmo aviso da últ
 | Item | Antes | Depois |
 |---|---|---|
 | `task.md` | rótulos soltos; Branch "criada pelo Juno"; um campo de impacto | subseções fixas para cada item obrigatório; Impacto com seis eixos; Decisões (uma linha por decisão) e Em aberto; Andamento; metadados Status, Criado em, Atualizado em, Tipo, Alcance, Modo, Branch (preenchida pelo script); "Commits entregues" no formato fixo; checklist de alcance na leitura |
-| `spec.md` | seções principais com rótulos | Entra, Fica fora, Fechadas e Em aberto como subseções fixas |
-| `design.md` | campo Branch; Em aberto com "bloqueia" | sem Branch; Em aberto como subseção fixa; item da lista com "bloqueada por" e "cobre" |
+| `spec.md` | seções principais com rótulos | Problema, Objetivo, Entra, Fica fora, Fechadas e Em aberto como subseções fixas (Problema e Objetivo: decisão do Juno ao abrir a 03) |
+| `design.md` | campo Branch; Em aberto com "bloqueia"; Impacto com rótulos da API | sem Branch; Fechadas, Em aberto e ADR novo? como subseções fixas; Impacto com os seis eixos da task (decisão do Juno ao abrir a 03); item da lista com "bloqueada por" e "cobre" ("cobre: nenhum" vale) |
 
 ### Skills e instruções
 
@@ -157,11 +164,17 @@ e o item da lista do design é riscado com data e motivo → mesmo aviso da últ
 | modelo de spec e design | `create_spec.py`, `create_design.py`, `validate_spec.py`, `spec/scripts/testes/`, esta spec | idem; esta spec e este design são convertidos na task 03 |
 | leitura da Branch no design | `validate_task.py` (task de spec usa a branch do design) | a regra sai junto com o campo |
 
-- **Front (`web/`):** nenhum.
-- **Swagger e `api/docs/Rotas.md`:** nenhum.
-- **ADRs existentes:** nenhum.
-- **Dados existentes:** as tasks em `tasks/done/` continuam no modelo antigo (fora do escopo); nenhuma task avulsa
-  está aberta hoje.
+### Impacto
+
+- **Contrato da API:** não — nada muda na API; o Swagger e o `api/docs/Rotas.md` continuam como estão
+- **Banco:** não — as tasks em `tasks/done/` continuam no modelo antigo (fora do escopo)
+- **Front:** não
+- **Permissões e segurança:** sim — o script do "iniciar" passa a mudar o repositório (`git pull --ff-only` e
+  `git switch -c`), exceção restrita na regra de Git do `AGENTS.md` (CA-22)
+- **Testes existentes que mudam de propósito:** sim — os que montam task, spec ou design pelo modelo antigo e os
+  que montam `Finding` à mão (tabela acima)
+- **Documentação:** sim — modelos de task, spec e design, skills `task`, `spec`, `governanca` e
+  `oficina-de-skills`, `AGENTS.md`, `.agents/README.md`, guias de commits e de testes; nenhum ADR existente muda
 
 ## 4. Riscos
 
@@ -216,3 +229,6 @@ Notas para abrir as tasks (do modelo de spec do doe-palmas, avaliado ao abrir a 
 - **04:** bloco de encerramento no topo da spec concluída (data, task que encerrou e o que ficou fora).
 - **07:** "fonte dos fatos" (o que foi lido, com a data) e a marca "[a verificar]" para o que não foi
   confirmado, no passo de leitura.
+- **07:** "Referências técnicas" do design continua com rótulos livres (ADRs aplicáveis, Guias do projeto,
+  Contratos existentes, Externas); decidir se "ADRs aplicáveis" (ou os quatro) vira subseção fixa, junto do
+  levantamento de ADRs no passo de leitura (pergunta do Juno na revisão da 03, 2026-11-20).

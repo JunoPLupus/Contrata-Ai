@@ -5,7 +5,9 @@ Modelo de spec: O QUÊ e POR QUÊ, sem detalhes de implementação.
 Copie para .agents/docs/specs/AAAA-MM-DD-<assunto>/spec.md.
 O COMO vai no design.md da mesma pasta; as tasks, em tasks/NN-<assunto>.md.
 Nada de caminhos de arquivo, nomes de classe ou trechos de código aqui: isso envelhece rápido
-e pertence ao design.md. Apague estes comentários ao preencher.
+e pertence ao design.md.
+Toda subseção "###" é obrigatória e nunca é apagada: "não se aplica" é resposta válida.
+Apague estes comentários ao preencher.
 -->
 
 - **Status:** `rascunho` | `aprovada` | `em andamento` | `concluída` | `cancelada` | `substituída`
@@ -28,8 +30,13 @@ arquivos de código a ler, nas tasks.
 
 ## 1. Problema e objetivo
 
-- **Problema:** <o que falta ou está errado, do ponto de vista de quem usa: cliente, prestador>
-- **Objetivo:** <como fica depois da entrega, em termos de produto>
+### Problema
+
+<o que falta ou está errado, do ponto de vista de quem usa: cliente, prestador>
+
+### Objetivo
+
+<como fica depois da entrega, em termos de produto>
 
 Ao final, isto é verdade:
 
@@ -44,20 +51,30 @@ Ao final, isto é verdade:
 
 ## 2. Escopo
 
-- **Entra:**
-  - <capacidade>
-- **Fica fora:**
-  - <o que não deve ser feito agora, mesmo parecendo relacionado>
+### Entra
+
+- <capacidade>
+
+### Fica fora
+
+- <o que não deve ser feito agora, mesmo parecendo relacionado>
 
 ## 3. Decisões de produto
 
 <!-- Decisões técnicas (camadas, índices, padrões de código) vão no design.md. -->
 
-- **Fechadas** (não se rediscutem nesta spec):
-  - <decisão> — descartadas: <alternativa (motivo)> — <onde foi tomada: link para a decisão/ADR ou data da conversa>
-- **Em aberto** (precisam de resposta antes do que bloqueiam; a spec só é aprovada sem nada bloqueando a aprovação):
-  - <pergunta> — bloqueia: <"aprovação da spec" ou "design"> (as tasks ainda não existem nesta fase)
-  - <contradição com requisito/ADR: trecho de cada lado> — bloqueia: aprovação da spec
+### Fechadas
+
+<!-- Não se rediscutem nesta spec. Uma por item. -->
+
+- <decisão> — descartadas: <alternativa (motivo)> — <onde foi tomada: link para a decisão/ADR ou data da conversa>
+
+### Em aberto
+
+<!-- Perguntas e contradições ainda sem resposta (com requisito ou ADR: o trecho de cada lado). Qualquer
+item aqui impede a aprovação da spec e a criação do design.md; sem nenhum: "nada". -->
+
+- <pergunta ou contradição>
 
 ## 4. Critérios de aceite
 
