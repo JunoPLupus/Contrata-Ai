@@ -32,7 +32,7 @@ pode escrever", mas você acha lacunas (ou contradições) no que ele entregou:
 2. deixe-o escolher: **responder agora** (vira uma rodada) ou **receber o rascunho** com elas em
    "Decisões de produto → Em aberto";
 3. se ele escolher o rascunho: status `rascunho`, nenhuma lacuna preenchida por você, e a spec **não pode
-   ser aprovada** (nem o `design.md` começar) enquanto houver item em aberto que bloqueie a aprovação.
+   ser aprovada** (nem o `design.md` começar) enquanto "Em aberto" não disser "nada".
 
 ## Contradições bloqueiam a aprovação
 
@@ -142,12 +142,15 @@ muitas respostas já estão na conversa ou no código):
 2. Leia o `spec.md` criado (as regras do modelo estão nos comentários dele) e a tabela "Onde fica cada
    coisa numa spec" do `.agents/README.md`.
 3. Preencha seguindo as regras do modelo e estas:
+   - **Subseções `###` do modelo** (Problema, Objetivo, Entra, Fica fora, Fechadas, Em aberto) nunca são
+     apagadas: o que não se aplica recebe "não se aplica". O validador acusa subseção ausente ou vazia.
    - **A spec registra decisões; não cria decisões.** Tudo que estiver nela precisa ter vindo da conversa,
      do código ou de um documento citado. Uma afirmação que o usuário nunca fez é defeito, mesmo que pareça
      óbvia. Se faltou algo para preencher uma seção, isso é uma pergunta, não um texto inventado.
    - **Decisões de produto:** cada decisão fechada leva a opção escolhida, as alternativas descartadas e o
-     motivo, e onde foi tomada. As em aberto dizem o que bloqueiam (a aprovação da spec ou o design: as
-     tasks ainda não existem nesta fase). Exemplo real:
+     motivo, e onde foi tomada. O que ainda não foi decidido vai para "Em aberto", escrito como quiser:
+     qualquer item ali impede a aprovação e a criação do `design.md`; sem nenhum, a subseção diz "nada".
+     Exemplo real de decisão fechada:
      ```
      - O texto da notificação é montado pela API no momento do evento e guardado pronto — descartadas:
        montar no front (uma consulta extra por notificação) e guardar dados soltos para o front montar
@@ -184,17 +187,18 @@ muitas respostas já estão na conversa ou no código):
    rtk python3 .agents/skills/spec/scripts/validate_spec.py .agents/docs/specs/<pasta>
    ```
    Ele confere comentários, `<placeholders>` e datas do modelo que sobraram, seções obrigatórias (título
-   exato do modelo, não vazias), status, critérios `CA-NN` (formato, repetidos, Dado/Quando/Então) e links
-   relativos, e lista cada problema como `arquivo:linha [ERRO|AVISO] código mensagem`. Corrija e rode de
+   exato do modelo, não vazias), subseções `###` (ausente ou vazia é erro; "não se aplica" vale), status,
+   "Em aberto" igual a "nada" a partir de `aprovada`, critérios `CA-NN` (formato, repetidos,
+   Dado/Quando/Então) e links relativos, e lista cada problema como `arquivo:linha [ERRO|AVISO] código
+   mensagem`, com a linha `N erro(s), M aviso(s)` no fim. Corrija e rode de
    novo até sair sem erro (exit 0); o que for genuinamente desconhecido vai para "Em aberto", não para o
    texto.
    Aviso de lacuna na sequência dos `CA-NN` é aceitável só quando um critério foi removido numa
    atualização (os IDs não são renumerados). O validador não substitui a varredura do passo 4: ele confere
    a forma, não o sentido.
 6. **Peça aprovação** com a mensagem do formato abaixo e revise até o usuário aprovar. Só então mude o
-   status para `aprovada` — e só se não houver item em aberto que bloqueie a aprovação nem contradição sem
-   decisão — e rode o validador de novo: com `aprovada`, ele acusa item "Em aberto" com
-   `bloqueia: aprovação`.
+   status para `aprovada` — e só com "Em aberto" igual a "nada" e nenhuma contradição sem decisão — e rode
+   o validador de novo: com `aprovada`, ele acusa cada item que sobrar em "Em aberto".
 
 **Formato da mensagem ao entregar o `spec.md`:**
 
@@ -204,7 +208,7 @@ Escrevi o rascunho em `.agents/docs/specs/<pasta>/spec.md`.
 - **Objetivo:** <uma frase>
 - **Fica fora:** <itens>
 - **Critérios:** CA-01 <nome> · CA-02 <nome> · …
-- **Em aberto:** <itens e o que bloqueiam, ou "nada">
+- **Em aberto:** <itens, ou "nada">
 
 O que está errado ou faltando? Com a aprovação, sigo para o `design.md`.
 (Opcional: posso preparar o pedido para uma sessão nova de agente, sem esta conversa e com acesso ao
@@ -226,16 +230,21 @@ Só depois do `spec.md` aprovado: o design responde ao "como" de um "o quê" que
    ```bash
    rtk python3 .agents/skills/spec/scripts/create_design.py .agents/docs/specs/<pasta>
    ```
-   O título vem do `spec.md`. O script recusa se a spec não estiver `aprovada` ou se o `design.md` já
-   existir.
+   O título vem do `spec.md`. O script recusa se a spec não estiver `aprovada`, se o "Em aberto" dela não
+   disser "nada" (lista os itens) ou se o `design.md` já existir. O design não tem campo de branch: cada
+   task tem a sua.
 4. **Preencha** pelas regras do modelo, mais estas:
    - cada decisão técnica com alternativas descartadas e motivo, como no `spec.md`;
    - **ADR:** se uma decisão vale para o projeto inteiro, ou altera um ADR existente, registre em
-     "ADR novo?" / "ADRs existentes" e coloque a escrita do ADR **como uma task da lista**. Não escreva o
+     "ADR novo?" / no eixo Documentação do Impacto e coloque a escrita do ADR **como uma task da lista**. Não escreva o
      ADR aqui: ele registra o que foi feito, e o "feito" ainda não aconteceu;
+   - **Impacto:** os mesmos seis eixos da task, cada um "sim — o que muda" ou "não"; "Em aberto" das
+     decisões técnicas com "nada" quando não houver item;
    - código HTTP e erro de domínio de cada `CA-NN` na estratégia de testes;
    - **lista de tasks:** fatias verticais (cada uma atravessa as camadas necessárias e pode ser testada
-     sozinha), numeradas na ordem de dependência, com "bloqueada por". Cada uma diz quais `CA-NN` cobre.
+     sozinha), numeradas na ordem de dependência, com "bloqueada por". Cada uma diz quais `CA-NN` cobre
+     ("cobre: nenhum" para a que não prova critério, como um refactor pedido pela spec); o validador acusa
+     item sem "bloqueada por" ou sem "cobre", e o `create_task.py` recusa criar a task.
      A lista guarda só a ordem, o "bloqueada por" e os `CA-NN` cobertos; o **status** de cada task mora no
      arquivo dela (skill `task`), não na lista. **Não crie os arquivos `tasks/NN-*.md`**: cada task é
      detalhada na hora de começar (skill `task`), com o código como estiver naquele momento. O validador

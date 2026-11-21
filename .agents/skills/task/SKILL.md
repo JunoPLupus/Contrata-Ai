@@ -98,9 +98,11 @@ pergunta reabre uma decisão "Fechada" do design, diga qual e por que antes de p
    "agente implementa, Juno revisa"; se o usuário já disse que vai implementar, acrescente `--modo juno`
    ("Juno implementa, agente guia e revisa"). Na task de spec,
    número, título e nome do arquivo vêm do link da lista do `design.md`, "Bloqueada por" e os `CA-NN` (em
-   "Critérios de aceite") vêm da mesma linha, a branch é a do `design.md` (se houver; senão, `<tipo>/juno/<assunto da spec>-NN`), e o status sai `bloqueada` quando uma
-   dependência não está `concluída` (o script diz qual e em que status está). Se o arquivo já existir,
-   ele recusa: é task existente (modo [Atualizar](#2-atualizar)).
+   "Critérios de aceite") vêm da mesma linha, a branch sugerida é `<tipo>/juno/<assunto da spec>-NN`, e o
+   status sai `bloqueada` quando uma dependência não está `concluída` (o script diz qual e em que status
+   está). O item precisa ter link e dizer o que cobre ("cobre: nenhum" vale): sem isso, o script recusa e
+   diz a linha do `design.md`. Se o arquivo já existir, ele recusa: é task existente (modo
+   [Atualizar](#2-atualizar)).
 2. Preencha o resto pelas regras do modelo e estas:
    - **Seção 1 (Contexto e critérios):** Problema, Objetivo e Referências nos dois tipos (na de spec, o
      recorte desta fatia; "não se aplica" vale). A task de spec **cita** os `CA-NN` em "Critérios de aceite"
