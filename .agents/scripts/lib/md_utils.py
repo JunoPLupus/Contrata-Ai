@@ -27,9 +27,14 @@ def _mask(match: re.Match) -> str:
     return "".join("\n" if c == "\n" else " " for c in match.group(0))
 
 
+# Bloco de código: a cerca de três crases abre e fecha só no começo da linha (com qualquer recuo, para valer
+# dentro de listas aninhadas). Três crases no meio do texto não abrem bloco (ficam para o código inline).
+_BLOCO_DE_CODIGO = re.compile(r"^[ \t]*```[^\n]*\n[\s\S]*?^[ \t]*```[ \t]*$", re.MULTILINE)
+
+
 def mask_code(texto: str) -> str:
-    """Mascara blocos de código (três crases) e depois código inline."""
-    mascarado = re.sub(r"```[\s\S]*?```", _mask, texto)
+    """Mascara blocos de código (cerca de três crases no começo da linha) e depois código inline."""
+    mascarado = _BLOCO_DE_CODIGO.sub(_mask, texto)
     return re.sub(r"`[^`\n]*`", _mask, mascarado)
 
 

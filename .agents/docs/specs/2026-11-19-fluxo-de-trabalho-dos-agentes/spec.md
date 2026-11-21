@@ -2,8 +2,8 @@
 
 - **Status:** `aprovada`
 - **Criado em:** 2026-11-19
-- **Atualizado em:** 2026-11-19 — aprovada pelo Juno, depois da revisão do rascunho (governança, base de achados,
-  canceladas, modelo de spec, leitura também para specs, status e branches das specs)
+- **Atualizado em:** 2026-11-20 — convertida ao modelo novo de spec (subseções fixas), na task 03; aprovada pelo
+  Juno em 2026-11-19
 - **Requisitos relacionados:** nenhum (a spec trata do fluxo de trabalho com agentes, não do produto ContrataAí)
 - **Substitui / substituída por:** nenhuma
 
@@ -31,21 +31,26 @@ Aqui, "produto" é o próprio fluxo de trabalho; quem usa é o Juno (revisa e ap
 
 ## 1. Problema e objetivo
 
-- **Problema:** a cada task, o Juno repete à mão os mesmos passos (atualizar a `main`, criar a branch, mover a
-  task para a pasta de concluídas, pedir o texto do merge) e o agente muda o status da task sem nenhuma checagem
-  objetiva. O validador da task não percebe quando um item obrigatório (problema, objetivo, o que fica fora,
-  arquivos previstos, o que não deve mudar, impactos) é apagado em vez de preenchido, e o da spec tem a mesma
-  lacuna (só exige as seções principais; o que está dentro delas, como "fica fora" e "em aberto", pode sumir), além
-  de só reconhecer uma decisão em aberto escrita com um texto exato. E, ao propor onde uma regra deve morar, seja
-  numa task ou numa spec, o agente não levanta o que já existe no código, o que gera duplicação. As checagens do conjunto de
-  instruções para agentes cresceram num verificador geral sem dono (não há skill de governança), e nada separa
-  um erro que a mudança causou de um erro que já existia.
-- **Objetivo:** um fluxo de task e spec com começo e fim feitos por script, que só avança com a aprovação do Juno e com
-  a task ou a spec sem pendências; modelos de task, de spec e de design em que todo item obrigatório tem lugar fixo e é
-  cobrado pelo validador; um passo de leitura, nas tasks e nas specs, que obriga o levantamento do que já existe
-  antes de propor; e uma governança
-  com dono, que verifica o conjunto inteiro e separa os erros novos dos antigos. Skills curtas: toda verificação
-  objetiva fica num script, e o agente fica só com o que é ambíguo.
+### Problema
+
+A cada task, o Juno repete à mão os mesmos passos (atualizar a `main`, criar a branch, mover a
+task para a pasta de concluídas, pedir o texto do merge) e o agente muda o status da task sem nenhuma checagem
+objetiva. O validador da task não percebe quando um item obrigatório (problema, objetivo, o que fica fora,
+arquivos previstos, o que não deve mudar, impactos) é apagado em vez de preenchido, e o da spec tem a mesma
+lacuna (só exige as seções principais; o que está dentro delas, como "fica fora" e "em aberto", pode sumir), além
+de só reconhecer uma decisão em aberto escrita com um texto exato. E, ao propor onde uma regra deve morar, seja
+numa task ou numa spec, o agente não levanta o que já existe no código, o que gera duplicação. As checagens do conjunto de
+instruções para agentes cresceram num verificador geral sem dono (não há skill de governança), e nada separa
+um erro que a mudança causou de um erro que já existia.
+
+### Objetivo
+
+Um fluxo de task e spec com começo e fim feitos por script, que só avança com a aprovação do Juno e com
+a task ou a spec sem pendências; modelos de task, de spec e de design em que todo item obrigatório tem lugar fixo e é
+cobrado pelo validador; um passo de leitura, nas tasks e nas specs, que obriga o levantamento do que já existe
+antes de propor; e uma governança
+com dono, que verifica o conjunto inteiro e separa os erros novos dos antigos. Skills curtas: toda verificação
+objetiva fica num script, e o agente fica só com o que é ambíguo.
 
 Ao final, isto é verdade:
 
@@ -92,150 +97,156 @@ Ao final, isto é verdade:
 
 ## 2. Escopo
 
-- **Entra:**
-  - Modelo de task reestruturado: subseções fixas para cada item obrigatório; seção de impacto com seis eixos;
-    seção de decisões tomadas e seção "Em aberto"; seção de andamento; metadados Status, Criado em, Atualizado
-    em, Tipo, Alcance, Modo e Branch.
-  - Validador da task acompanhando o modelo novo (subseções, eixos de impacto, "Em aberto", Modo).
-  - Modelos de spec e de design com o mesmo tratamento (subseções fixas, "Em aberto" que precisa dizer "nada",
-    cada item da lista de tasks com "bloqueada por" e os critérios cobertos; sem branch única no design), mantendo a divisão entre o quê
-    (spec) e o como (design); validador da spec acompanhando; esta própria spec convertida para o modelo novo.
-  - Modo "iniciar" na skill de task, com script.
-  - Modo "encerrar" na skill de task, com script, incluindo a conferência dos commits feitos pelo Juno e o texto
-    do merge; o mesmo passo cancela uma task (avulsa: `cancelada` e movida para as concluídas; de spec:
-    `cancelada`, fica na pasta da spec e é riscada na lista do design) e, quando fecha a última pendência de uma
-    spec, oferece encerrar a spec na mesma branch.
-  - O "fechar" passa a só preencher o fechamento e pedir a revisão (deixa de mudar o status).
-  - Aprovar e encerrar uma spec por script, como passos da skill de spec (encerrar = mudar para concluída e mover a
-    pasta quando todas as tasks terminam); o "iniciar" da primeira task de uma spec a põe `em andamento`.
-  - Passo de leitura das skills de task e de spec (antes da primeira rodada de decisão): levantamento de todos os
-    mecanismos já usados para o tipo de regra (na rota, no caso de uso, na entidade) e das rotas irmãs, mais o
-    checklist de alcance (quem chama, testes, fixtures, configuração, o que é exportado).
-  - Formato do texto do merge no guia de commits.
-  - Atualização das instruções gerais para agentes: exceção à regra de Git restrita aos scripts do fluxo
-    (buscar e avançar a `main`, criar a branch da task); fluxo novo descrito; pasta única de concluídas.
-  - Skill de governança, dona das checagens do conjunto de instruções para agentes: absorve o verificador geral
-    atual (que deixa de existir como peça à parte) e acrescenta status × pasta, duplicatas, task em andamento sem
-    branch, comando de agente sem o prefixo de economia de saída e marcador de modelo esquecido em documento
-    canônico; roda os validadores de cada task e spec abertas e junta o resultado, sem regra de conteúdo própria.
-  - Base de achados da governança: salva antes da mudança e comparada depois (novos, antigos, corrigidos), usada
-    pelo "iniciar" e pelo "encerrar" de toda task e pela oficina de skills.
-  - Quem chamava o verificador geral (integração contínua, guia de testes, oficina de skills) passa a chamar a
-    governança inteira.
-- **Fica fora:**
-  - Guias de padrões e de restrições do código: outra spec ou task (decisão de 2026-11-19; o Juno observou que
-    eles vão influenciar o fluxo depois).
-  - Skill de implementação e o restante do Ponytail.
-  - Subpastas por mês nas concluídas e pasta própria para as canceladas (estacionados: só se for simples depois).
-  - Reescrever ou revalidar as tasks que já estão nas concluídas: continuam no modelo antigo.
-  - Abrir PR, fazer merge, push ou commit pelo agente: continuam com o Juno.
+### Entra
+
+- Modelo de task reestruturado: subseções fixas para cada item obrigatório; seção de impacto com seis eixos;
+  seção de decisões tomadas e seção "Em aberto"; seção de andamento; metadados Status, Criado em, Atualizado
+  em, Tipo, Alcance, Modo e Branch.
+- Validador da task acompanhando o modelo novo (subseções, eixos de impacto, "Em aberto", Modo).
+- Modelos de spec e de design com o mesmo tratamento (subseções fixas, "Em aberto" que precisa dizer "nada",
+  cada item da lista de tasks com "bloqueada por" e os critérios cobertos; sem branch única no design), mantendo a divisão entre o quê
+  (spec) e o como (design); validador da spec acompanhando; esta própria spec convertida para o modelo novo.
+- Modo "iniciar" na skill de task, com script.
+- Modo "encerrar" na skill de task, com script, incluindo a conferência dos commits feitos pelo Juno e o texto
+  do merge; o mesmo passo cancela uma task (avulsa: `cancelada` e movida para as concluídas; de spec:
+  `cancelada`, fica na pasta da spec e é riscada na lista do design) e, quando fecha a última pendência de uma
+  spec, oferece encerrar a spec na mesma branch.
+- O "fechar" passa a só preencher o fechamento e pedir a revisão (deixa de mudar o status).
+- Aprovar e encerrar uma spec por script, como passos da skill de spec (encerrar = mudar para concluída e mover a
+  pasta quando todas as tasks terminam); o "iniciar" da primeira task de uma spec a põe `em andamento`.
+- Passo de leitura das skills de task e de spec (antes da primeira rodada de decisão): levantamento de todos os
+  mecanismos já usados para o tipo de regra (na rota, no caso de uso, na entidade) e das rotas irmãs, mais o
+  checklist de alcance (quem chama, testes, fixtures, configuração, o que é exportado).
+- Formato do texto do merge no guia de commits.
+- Atualização das instruções gerais para agentes: exceção à regra de Git restrita aos scripts do fluxo
+  (buscar e avançar a `main`, criar a branch da task); fluxo novo descrito; pasta única de concluídas.
+- Skill de governança, dona das checagens do conjunto de instruções para agentes: absorve o verificador geral
+  atual (que deixa de existir como peça à parte) e acrescenta status × pasta, duplicatas, task em andamento sem
+  branch, comando de agente sem o prefixo de economia de saída e marcador de modelo esquecido em documento
+  canônico; roda os validadores de cada task e spec abertas e junta o resultado, sem regra de conteúdo própria.
+- Base de achados da governança: salva antes da mudança e comparada depois (novos, antigos, corrigidos), usada
+  pelo "iniciar" e pelo "encerrar" de toda task e pela oficina de skills.
+- Quem chamava o verificador geral (integração contínua, guia de testes, oficina de skills) passa a chamar a
+  governança inteira.
+
+### Fica fora
+
+- Guias de padrões e de restrições do código: outra spec ou task (decisão de 2026-11-19; o Juno observou que
+  eles vão influenciar o fluxo depois).
+- Skill de implementação e o restante do Ponytail.
+- Subpastas por mês nas concluídas e pasta própria para as canceladas (estacionados: só se for simples depois).
+- Reescrever ou revalidar as tasks que já estão nas concluídas: continuam no modelo antigo.
+- Abrir PR, fazer merge, push ou commit pelo agente: continuam com o Juno.
 
 ## 3. Decisões de produto
 
-- **Fechadas** (não se rediscutem nesta spec):
-  - É spec, não tasks avulsas — descartada: tasks avulsas (as peças dependem umas das outras e mudam uma regra que
-    vale para o projeto inteiro) — conversa de 2026-11-19, rodada 1.
-  - Iniciar é um modo novo da skill de task, com o trabalho objetivo num script — descartada: skill própria de
-    aprovação (duas skills escrevendo o status do mesmo arquivo); motivo do Juno: menos texto na skill e menos
-    responsabilidade no agente, que fica só com o que é ambíguo — rodada 1.
-  - O script cria a branch, a partir da `main` — descartada: o script só imprimir o comando (passo manual
-    repetido); exige uma exceção restrita na regra de Git das instruções gerais — rodada 1.
-  - Decisões em aberto ficam numa seção própria da task, e o "iniciar" recusa se ela não estiver como "nada" —
-    descartada: reaproveitar o status `bloqueada` (mistura "depende de outra task" com "falta decidir") — rodada 1.
-  - Campo "Modo" na task, com o padrão "agente implementa, Juno revisa"; uma troca no meio fica registrada no
-    andamento; como guiar o Juno quando ele implementa fica nas preferências pessoais dele — descartada: modo só
-    nas preferências pessoais, sem registro na task — rodada 2.
-  - Do Ponytail entra só o checklist de alcance, junto do passo de leitura — descartadas: skill de implementação
-    no estilo Ponytail; nada do Ponytail — rodada 2.
-  - Guias de padrões e de restrições ficam fora — descartada: incluí-los (juntaria um levantamento grande do
-    código ao redesenho do fluxo) — rodada 2.
-  - Concluídas numa pasta só, corrigindo a documentação — descartada: subpastas por mês (estacionada) — rodada 2.
-  - Itens rastreáveis como subseções fixas, nunca apagadas; "não se aplica" é resposta válida — descartada:
-    rótulos dentro das seções atuais (mais frágeis para o validador). Motivo do Juno: o validador atual não confere
-    problema, objetivo, o que fica fora, arquivos previstos nem o que não deve mudar — rodada 3.
-  - Impacto com seis eixos fixos (contrato da API, banco, front, permissões e segurança, testes existentes que
-    mudam de propósito, documentação), cada um "sim — o quê" ou "não" — descartada: lista livre — rodada 3.
-  - A task registra só as decisões tomadas, uma por linha (decisão, descartadas, motivo, data), no mesmo formato da
-    spec — descartada: tabela de perguntas e opções com as respostas (repete a rodada do chat e incha a task) —
-    rodada 3.
-  - Seção de andamento com entradas datadas (comandos e resultado, achados, mudança de escopo), preenchida durante
-    a task; o fechamento resume — descartada: tudo só no fechamento — rodada 3.
-  - Metadados: Status, Criado em, Atualizado em, Tipo, Alcance, Modo e Branch — descartados: prioridade,
-    responsável, solicitante e branch base (sempre os mesmos neste projeto; a base é sempre a `main`) — rodada 3.
-  - Encerrar é um modo novo da skill de task, com script; encerrar uma spec é passo da skill de spec — descartada:
-    skill de encerramento própria — rodada 4.
-  - O "encerrar" move a task para as concluídas antes de entregar os textos de commit — descartada: o Juno mover
-    depois de commitar (passo manual e commit a mais) — rodada 4.
-  - O "iniciar" atualiza a `main` só por avanço direto (fast-forward) e para se não der — descartadas: buscar e
-    recusar, deixando o pull com o Juno (passo manual a cada task); só checar localmente (branch a partir de uma
-    `main` velha) — rodada 4, depois da explicação do pull com fast-forward.
-  - O "iniciar" avisa quando o impacto aponta para um critério de spec; o agente reavalia e o Juno decide; o modo
-    "atualizar" refaz a checagem — descartada: só o agente reavaliar, sem sinal objetivo — rodada 4.
-  - O "iniciar" registra no andamento a aprovação, a branch e o commit de base — descartada: só status e branch —
-    rodada 4.
-  - A recusa por "`main` divergiu do GitHub" é a falha do próprio pull com fast-forward (divergência, sem rede,
-    autenticação), não uma checagem à parte — ajuste do Juno no resumo, 2026-11-19.
-  - Quem marca `concluída` é o "encerrar", depois da aprovação e só se a validação do fechamento passar; o
-    "fechar" deixa o status em `em andamento` — ajuste do Juno no resumo, 2026-11-19.
-  - A aprovação do Juno é dada na conversa; o agente só roda o "iniciar" e o "encerrar" depois dela, e o registro
-    no andamento diz quem aprovou e quando — conversa de 2026-11-19 (fluxo descrito pelo Juno).
-  - Com diferença na conferência dos commits, o texto do merge só sai depois que o Juno corrige ou aceita cada
-    uma; uma spec é encerrada quando todas as tasks estão concluídas ou canceladas, e só com a aprovação do Juno —
-    propostas pelo agente no rascunho, confirmadas pelo Juno na revisão de 2026-11-19.
-  - Tasks avulsas canceladas também vão para a pasta de concluídas (que passa a significar "fora de circulação"),
-    com status `cancelada`, movidas pelo mesmo passo do "encerrar", sem textos de commit de implementação; tasks
-    de spec canceladas ficam na pasta da spec, riscadas na lista do design. O Juno pode, conforme o caso, só apagar
-    o arquivo de uma task cancelada que nunca foi para o repositório — descartadas: pasta própria de canceladas
-    (uma pasta e uma regra a mais para um caso raro; estacionada, junto das subpastas por mês); deixar nas abertas
-    (a pasta deixa de significar "vivas") — revisão do rascunho, 2026-11-19.
-  - Modelos de spec e de design recebem o mesmo tratamento do modelo de task, nesta spec, e esta spec é convertida
-    para o modelo novo — descartada: spec ou task separada depois (os dois validadores ficariam com regras
-    diferentes para a mesma ideia). O modelo de spec do doe-palmas (arquivo único) serve de referência, respeitando
-    a divisão deste projeto entre spec e design; o que aproveitar dele é decisão do design — revisão do rascunho,
-    2026-11-19.
-  - Cancelar uma task avulsa é feito pelo script, no passo do "encerrar": vale para task `aberta`, `bloqueada` ou
-    `em andamento`, registra no andamento "cancelada pelo Juno" e o motivo, e o agente entrega só o texto do commit
-    de documentação que move o arquivo — proposto pelo agente na revisão de coerência, confirmado pelo Juno em
-    2026-11-19.
-  - As mudanças de status da spec também são feitas por script: aprovar (valida, exige "Em aberto" igual a "nada",
-    registra a aprovação), entrar em andamento (pelo "iniciar" da primeira task) e encerrar (confere as tasks,
-    `concluída`, move a pasta) — descartada: só a task por script, com o agente mudando o status da spec à mão —
-    revisão do rascunho, 2026-11-19 (o Juno ajustou o objetivo para "fluxo de task e spec"). Uma task de spec só
-    pode ser iniciada com a spec `aprovada` ou `em andamento` — proposto pelo agente, confirmado pelo Juno.
-  - Uma branch por task, também nas tasks de spec, sempre a partir da `main` atualizada, cada uma com o seu PR; as
-    mudanças na spec acompanham a task que as causou; o campo de branch única no design deixa de existir —
-    descartada: uma branch por spec (PR grande, a `main` espera até o fim, e o "iniciar" precisaria de exceções
-    para estar fora da `main` e para a branch já existente) — revisão do rascunho, 2026-11-19.
-  - O encerramento da spec roda na branch da task que fecha a última pendência, descoberta pelo script na hora (o
-    "encerrar" da task confere se sobrou alguma task da lista não concluída nem cancelada; uma task nova no meio do
-    caminho entra na contagem); se a última pendência foi cancelada sem branch, o encerramento vai para a `main`
-    como commit só de documentação — descartada: sempre direto na `main` depois do último merge (status da spec
-    atrasado e um commit a mais) — revisão do rascunho, 2026-11-19.
-  - Task de spec é cancelada pelo mesmo passo de cancelamento do "encerrar" (status `cancelada`, motivo no
-    andamento), mas fica na pasta da spec, riscada na lista do design com o motivo; sem branch, o commit vai para
-    a `main` — descartada: só riscar na lista (o arquivo continuaria aberto para a governança e para o
-    encerramento da spec) — revisão do rascunho, 2026-11-19.
-  - A criação e a aprovação da spec entram por commit direto do Juno na `main`, com push antes do "iniciar" da
-    primeira task, como os commits só de documentação de hoje — descartada: branch e PR próprios para a spec (um
-    ciclo de PR para documentos já revisados nas rodadas) — revisão do rascunho, 2026-11-19.
-  - Skills curtas: toda verificação objetiva vai para um script, e o texto da skill fica com o que é ambíguo;
-    cada passo novo de skill precisa justificar por que não é script — pedido repetido do Juno, 2026-11-19.
-  - Skill de governança dona das checagens do conjunto, com um script só, organizado por área internamente —
-    descartadas: ampliar o verificador geral sem skill (mantém o acúmulo sem dono); dois scripts, um para skills
-    e outro para documentos (várias checagens cruzam as duas áreas e ficariam com dono escolhido caso a caso);
-    governança dona também do conteúdo de cada task e spec (a mesma regra com dois donos, e as skills de task e
-    spec dependendo de outra skill) — revisão do rascunho, 2026-11-19.
-  - A governança roda sempre inteira, sem filtro por área — descartada: filtro por área (esconderia o que uma
-    mudança numa skill quebra fora dela, como uma task que a cita) — revisão do rascunho, 2026-11-19.
-  - Erros antigos × novos por base salva pelo script e comparação em três grupos (novos bloqueiam; antigos só
-    informados; corrigidos aparecem como tal) — descartadas: exigir governança limpa antes de mexer (um erro alheio
-    trava qualquer trabalho); o agente julgar pela leitura (é a parte ambígua que se quer tirar dele) — revisão do
-    rascunho, 2026-11-19.
-  - A base vale para a oficina de skills e para toda task: o "iniciar" salva e registra os antigos no andamento; o
-    "encerrar" compara e recusa se houver erro novo — descartada: só na oficina (tasks também mexem nas instruções
-    e nos modelos) — revisão do rascunho, 2026-11-19.
-- **Em aberto:**
-  - nada.
+### Fechadas
+
+- É spec, não tasks avulsas — descartada: tasks avulsas (as peças dependem umas das outras e mudam uma regra que
+  vale para o projeto inteiro) — conversa de 2026-11-19, rodada 1.
+- Iniciar é um modo novo da skill de task, com o trabalho objetivo num script — descartada: skill própria de
+  aprovação (duas skills escrevendo o status do mesmo arquivo); motivo do Juno: menos texto na skill e menos
+  responsabilidade no agente, que fica só com o que é ambíguo — rodada 1.
+- O script cria a branch, a partir da `main` — descartada: o script só imprimir o comando (passo manual
+  repetido); exige uma exceção restrita na regra de Git das instruções gerais — rodada 1.
+- Decisões em aberto ficam numa seção própria da task, e o "iniciar" recusa se ela não estiver como "nada" —
+  descartada: reaproveitar o status `bloqueada` (mistura "depende de outra task" com "falta decidir") — rodada 1.
+- Campo "Modo" na task, com o padrão "agente implementa, Juno revisa"; uma troca no meio fica registrada no
+  andamento; como guiar o Juno quando ele implementa fica nas preferências pessoais dele — descartada: modo só
+  nas preferências pessoais, sem registro na task — rodada 2.
+- Do Ponytail entra só o checklist de alcance, junto do passo de leitura — descartadas: skill de implementação
+  no estilo Ponytail; nada do Ponytail — rodada 2.
+- Guias de padrões e de restrições ficam fora — descartada: incluí-los (juntaria um levantamento grande do
+  código ao redesenho do fluxo) — rodada 2.
+- Concluídas numa pasta só, corrigindo a documentação — descartada: subpastas por mês (estacionada) — rodada 2.
+- Itens rastreáveis como subseções fixas, nunca apagadas; "não se aplica" é resposta válida — descartada:
+  rótulos dentro das seções atuais (mais frágeis para o validador). Motivo do Juno: o validador atual não confere
+  problema, objetivo, o que fica fora, arquivos previstos nem o que não deve mudar — rodada 3.
+- Impacto com seis eixos fixos (contrato da API, banco, front, permissões e segurança, testes existentes que
+  mudam de propósito, documentação), cada um "sim — o quê" ou "não" — descartada: lista livre — rodada 3.
+- A task registra só as decisões tomadas, uma por linha (decisão, descartadas, motivo, data), no mesmo formato da
+  spec — descartada: tabela de perguntas e opções com as respostas (repete a rodada do chat e incha a task) —
+  rodada 3.
+- Seção de andamento com entradas datadas (comandos e resultado, achados, mudança de escopo), preenchida durante
+  a task; o fechamento resume — descartada: tudo só no fechamento — rodada 3.
+- Metadados: Status, Criado em, Atualizado em, Tipo, Alcance, Modo e Branch — descartados: prioridade,
+  responsável, solicitante e branch base (sempre os mesmos neste projeto; a base é sempre a `main`) — rodada 3.
+- Encerrar é um modo novo da skill de task, com script; encerrar uma spec é passo da skill de spec — descartada:
+  skill de encerramento própria — rodada 4.
+- O "encerrar" move a task para as concluídas antes de entregar os textos de commit — descartada: o Juno mover
+  depois de commitar (passo manual e commit a mais) — rodada 4.
+- O "iniciar" atualiza a `main` só por avanço direto (fast-forward) e para se não der — descartadas: buscar e
+  recusar, deixando o pull com o Juno (passo manual a cada task); só checar localmente (branch a partir de uma
+  `main` velha) — rodada 4, depois da explicação do pull com fast-forward.
+- O "iniciar" avisa quando o impacto aponta para um critério de spec; o agente reavalia e o Juno decide; o modo
+  "atualizar" refaz a checagem — descartada: só o agente reavaliar, sem sinal objetivo — rodada 4.
+- O "iniciar" registra no andamento a aprovação, a branch e o commit de base — descartada: só status e branch —
+  rodada 4.
+- A recusa por "`main` divergiu do GitHub" é a falha do próprio pull com fast-forward (divergência, sem rede,
+  autenticação), não uma checagem à parte — ajuste do Juno no resumo, 2026-11-19.
+- Quem marca `concluída` é o "encerrar", depois da aprovação e só se a validação do fechamento passar; o
+  "fechar" deixa o status em `em andamento` — ajuste do Juno no resumo, 2026-11-19.
+- A aprovação do Juno é dada na conversa; o agente só roda o "iniciar" e o "encerrar" depois dela, e o registro
+  no andamento diz quem aprovou e quando — conversa de 2026-11-19 (fluxo descrito pelo Juno).
+- Com diferença na conferência dos commits, o texto do merge só sai depois que o Juno corrige ou aceita cada
+  uma; uma spec é encerrada quando todas as tasks estão concluídas ou canceladas, e só com a aprovação do Juno —
+  propostas pelo agente no rascunho, confirmadas pelo Juno na revisão de 2026-11-19.
+- Tasks avulsas canceladas também vão para a pasta de concluídas (que passa a significar "fora de circulação"),
+  com status `cancelada`, movidas pelo mesmo passo do "encerrar", sem textos de commit de implementação; tasks
+  de spec canceladas ficam na pasta da spec, riscadas na lista do design. O Juno pode, conforme o caso, só apagar
+  o arquivo de uma task cancelada que nunca foi para o repositório — descartadas: pasta própria de canceladas
+  (uma pasta e uma regra a mais para um caso raro; estacionada, junto das subpastas por mês); deixar nas abertas
+  (a pasta deixa de significar "vivas") — revisão do rascunho, 2026-11-19.
+- Modelos de spec e de design recebem o mesmo tratamento do modelo de task, nesta spec, e esta spec é convertida
+  para o modelo novo — descartada: spec ou task separada depois (os dois validadores ficariam com regras
+  diferentes para a mesma ideia). O modelo de spec do doe-palmas (arquivo único) serve de referência, respeitando
+  a divisão deste projeto entre spec e design; o que aproveitar dele é decisão do design — revisão do rascunho,
+  2026-11-19.
+- Cancelar uma task avulsa é feito pelo script, no passo do "encerrar": vale para task `aberta`, `bloqueada` ou
+  `em andamento`, registra no andamento "cancelada pelo Juno" e o motivo, e o agente entrega só o texto do commit
+  de documentação que move o arquivo — proposto pelo agente na revisão de coerência, confirmado pelo Juno em
+  2026-11-19.
+- As mudanças de status da spec também são feitas por script: aprovar (valida, exige "Em aberto" igual a "nada",
+  registra a aprovação), entrar em andamento (pelo "iniciar" da primeira task) e encerrar (confere as tasks,
+  `concluída`, move a pasta) — descartada: só a task por script, com o agente mudando o status da spec à mão —
+  revisão do rascunho, 2026-11-19 (o Juno ajustou o objetivo para "fluxo de task e spec"). Uma task de spec só
+  pode ser iniciada com a spec `aprovada` ou `em andamento` — proposto pelo agente, confirmado pelo Juno.
+- Uma branch por task, também nas tasks de spec, sempre a partir da `main` atualizada, cada uma com o seu PR; as
+  mudanças na spec acompanham a task que as causou; o campo de branch única no design deixa de existir —
+  descartada: uma branch por spec (PR grande, a `main` espera até o fim, e o "iniciar" precisaria de exceções
+  para estar fora da `main` e para a branch já existente) — revisão do rascunho, 2026-11-19.
+- O encerramento da spec roda na branch da task que fecha a última pendência, descoberta pelo script na hora (o
+  "encerrar" da task confere se sobrou alguma task da lista não concluída nem cancelada; uma task nova no meio do
+  caminho entra na contagem); se a última pendência foi cancelada sem branch, o encerramento vai para a `main`
+  como commit só de documentação — descartada: sempre direto na `main` depois do último merge (status da spec
+  atrasado e um commit a mais) — revisão do rascunho, 2026-11-19.
+- Task de spec é cancelada pelo mesmo passo de cancelamento do "encerrar" (status `cancelada`, motivo no
+  andamento), mas fica na pasta da spec, riscada na lista do design com o motivo; sem branch, o commit vai para
+  a `main` — descartada: só riscar na lista (o arquivo continuaria aberto para a governança e para o
+  encerramento da spec) — revisão do rascunho, 2026-11-19.
+- A criação e a aprovação da spec entram por commit direto do Juno na `main`, com push antes do "iniciar" da
+  primeira task, como os commits só de documentação de hoje — descartada: branch e PR próprios para a spec (um
+  ciclo de PR para documentos já revisados nas rodadas) — revisão do rascunho, 2026-11-19.
+- Skills curtas: toda verificação objetiva vai para um script, e o texto da skill fica com o que é ambíguo;
+  cada passo novo de skill precisa justificar por que não é script — pedido repetido do Juno, 2026-11-19.
+- Skill de governança dona das checagens do conjunto, com um script só, organizado por área internamente —
+  descartadas: ampliar o verificador geral sem skill (mantém o acúmulo sem dono); dois scripts, um para skills
+  e outro para documentos (várias checagens cruzam as duas áreas e ficariam com dono escolhido caso a caso);
+  governança dona também do conteúdo de cada task e spec (a mesma regra com dois donos, e as skills de task e
+  spec dependendo de outra skill) — revisão do rascunho, 2026-11-19.
+- A governança roda sempre inteira, sem filtro por área — descartada: filtro por área (esconderia o que uma
+  mudança numa skill quebra fora dela, como uma task que a cita) — revisão do rascunho, 2026-11-19.
+- Erros antigos × novos por base salva pelo script e comparação em três grupos (novos bloqueiam; antigos só
+  informados; corrigidos aparecem como tal) — descartadas: exigir governança limpa antes de mexer (um erro alheio
+  trava qualquer trabalho); o agente julgar pela leitura (é a parte ambígua que se quer tirar dele) — revisão do
+  rascunho, 2026-11-19.
+- A base vale para a oficina de skills e para toda task: o "iniciar" salva e registra os antigos no andamento; o
+  "encerrar" compara e recusa se houver erro novo — descartada: só na oficina (tasks também mexem nas instruções
+  e nos modelos) — revisão do rascunho, 2026-11-19.
+
+### Em aberto
+
+nada
 
 ## 4. Critérios de aceite
 

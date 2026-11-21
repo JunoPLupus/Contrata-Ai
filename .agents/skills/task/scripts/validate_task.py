@@ -19,7 +19,7 @@ Verifica:
 - [x] Avulsa: critérios CA-NN (formato, únicos, Dado / Quando / Então)
 - [x] Task de spec: cita em "Critérios de aceite" CA-NN no formato, que existem no spec.md (se a pasta tiver
       um), e não copia critérios
-- [x] Branch `<tipo>/juno/<assunto>`; task de spec com branch no design.md usa a mesma
+- [x] Branch `<tipo>/juno/<assunto>`
 - [x] "Ler antes de começar": todo caminho citado existe
 - [x] Tabela critério → teste: cada CA-NN da task com um nome de teste entre aspas terminando em (CA-NN)
       (task de alcance `documentação`: só aviso, a prova costuma ser um cenário)
@@ -31,7 +31,7 @@ Verifica:
 As checagens comuns com a skill spec moram na lib global (.agents/scripts/lib/md_checks.py). As funções
 públicas daqui são reaproveitadas pelos critérios dos evals (../evals/checks.py).
 
-Saída: `arquivo:linha [SEVERIDADE] código mensagem`; exit 1 se houver erro.
+Saída: `arquivo:linha [SEVERIDADE] código mensagem` e, no fim, `N erro(s), M aviso(s)`; exit 1 se houver erro.
 
 Uso: python validate_task.py <arquivo da task> [--fechar]
 """
@@ -46,6 +46,7 @@ from typing import Literal
 sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "scripts" / "lib"))
 from md_checks import (  # noqa: E402  (precisa do sys.path ajustado acima)
     CA_PASSO_LINHA,
+    EIXOS_IMPACTO,
     Finding,
     aviso,
     ca_numbers_cited,
@@ -55,15 +56,21 @@ from md_checks import (  # noqa: E402  (precisa do sys.path ajustado acima)
     check_ca_refs_exist,
     check_links,
     check_paths_exist,
+    check_impact_axes,
     check_placeholders,
     check_sections,
     check_status,
     check_updated_at,
     erro,
     find_paths,
+    labels,
     read_status,
     section_body,
+    subsection_body,
+    subsections,
+    summary_line,
 )
+from md_checks import check_subsections as check_required_subsections  # noqa: E402
 from md_utils import COMENTARIO_PATTERN, find_placeholders, line_of, mask_code_and_comments  # noqa: E402
 from projeto import get_project_root, read_text, relative_to_root  # noqa: E402
 
@@ -93,9 +100,6 @@ SUBSECOES_O_QUE_FAZER = ("Fica fora", "Decisões", "Em aberto", "Passos", "Ler a
 SUBSECAO_LER_ANTES = "Ler antes de começar"
 SUBSECAO_IMPACTO = "Impacto"
 
-EIXOS_IMPACTO = ("Contrato da API", "Banco", "Front", "Permissões e segurança",
-                 "Testes existentes que mudam de propósito", "Documentação")
-
 MODOS = ("agente implementa, Juno revisa", "Juno implementa, agente guia e revisa")
 STATUS_COM_ANDAMENTO = ("em andamento", "concluída", "cancelada")
 
@@ -122,17 +126,9 @@ _BLOQUEADA_POR = re.compile(_METADADO.format("Bloqueada por"), re.MULTILINE)
 _NAO_SE_APLICA = re.compile(r"^\s*não se aplica\.?\s*$", re.IGNORECASE)
 _PRIMEIRO_CODIGO = re.compile(r"`([^`]+)`")
 
-_SUBSECAO = re.compile(r"^### (.+?)[ \t]*$", re.MULTILINE)
 _LINHA_TABELA = re.compile(r"^[ \t]*\|[ \t]*CA-(\d+)[ \t]*\|.*$", re.MULTILINE)
 _CA_QUALQUER = re.compile(r"\bCA-(\w*)")
-_ROTULO = re.compile(r"^- \*\*(.+?):\*\*[ \t]*(.*)$", re.MULTILINE)
 _TASK_IRMA = re.compile(r"(?:^|/)\d{2}-[\w-]+\.md$")
-
-# Eixo do Impacto: "sim — o que muda" (travessão como no "Atualizado em": —, – ou -) ou "não" (com ou sem
-# comentário depois).
-_SIM = re.compile(r"sim\b", re.IGNORECASE)
-_SIM_COM_O_QUE = re.compile(r"sim\s*[—–-]\s*\S", re.IGNORECASE)
-_NAO = re.compile(r"não\b", re.IGNORECASE)
 
 _ENTRADA_ANDAMENTO = re.compile(r"^- (\d{4}-\d{2}-\d{2})\s*[—–-]\s*\S")
 
@@ -167,25 +163,8 @@ def task_cas(texto: str, tipo: Tipo) -> set[int]:
     return {n for n, _ in ca_numbers_cited(texto[corpo[0]:corpo[1]])} if corpo else set()
 
 
-def subsections(texto: str, secao: str) -> dict[str, tuple[int, int, int]]:
-    """Subseções '### ' da seção cujo título começa com `secao`: título → (posição do título, início e fim
-    do corpo), com o corpo indo até o próximo '###' ou o fim da seção. Fora de código e comentários."""
-    corpo_secao = section_body(texto, secao)
-    if corpo_secao is None:
-        return {}
-    corpo, inicio = corpo_secao
-    titulos = list(_SUBSECAO.finditer(mask_code_and_comments(corpo)))
-    encontradas: dict[str, tuple[int, int, int]] = {}
-    for i, titulo in enumerate(titulos):
-        fim = titulos[i + 1].start() if i + 1 < len(titulos) else len(corpo)
-        encontradas.setdefault(titulo.group(1), (inicio + titulo.start(), inicio + titulo.end(), inicio + fim))
-    return encontradas
 
 
-def subsection_body(texto: str, secao: str, titulo: str) -> tuple[int, int] | None:
-    """(início, fim) do corpo da subseção '### <titulo>' da seção `secao`, ou None."""
-    achada = subsections(texto, secao).get(titulo)
-    return (achada[1], achada[2]) if achada else None
 
 
 def ler_antes(texto: str) -> tuple[int, int] | None:
@@ -213,17 +192,6 @@ def criteria_table(texto: str) -> dict[int, list[tuple[int, bool]]]:
     return linhas
 
 
-def labels(texto: str, inicio: int, fim: int) -> dict[str, tuple[int, str]]:
-    """Rótulo '- **X:**' de texto[inicio:fim] → (linha, valor). O valor inclui as linhas seguintes até o
-    próximo rótulo (os rótulos são achados fora de código e comentários; o valor sai do original)."""
-    trecho = texto[inicio:fim]
-    rotulos = list(_ROTULO.finditer(mask_code_and_comments(trecho)))
-    valores: dict[str, tuple[int, str]] = {}
-    for i, rotulo in enumerate(rotulos):
-        fim_valor = rotulos[i + 1].start() if i + 1 < len(rotulos) else len(trecho)
-        valores.setdefault(rotulo.group(1), (line_of(texto, inicio + rotulo.start()),
-                                             COMENTARIO_PATTERN.sub("", trecho[rotulo.start(2):fim_valor]).strip()))
-    return valores
 
 
 def closing_labels(texto: str) -> dict[str, tuple[int, str]]:
@@ -303,60 +271,20 @@ def check_type_sections(arquivo: Path, texto: str, tipo: Tipo) -> list[Finding]:
 def check_subsections(arquivo: Path, texto: str, tipo: Tipo) -> list[Finding]:
     """Subseções obrigatórias presentes e não vazias (comentário não conta); "não se aplica" é resposta válida.
     Seção ausente já é acusada por check_sections: aqui só se confere o que está dentro dela."""
-    findings: list[Finding] = []
     exigidas = [(SECAO_CONTEXTO, SUBSECOES_CONTEXTO), (SECAO_O_QUE_FAZER, SUBSECOES_O_QUE_FAZER)]
     criterios = subsections(texto, SECAO_CONTEXTO).get(SUBSECAO_CRITERIOS)
     if tipo == "spec" and criterios is not None:
         # Ausente é acusada por check_type_sections; aqui só vazia.
         exigidas[0] = (SECAO_CONTEXTO, (*SUBSECOES_CONTEXTO, SUBSECAO_CRITERIOS))
 
-    for secao, titulos in exigidas:
-        corpo_secao = section_body(texto, secao)
-        if corpo_secao is None:
-            continue
-        linha_secao = line_of(texto, corpo_secao[1])
-        presentes = subsections(texto, secao)
-        for titulo in titulos:
-            if titulo not in presentes:
-                findings.append(erro(arquivo, linha_secao, "task.subsecao-ausente",
-                                     f"subseção: obrigatória ausente: ### {titulo} (## {secao})"))
-                continue
-            posicao, inicio, fim = presentes[titulo]
-            if not COMENTARIO_PATTERN.sub("", texto[inicio:fim]).strip():
-                findings.append(erro(arquivo, line_of(texto, posicao), "task.subsecao-vazia",
-                                     f"subseção: vazia: ### {titulo} (escreva o conteúdo ou 'não se aplica')"))
-    return findings
+    return check_required_subsections(arquivo, texto, exigidas, "task")
 
 
 def check_impact(arquivo: Path, texto: str) -> list[Finding]:
     """Os seis eixos do Impacto, cada um "sim — o que muda" ou "não" (CA-03).
     Subseção ausente ou vazia já é acusada por check_subsections."""
     corpo = subsection_body(texto, SECAO_O_QUE_FAZER, SUBSECAO_IMPACTO)
-    if corpo is None or not COMENTARIO_PATTERN.sub("", texto[corpo[0]:corpo[1]]).strip():
-        return []
-    findings: list[Finding] = []
-    eixos = labels(texto, *corpo)
-    linha_impacto = line_of(texto, corpo[0])
-
-    for eixo in EIXOS_IMPACTO:
-        if eixo not in eixos:
-            findings.append(erro(arquivo, linha_impacto, "task.impacto-eixo-ausente",
-                                 f"impacto: eixo '{eixo}' ausente (responda 'sim — o que muda' ou 'não')"))
-            continue
-        linha, valor = eixos[eixo]
-        if find_placeholders(valor):
-            continue  # o placeholder do modelo já é acusado por check_placeholders
-        if not valor:
-            findings.append(erro(arquivo, linha, "task.impacto-eixo-vazio",
-                                 f"impacto: eixo '{eixo}' vazio (responda 'sim — o que muda' ou 'não')"))
-        elif _SIM.match(valor):
-            if not _SIM_COM_O_QUE.match(valor):
-                findings.append(erro(arquivo, linha, "task.impacto-sim-sem-o-que",
-                                     f"impacto: eixo '{eixo}' com 'sim' sem dizer o quê (use 'sim — o que muda')"))
-        elif not _NAO.match(valor):
-            findings.append(erro(arquivo, linha, "task.impacto-eixo-sem-resposta",
-                                 f"impacto: eixo '{eixo}' sem 'sim — …' ou 'não'"))
-    return findings
+    return check_impact_axes(arquivo, texto, *corpo, "task") if corpo else []
 
 
 def task_mode(texto: str) -> str | None:
@@ -478,17 +406,6 @@ def check_spec_criteria(arquivo: Path, texto: str) -> list[Finding]:
     return findings
 
 
-def _design_branch(arquivo: Path) -> str | None:
-    """Branch preenchida no design.md da spec da task, se houver."""
-    pasta = spec_dir(arquivo)
-    design = pasta / "design.md" if pasta else None
-    if design is None or not design.exists():
-        return None
-    linha = _BRANCH.search(read_text(design))
-    if linha is None or "<" in linha.group(1):
-        return None
-    valor = _PRIMEIRO_CODIGO.search(linha.group(1))
-    return valor.group(1) if valor else (linha.group(1).split() or [None])[0]
 
 
 def task_branch(texto: str) -> str | None:
@@ -498,17 +415,12 @@ def task_branch(texto: str) -> str | None:
     return valor.group(1) if valor else None
 
 
-def check_branch(arquivo: Path, texto: str, branch_design: str | None = None) -> list[Finding]:
-    """Branch `<tipo>/juno/<assunto>`; com branch no design.md da spec, a task usa a mesma."""
+def check_branch(arquivo: Path, texto: str) -> list[Finding]:
+    """Branch `<tipo>/juno/<assunto>` logo depois do rótulo."""
     linha = _BRANCH.search(texto)
     if linha is None:
         return [erro(arquivo, 1, "task.branch-ausente", "branch: linha **Branch:** não encontrada")]
     numero = line_of(texto, linha.start())
-
-    if branch_design is not None:
-        if branch_design not in linha.group(1):
-            return [erro(arquivo, numero, "task.branch-diferente-do-design", f"branch: task de spec usa a branch do design.md ({branch_design})")]
-        return []
 
     branch = task_branch(texto)
     if branch is None:
@@ -616,7 +528,7 @@ def validate(arquivo: Path, texto: str | None = None, fechar: bool = False, raiz
         *check_subsections(arquivo, texto, tipo),
         *check_impact(arquivo, texto),
         *check_progress(arquivo, texto),
-        *check_branch(arquivo, texto, _design_branch(arquivo) if tipo == "spec" else None),
+        *check_branch(arquivo, texto),
         *check_read_first(arquivo, texto, raiz),
         *check_criteria_table(arquivo, texto, cas),
         *check_links(arquivo, texto, raiz, ignorar=lambda alvo: bool(_TASK_IRMA.search(alvo))),
@@ -651,6 +563,7 @@ def main() -> None:
 
     print(f"{len(findings)} problema(s) encontrado(s) em {relative_to_root(arquivo)}:")
     print("\n".join(str(f) for f in findings))
+    print(summary_line(findings))
 
     if any(f.severidade == "erro" for f in findings):
         sys.exit(1)

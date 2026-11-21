@@ -20,11 +20,16 @@
 
 ## 1. Problema e objetivo
 
-- **Problema:** cliente e prestador só ficam sabendo do que aconteceu com solicitações, orçamentos,
-  contratos e avaliações abrindo cada tela. Os requisitos pedem aviso em vários pontos, e nada disso existe.
-- **Objetivo:** cada perfil (cliente ou prestador) recebe dentro da plataforma um aviso curto, pronto para
-  ler, quando algo que o envolve acontece; vê a lista com o total de não lidas, marca como lida (uma ou
-  todas) e limpa as lidas. Avisos lidos somem sozinhos depois de um tempo.
+### Problema
+
+Cliente e prestador só ficam sabendo do que aconteceu com solicitações, orçamentos,
+contratos e avaliações abrindo cada tela. Os requisitos pedem aviso em vários pontos, e nada disso existe.
+
+### Objetivo
+
+Cada perfil (cliente ou prestador) recebe dentro da plataforma um aviso curto, pronto para
+ler, quando algo que o envolve acontece; vê a lista com o total de não lidas, marca como lida (uma ou
+todas) e limpa as lidas. Avisos lidos somem sozinhos depois de um tempo.
 
 Ao final, isto é verdade:
 
@@ -35,40 +40,39 @@ Ao final, isto é verdade:
 5. Lidas somem 30 dias depois da leitura; não lidas não expiram.
 6. Falhar ao notificar nunca faz a operação principal falhar.
 
+### Entra
 
-- **Entra:**
-  - Eventos do MVP (tabela abaixo), com texto pronto montado pela API.
-  - Listar as notificações do usuário logado (as 50 mais recentes) com o total de não lidas.
-  - Marcar uma notificação como lida; marcar todas como lidas.
-  - Excluir as notificações lidas do usuário logado.
-  - Expiração automática das lidas 30 dias após a leitura.
-  - Atualizar o UC14 E01 nos requisitos para "melhor esforço" (task desta spec).
+- Eventos do MVP (tabela abaixo), com texto pronto montado pela API.
+- Listar as notificações do usuário logado (as 50 mais recentes) com o total de não lidas.
+- Marcar uma notificação como lida; marcar todas como lidas.
+- Excluir as notificações lidas do usuário logado.
+- Expiração automática das lidas 30 dias após a leitura.
+- Atualizar o UC14 E01 nos requisitos para "melhor esforço" (task desta spec).
 
-  | Evento | Quem recebe | Requisito |
-  |---|---|---|
-  | Solicitação direta recebida | prestador escolhido | UC10 |
-  | Orçamento recebido | cliente da solicitação | UC11 |
-  | Orçamento aceito | prestador do orçamento aceito | UC12 |
-  | Orçamento encerrado (outro foi aceito) | demais prestadores com orçamento pendente | RF14, UC14 |
-  | Solicitação cancelada | prestadores com orçamento pendente | RN06, UC17 |
-  | Contrato cancelado | a outra parte do contrato | UC18 |
-  | Status do contrato atualizado | cliente do contrato | UC19 |
-  | Extensão de prazo pedida | cliente do contrato | UC20 |
-  | Extensão de prazo aprovada / recusada | as duas partes / o prestador | UC20 |
-  | Contrato concluído | as duas partes | UC21 |
-  | Avaliação recebida | o avaliado | UC23 (sem passo de notificação; incluído na conversa de 2026-11-15) |
+| Evento | Quem recebe | Requisito |
+|---|---|---|
+| Solicitação direta recebida | prestador escolhido | UC10 |
+| Orçamento recebido | cliente da solicitação | UC11 |
+| Orçamento aceito | prestador do orçamento aceito | UC12 |
+| Orçamento encerrado (outro foi aceito) | demais prestadores com orçamento pendente | RF14, UC14 |
+| Solicitação cancelada | prestadores com orçamento pendente | RN06, UC17 |
+| Contrato cancelado | a outra parte do contrato | UC18 |
+| Status do contrato atualizado | cliente do contrato | UC19 |
+| Extensão de prazo pedida | cliente do contrato | UC20 |
+| Extensão de prazo aprovada / recusada | as duas partes / o prestador | UC20 |
+| Contrato concluído | as duas partes | UC21 |
+| Avaliação recebida | o avaliado | UC23 (sem passo de notificação; incluído na conversa de 2026-11-15) |
 
-- **Fica fora:**
-  - Email, push ou WhatsApp: o MVP é só in-app.
-  - Reenvio ou agendamento de notificação que falhou.
-  - Eventos de UCs sem use-case implementado (ex.: conclusão automática do contrato).
-  - Paginação completa da lista (só o limite de 50).
-  - Expiração das não lidas.
-  - Tempo real (websocket): o front consulta a API.
+### Fica fora
+
+- Email, push ou WhatsApp: o MVP é só in-app.
+- Reenvio ou agendamento de notificação que falhou.
+- Eventos de UCs sem use-case implementado (ex.: conclusão automática do contrato).
+- Paginação completa da lista (só o limite de 50).
+- Expiração das não lidas.
+- Tempo real (websocket): o front consulta a API.
 
 ## 3. Decisões de produto
-
-<!-- só comentário -->
 
 ## 4. Critérios de aceite
 
