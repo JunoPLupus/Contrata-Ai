@@ -2,9 +2,8 @@
 
 - **Spec:** [spec.md](spec.md)
 - **Criado em:** 2026-11-19
-- **Atualizado em:** 2026-11-20 — convertido ao modelo novo de design na task 03 (subseções fixas, Impacto com os
-  seis eixos); modelo de spec com Problema e Objetivo e de design com o Impacto em eixos (decisões do Juno ao abrir a
-  03)
+- **Atualizado em:** 2026-11-23 — ao abrir a 05: checagens do "iniciar" em dois blocos (Q7) e notas para a 08
+  (exceção da regra de Git, Q6) e a 07 (enxugar a skill `task`, Q8; modo leve obrigatório por script, Q10)
 
 ## Referências técnicas
 
@@ -116,9 +115,10 @@ Nada muda na API nem no banco. As mudanças são nos scripts, modelos e instruç
 | `spec/scripts/create_design.py` | recusa spec não aprovada | também recusa com "Em aberto" diferente de "nada" e lista os itens |
 | `spec/scripts/approve_spec.py`, `finish_spec.py` | não existem | aprovar e encerrar a spec |
 
-**Ordem do "iniciar"** (para no primeiro problema, sem mudar nada): status `aberta` → (task de spec) spec
-`aprovada` ou `em andamento` → validador sem erro → "Em aberto" igual a "nada" → árvore limpa → na `main` →
-branch ainda inexistente → `git pull --ff-only` (a falha devolve a mensagem do git) → governança roda e a base é
+**Ordem do "iniciar"** (nada muda antes de todas as checagens passarem; as checagens de leitura vão em dois
+blocos, e cada bloco mostra todos os problemas dele de uma vez): bloco da task — status `aberta`, (task de spec)
+spec `aprovada` ou `em andamento`, validador sem erro, "Em aberto" igual a "nada" → só com a task ok, bloco do
+repositório — árvore limpa, na `main`, branch ainda inexistente → `git pull --ff-only` (a falha devolve a mensagem do git) → governança roda e a base é
 guardada → `git switch -c` → task `em andamento`, Branch e "Atualizado em" preenchidos, entrada no Andamento
 (data, aprovada pelo Juno, branch, commit de base, bloco da base) → (primeira task da spec) spec `em andamento` →
 aviso de possível spec, se a regra dos eixos disparar.
@@ -215,8 +215,7 @@ e o item da lista do design é riscado com data e motivo → mesmo aviso da últ
 - [02 — Modelo e validador de task](tasks/02-modelo-e-validador-de-task.md) — bloqueada por: 01 — cobre: CA-01, CA-02, CA-03, CA-20
 - [03 — Modelos e validador de spec e design](tasks/03-modelos-e-validador-de-spec-e-design.md) — bloqueada por: 01 — cobre: CA-31, CA-32, CA-33
 - 04 — Status da spec por script — bloqueada por: 03 — cobre: CA-19, CA-35
-- 05 — Iniciar — bloqueada por: 02, 03, 09 — cobre: CA-05, CA-06, CA-07, CA-08, CA-09, CA-10,
-  CA-11, CA-12, CA-13, CA-36
+- [05 — Iniciar](tasks/05-iniciar.md) — bloqueada por: 02, 03, 09 — cobre: CA-05, CA-06, CA-07, CA-08, CA-09, CA-10, CA-11, CA-12, CA-13, CA-36
 - 06 — Encerrar, cancelar e texto do merge — bloqueada por: 04, 05 — cobre: CA-14, CA-15,
   CA-16, CA-17, CA-18, CA-34, CA-37, CA-38
 - 07 — Passo de leitura nas skills de task e spec — bloqueada por: 02, 03 —
@@ -229,6 +228,18 @@ Notas para abrir as tasks (do modelo de spec do doe-palmas, avaliado ao abrir a 
 - **04:** bloco de encerramento no topo da spec concluída (data, task que encerrou e o que ficou fora).
 - **07:** "fonte dos fatos" (o que foi lido, com a data) e a marca "[a verificar]" para o que não foi
   confirmado, no passo de leitura.
+- **08:** a frase da exceção na regra de Git do `AGENTS.md` (o `start_task.py` atualiza a `main` e cria a
+  branch) já entra pela 05, para a regra não contradizer o script entre o merge da 05 e o da 08; a 08 ajusta o
+  resto do texto e prova o CA-22 (Q6 da abertura da 05, 2026-11-23).
+- **07:** passada geral para enxugar a `task/SKILL.md` (e a `spec/SKILL.md`, se o eval mostrar o mesmo
+  excesso), depois da 06, provada pelo eval completo da oficina; a 05 só escreve o que toca (Q8 da abertura da
+  05, 2026-11-23).
+- **07:** modo leve obrigatório por script. Regra: toda mudança de `SKILL.md` exige o modo leve da oficina; a
+  task não é encerrada sem o resultado no fechamento; limite de tokens só adia (para depois do reset, registrado
+  no Andamento), nunca dispensa. O `validate_task.py` cobra na abertura (`SKILL.md` nos Arquivos previstos exige
+  o modo leve na seção 3) e no `--fechar` (exige o resultado no fechamento; o "encerrar" da 06 já roda o
+  `--fechar`); a oficina troca "sugira — ele decide" por essa regra, em texto direto para o agente (Q10 da
+  abertura da 05, 2026-11-23).
 - **07:** "Referências técnicas" do design continua com rótulos livres (ADRs aplicáveis, Guias do projeto,
   Contratos existentes, Externas); decidir se "ADRs aplicáveis" (ou os quatro) vira subseção fixa, junto do
   levantamento de ADRs no passo de leitura (pergunta do Juno na revisão da 03, 2026-11-20).
