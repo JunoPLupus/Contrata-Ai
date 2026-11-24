@@ -2,9 +2,9 @@
 
 - **Spec:** [spec.md](spec.md)
 - **Criado em:** 2026-11-19
-- **Atualizado em:** 2026-11-24 — ao abrir a 04: o item 04 da lista passa a se chamar "Aprovar e encerrar a
-  spec" (o "em andamento" da spec é do "iniciar", na 05) e cobre também o CA-39 (pendências revistas antes de
-  encerrar)
+- **Atualizado em:** 2026-11-24 — notas para a 06 (texto do Iniciar na skill `task`) e a 08 (refactor da
+  governança e do `md_checks.py`); antes, ao abrir a 04: o item 04 passa a se chamar "Aprovar e encerrar a
+  spec" e cobre também o CA-39
 
 ## Referências técnicas
 
@@ -241,6 +241,14 @@ Notas para abrir as tasks (do modelo de spec do doe-palmas, avaliado ao abrir a 
   o modo leve na seção 3) e no `--fechar` (exige o resultado no fechamento; o "encerrar" da 06 já roda o
   `--fechar`); a oficina troca "sugira — ele decide" por essa regra, em texto direto para o agente (Q10 da
   abertura da 05, 2026-11-23).
+- **06:** no Iniciar da skill `task`, dizer que a abertura precisa estar commitada e com push feitos pelo Juno
+  antes (o script recusa a árvore suja, mas o agente só descobre na recusa) e que o agente roda o script só
+  quando o Juno pedir; no Abrir, "não inicie" (um agente planejou rodar o iniciar já no pedido de abrir a 04) —
+  achado de 2026-11-24.
+- **08:** refactor da governança: `_rel` (`checagens/registros.py`) e `relative_name` (`governanca.py`) usarem o
+  `relative_to_root` da lib, e a saída sem achado virar "Nenhum problema encontrado.", como nos validadores; e
+  enxugar o `md_checks.py` (arquivo grande, que a 04 ainda faz crescer; dividir por assunto). A 08 decide se
+  absorve os dois ou abre tasks avulsas — revisão da 05, 2026-11-24.
 - **07:** "Referências técnicas" do design continua com rótulos livres (ADRs aplicáveis, Guias do projeto,
   Contratos existentes, Externas); decidir se "ADRs aplicáveis" (ou os quatro) vira subseção fixa, junto do
   levantamento de ADRs no passo de leitura (pergunta do Juno na revisão da 03, 2026-11-20).
