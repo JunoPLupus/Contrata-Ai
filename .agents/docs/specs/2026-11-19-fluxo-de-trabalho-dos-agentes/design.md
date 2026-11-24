@@ -2,8 +2,9 @@
 
 - **Spec:** [spec.md](spec.md)
 - **Criado em:** 2026-11-19
-- **Atualizado em:** 2026-11-23 — ao abrir a 05: checagens do "iniciar" em dois blocos (Q7) e notas para a 08
-  (exceção da regra de Git, Q6) e a 07 (enxugar a skill `task`, Q8; modo leve obrigatório por script, Q10)
+- **Atualizado em:** 2026-11-24 — ao abrir a 04: o item 04 da lista passa a se chamar "Aprovar e encerrar a
+  spec" (o "em andamento" da spec é do "iniciar", na 05) e cobre também o CA-39 (pendências revistas antes de
+  encerrar)
 
 ## Referências técnicas
 
@@ -113,7 +114,7 @@ Nada muda na API nem no banco. As mudanças são nos scripts, modelos e instruç
 | `task/scripts/finish_task.py` | não existe | o "encerrar" (concluir), o cancelamento e a conferência dos commits |
 | `spec/scripts/validate_spec.py` | seções principais; Em aberto só pelo marcador de texto exato | subseções fixas no `spec.md` e no `design.md`; "Em aberto" precisa ser "nada" para `aprovada`; item da lista de tasks com "bloqueada por" e "cobre" |
 | `spec/scripts/create_design.py` | recusa spec não aprovada | também recusa com "Em aberto" diferente de "nada" e lista os itens |
-| `spec/scripts/approve_spec.py`, `finish_spec.py` | não existem | aprovar e encerrar a spec |
+| `spec/scripts/approve_spec.py`, `finish_spec.py` | não existem | aprovar e encerrar a spec; o encerrar lista as pendências versionadas (também numa consulta que não muda nada) |
 
 **Ordem do "iniciar"** (nada muda antes de todas as checagens passarem; as checagens de leitura vão em dois
 blocos, e cada bloco mostra todos os problemas dele de uma vez): bloco da task — status `aberta`, (task de spec)
@@ -145,7 +146,7 @@ e o item da lista do design é riscado com data e motivo → mesmo aviso da últ
 |---|---|---|
 | skill `governanca` | não existe | dona das checagens do conjunto; entra na tabela de skills do `AGENTS.md` |
 | skill `task` | abrir, atualizar, fechar (o fechar marca `concluída`) | + iniciar e encerrar, curtos, chamando os scripts; o fechar só preenche e pede revisão; passo 1.2 com levantamento dos mecanismos e checklist de alcance |
-| skill `spec` | aprovação à mão | aprovar e encerrar por script; leitura com levantamento antes das rodadas |
+| skill `spec` | aprovação à mão | aprovar e encerrar por script, com a revisão das pendências antes de encerrar; leitura com levantamento antes das rodadas |
 | skill `oficina-de-skills` | chama o `check_agents.py` | salva a base no começo e compara no fim (task 09, arquivo no workspace); depois da 05, dentro de uma task, usa a base do Andamento (task 08) |
 | `AGENTS.md` | agente não cria branch | exceção restrita ao script do "iniciar"; fluxo novo; governança na tabela |
 | `.agents/README.md` | `tasks/done/AAAA-MM/` | `tasks/done/` numa pasta só (concluídas e canceladas) |
@@ -201,7 +202,7 @@ e o item da lista do design é riscado com data e motivo → mesmo aviso da últ
   - CA-05 a 13, 36 → `start_task.py`, um teste por recusa, conferindo que nada mudou (arquivo e branches).
   - CA-14 → texto da skill `task` (eval da task 06: o fechar não muda o status).
   - CA-15 a 17, 34, 37, 38 → `finish_task.py`; CA-18 → formato no `commits.md`, conferido no eval da task 06.
-  - CA-19, 35 → `approve_spec.py`, `finish_spec.py`; CA-31 a 33 → `validate_spec.py` e `create_design.py`.
+  - CA-19, 35, 39 → `approve_spec.py`, `finish_spec.py` (CA-39 também no modo leve da skill `spec`); CA-31 a 33 → `validate_spec.py` e `create_design.py`.
   - CA-21 → eval da oficina com o cenário do perfil do cliente, nas skills `task` e `spec`.
   - CA-22 → texto do `AGENTS.md` e busca por comandos de git nos scripts (só o "iniciar" muda o repositório).
 - **Mutação manual:** nas recusas do "iniciar" e do "encerrar", na regra "Em aberto igual a nada", na comparação
@@ -214,7 +215,7 @@ e o item da lista do design é riscado com data e motivo → mesmo aviso da últ
   CA-24, CA-25, CA-26, CA-27, CA-30
 - [02 — Modelo e validador de task](tasks/02-modelo-e-validador-de-task.md) — bloqueada por: 01 — cobre: CA-01, CA-02, CA-03, CA-20
 - [03 — Modelos e validador de spec e design](tasks/03-modelos-e-validador-de-spec-e-design.md) — bloqueada por: 01 — cobre: CA-31, CA-32, CA-33
-- 04 — Status da spec por script — bloqueada por: 03 — cobre: CA-19, CA-35
+- [04 — Aprovar e encerrar a spec](tasks/04-aprovar-e-encerrar-a-spec.md) — bloqueada por: 03 — cobre: CA-19, CA-35, CA-39
 - [05 — Iniciar](tasks/05-iniciar.md) — bloqueada por: 02, 03, 09 — cobre: CA-05, CA-06, CA-07, CA-08, CA-09, CA-10, CA-11, CA-12, CA-13, CA-36
 - 06 — Encerrar, cancelar e texto do merge — bloqueada por: 04, 05 — cobre: CA-14, CA-15,
   CA-16, CA-17, CA-18, CA-34, CA-37, CA-38

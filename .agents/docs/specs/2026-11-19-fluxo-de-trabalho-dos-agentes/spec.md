@@ -2,8 +2,8 @@
 
 - **Status:** `aprovada`
 - **Criado em:** 2026-11-19
-- **Atualizado em:** 2026-11-20 — convertida ao modelo novo de spec (subseções fixas), na task 03; aprovada pelo
-  Juno em 2026-11-19
+- **Atualizado em:** 2026-11-24 — CA-39 (pendências revistas antes de encerrar a spec), decidido pelo Juno na
+  abertura da task 04; aprovada pelo Juno em 2026-11-19
 - **Requisitos relacionados:** nenhum (a spec trata do fluxo de trabalho com agentes, não do produto ContrataAí)
 - **Substitui / substituída por:** nenhuma
 
@@ -69,7 +69,8 @@ Ao final, isto é verdade:
 4. Cada item obrigatório da task, da spec e do design tem lugar fixo e o validador acusa quando ele falta ou está
    vazio; uma spec com decisão em aberto não é aprovada nem ganha o design.
 5. Uma spec segue a mesma lógica: leitura antes das rodadas, aprovação só sem nada em aberto, e encerramento (a
-   pasta vai para as concluídas) só com todas as tasks concluídas ou canceladas e com a aprovação do Juno.
+   pasta vai para as concluídas) só com todas as tasks concluídas ou canceladas, depois de revistas as pendências
+   que ficaram fora das tasks, e com a aprovação do Juno.
 6. Nenhuma task e nenhuma mudança de skill termina deixando a governança com um erro que não existia antes dela.
 
 | Comportamento | Hoje | Depois |
@@ -88,6 +89,7 @@ Ao final, isto é verdade:
 | Comandos rodados e achados do meio do caminho | só no fechamento, no fim | numa seção de andamento, com data, preenchida durante a task |
 | Quem implementa | não registrado | campo "Modo" (padrão: agente implementa, Juno revisa) |
 | Pasta das tasks concluídas | a documentação diz "uma subpasta por mês"; na prática é uma pasta só | uma pasta só, para tudo que saiu de circulação (concluídas e canceladas), e a documentação acompanha |
+| Pendências que ficaram fora das tasks (estacionadas, "ficou para depois") ao encerrar a spec | sem regra: somem quando a pasta vai para as concluídas | o encerramento as mostra e o agente propõe, item a item, virar task da spec, task avulsa, outra spec ou continuar estacionada; o Juno decide antes de encerrar |
 | Cancelar uma task avulsa | sem regra: status mudado à mão, arquivo fica onde estiver | o mesmo passo do "encerrar" marca `cancelada` e move para as concluídas, sem textos de commit de implementação |
 | Leitura antes de propor (task e spec) | a skill de task manda ler o código, mas não exige o levantamento dos mecanismos que já existem nem do alcance | levantamento obrigatório antes da primeira rodada, nas duas skills, com as propostas citando o que foi lido |
 | Item obrigatório apagado da spec ou do design (ex.: "fica fora", "em aberto") | passa sem aviso; o validador só exige as seções principais | subseções fixas, cobradas pelo validador da spec como no da task |
@@ -243,6 +245,16 @@ Ao final, isto é verdade:
 - A base vale para a oficina de skills e para toda task: o "iniciar" salva e registra os antigos no andamento; o
   "encerrar" compara e recusa se houver erro novo — descartada: só na oficina (tasks também mexem nas instruções
   e nos modelos) — revisão do rascunho, 2026-11-19.
+
+- Antes de encerrar uma spec, as pendências que ficaram fora das tasks são revistas: o script de encerramento
+  mostra as que estão registradas no repositório (o que ficou para depois no fechamento de cada task e as notas
+  da lista de tasks do design), também numa consulta que não muda nada, e o agente junta a elas o "fica fora" da
+  spec e as anotações locais do Juno, quando as instruções locais apontam para elas. Um item vira task da spec
+  se serve ao objetivo dela e não contradiz o "fica fora"; senão, o agente propõe task avulsa, outra spec ou
+  deixar estacionado. O Juno decide cada item; o resultado fica só no efeito de cada decisão (task nova na lista,
+  avulsa criada, item que segue estacionado) — descartadas: só texto na skill (o agente pode esquecer); o script
+  exigir uma opção de "pendências revistas" (quem a passa é o próprio agente); sem critério escrito; registrar a
+  triagem na spec (a mesma informação em dois lugares) — proposta do Juno na abertura da task 04, 2026-11-24.
 
 ### Em aberto
 
@@ -402,6 +414,17 @@ Nos critérios abaixo, "quem usa" vê o resultado na saída do script ou do vali
 - **E** o item dela na lista do design fica riscado, com a data e o motivo
 - **E** se ela era a última pendência, o encerramento da spec é oferecido como no CA-37; sem branch da task, o
   commit desse encerramento vai para a `main`
+
+### CA-39: pendências revistas antes de encerrar a spec
+
+- **Dado** uma spec `em andamento` com pendências registradas fora das tasks (o que ficou para depois no
+  fechamento de uma task, notas da lista de tasks do design)
+- **Quando** o agente vai encerrar a spec, depois da aprovação do Juno
+- **Então** antes de encerrar, o agente consulta o encerramento sem mudar nada, e a saída lista essas
+  pendências (a recusa por task pendente também as lista)
+- **E** o agente propõe um destino para cada item (task da spec, task avulsa, outra spec, continuar estacionado)
+  e só roda o encerramento depois da decisão do Juno; um item que vira task da spec entra na lista e impede o
+  encerramento até terminar (CA-19)
 
 ### CA-20: modo registrado na task
 
