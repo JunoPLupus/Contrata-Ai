@@ -1,13 +1,13 @@
 ---
 name: task
-description: Abre, atualiza e fecha o arquivo de uma task (avulsa em .agents/docs/tasks/ ou de spec em .agents/docs/specs/(pasta da spec)/tasks/). Abrir = escrever a task a partir do modelo, lendo o código real; atualizar = registrar uma mudança de escopo no meio da implementação; fechar = preencher o fechamento com evidência verificada e, só depois da aprovação explícita do usuário, marcar concluída. Use quando o usuário pedir para criar ou detalhar uma task, quando o escopo de uma task em andamento mudar, quando ele disser que terminou uma task ou quando aprovar o fechamento. Não use para implementar o código, para escrever ou alterar spec e design (skill spec), para quebrar uma spec em tasks (é a lista do design.md) nem para mover a task para done/ (skill encerramento, futura — ainda não existe, e por ora o usuário move à mão).
+description: Abre, inicia, atualiza e fecha o arquivo de uma task (avulsa em .agents/docs/tasks/ ou de spec em .agents/docs/specs/(pasta da spec)/tasks/). Abrir = escrever a task a partir do modelo, lendo o código real; iniciar = depois da aprovação do usuário, rodar o script que confere, atualiza a main e cria a branch; atualizar = registrar uma mudança de escopo no meio da implementação; fechar = preencher o fechamento com evidência verificada e, só depois da aprovação explícita do usuário, marcar concluída. Use quando o usuário pedir para criar ou detalhar uma task, quando ele aprovar uma task aberta para começar, quando o escopo de uma task em andamento mudar, quando ele disser que terminou uma task ou quando aprovar o fechamento. Não use para implementar o código, para escrever ou alterar spec e design (skill spec), para quebrar uma spec em tasks (é a lista do design.md) nem para mover a task para done/ (skill encerramento, futura — ainda não existe, e por ora o usuário move à mão).
 license: MIT (ver ORIGEM.md)
 ---
 
 # Task
 
-Uma task é a execução de uma mudança **já entendida**. Esta skill cuida do **arquivo** da task nos três
-momentos da vida dela: abrir, atualizar e fechar. Ela não implementa: o código é escrito depois, por quem
+Uma task é a execução de uma mudança **já entendida**. Esta skill cuida do **arquivo** da task nos
+momentos da vida dela: abrir, iniciar, atualizar e fechar. Ela não implementa: o código é escrito depois, por quem
 segue a task.
 
 Origem e licenças: [ORIGEM.md](ORIGEM.md).
@@ -22,6 +22,7 @@ acaba desfazendo a outra.
 | O usuário diz… | Modo |
 |---|---|
 | "cria a task", "detalha a task 02 da spec X", "vou começar a task…" | [Abrir](#1-abrir) |
+| "aprovado, pode começar" sobre uma task `aberta` | [Iniciar](#4-iniciar) |
 | "mudou o escopo", "descobri que…", "decidi trocar…" sobre uma task em andamento | [Atualizar](#2-atualizar) |
 | "terminei", "fecha a task", "manda o commit" | [Fechar](#3-fechar) |
 | "revisei, aprovado", "pode concluir" sobre uma task com o fechamento preenchido | [Fechar, passo 8](#3-fechar) |
@@ -91,14 +92,14 @@ pergunta reabre uma decisão "Fechada" do design, diga qual e por que antes de p
    # de spec → <pasta da spec>/tasks/NN-<assunto>.md, a partir da linha NN da lista do design.md
    rtk python3 .agents/skills/task/scripts/create_task.py spec .agents/docs/specs/<pasta> 02 --tipo feat
    ```
-   Ele preenche título, datas, "Atualizado em — criação", tipo, Modo, Spec, Bloqueada por, branch sugerida e
-   status, e deixa o fechamento com os rótulos vazios. O corpo é o mesmo nos dois tipos: na avulsa, Spec e
+   Ele preenche título, datas, "Atualizado em — criação", tipo, Modo, Spec, Bloqueada por, o nome da branch
+   e o status, e deixa o fechamento com os rótulos vazios. O corpo é o mesmo nos dois tipos: na avulsa, Spec e
    Bloqueada por saem `não se aplica` e os critérios são os `### CA-NN`; na de spec, Spec traz os links e os
    critérios ficam em `### Critérios de aceite`. O Modo nasce
    "agente implementa, Juno revisa"; se o usuário já disse que vai implementar, acrescente `--modo juno`
    ("Juno implementa, agente guia e revisa"). Na task de spec,
    número, título e nome do arquivo vêm do link da lista do `design.md`, "Bloqueada por" e os `CA-NN` (em
-   "Critérios de aceite") vêm da mesma linha, a branch sugerida é `<tipo>/juno/<assunto da spec>-NN`, e o
+   "Critérios de aceite") vêm da mesma linha, a branch é `<tipo>/juno/<assunto da spec>-NN`, e o
    status sai `bloqueada` quando uma dependência não está `concluída` (o script diz qual e em que status
    está). O item precisa ter link e dizer o que cobre ("cobre: nenhum" vale): sem isso, o script recusa e
    diz a linha do `design.md`. Se o arquivo já existir, ele recusa: é task existente (modo
@@ -111,8 +112,8 @@ pergunta reabre uma decisão "Fechada" do design, diga qual e por que antes de p
      `AcessoProibidoError` → 403).
    - **Status:** `aberta` (ou `bloqueada`, se 1.2 achou bloqueio pendente; o script já decide pela
      lista do `design.md`).
-   - **Branch:** o script sugere `<tipo>/juno/<assunto>` (ex.: `fix/juno/restringir-perfil-cliente`)
-     com "(sugerida; criada pelo Juno)". O agente não cria branch.
+   - **Branch:** só o nome, `<tipo>/juno/<assunto>` (ex.: `fix/juno/restringir-perfil-cliente`). Quem
+     cria a branch é o [Iniciar](#4-iniciar), depois da aprovação.
    - **Ler antes de começar:** só caminhos que existem hoje (o validador do passo 3 confere). Arquivo
      que outra task ainda vai criar não é leitura: cite a task ("o que a 01 entregar").
    - **Arquivos previstos:** criados e alterados, com caminho real. Arquivo que ainda não existe e cujo
@@ -127,7 +128,9 @@ pergunta reabre uma decisão "Fechada" do design, diga qual e por que antes de p
      e já passa hoje (ex.: "prestador continua vendo"), ele **continua sendo CA**: diga na seção 3 que só
      prova junto da mutação manual que o quebraria. Não o mova para "Não deve mudar", que é para o que
      está fora do pedido.
-3. **Conferência** antes de mostrar:
+3. **Releitura e conferência** antes de mostrar. Releia a task inteira contra as decisões da rodada:
+   trecho com a versão antiga (um "depende de Qn" esquecido, Objetivo ou Passo que não acompanhou a
+   decisão) é corrigido agora, porque a aprovação vale para o texto que for commitado. Depois rode:
    ```bash
    rtk python3 .agents/skills/task/scripts/validate_task.py <caminho-da-task>
    ```
@@ -151,7 +154,7 @@ Escrevi a task em `<caminho>` (status `aberta`).
 - **Objetivo:** <uma frase>
 - **Critérios:** CA-01 <nome> · CA-02 <nome> · …
 - **Fica fora:** <itens>
-- **Branch sugerida:** `<tipo>/juno/<assunto>`
+- **Branch:** `<tipo>/juno/<assunto>`
 - **Bloqueios / em aberto:** <itens, ou "nada">
 
 O que está errado ou faltando? Com a aprovação, a task pode começar.
@@ -178,7 +181,7 @@ O que o agente faz, sem perguntar o tamanho (o usuário disse task e é task):
 ➡️ **A**: não quebra quem usa a rota atual.
 ```
 
-- com a resposta, grava a task, com "Não deve mudar: `GET /avaliacoes`" e a branch sugerida
+- com a resposta, grava a task, com "Não deve mudar: `GET /avaliacoes`" e a branch
   `feat/juno/avaliacoes-escritas-prestador`.
 
 ### Exemplo — task de spec bloqueada
@@ -214,7 +217,10 @@ nova):
    - **não acrescente critério de aceite que o usuário não pediu.** Se a mudança sugere um critério novo
      (ex.: "`GET /clientes` continua igual"), proponha na mensagem; ele entra na task só com o "sim".
      Critério novo muda o que precisa ser provado no fechamento.
-5. Rode o validador (`validate_task.py <caminho-da-task>`, passo 1.4.3) e corrija até sair sem erro.
+5. Releia a task inteira contra a decisão nova (trecho que ainda diz a versão antiga) e rode o validador
+   (`validate_task.py <caminho-da-task>`, passo 1.4.3) até sair sem erro. **Aviso de possível spec** no fim
+   da saída (regra dos eixos do Impacto): não decida sozinho nem ignore. Diga ao usuário o critério e o
+   motivo e pergunte se segue como task ou vira spec.
 6. Liste o impacto: critérios afetados, testes novos, se a mudança ainda cabe na task (se não cabe,
    proponha dividir ou virar spec).
 
@@ -292,6 +298,28 @@ A task continua `em andamento` até você revisar: confere o diff e o fechamento
 Com o "aprovado", marco `concluída` e te mando o texto do commit:
 docs(orcamento): Fecha a task do aceite exigir solicitação aberta
 ```
+
+## 4. Iniciar
+
+Só depois do "aprovado" do usuário na conversa, sobre uma task `aberta`. O script faz o trabalho; não rode
+`git pull` nem `git switch` e não mude o status à mão.
+
+```bash
+rtk python3 .agents/skills/task/scripts/start_task.py <caminho-da-task>
+```
+
+Ele confere a task (status, spec, validador, "Em aberto") e, com ela ok, o repositório (árvore limpa, na
+`main`, branch inexistente); atualiza a `main` com `git pull --ff-only`; grava a base de achados da
+governança no Andamento; cria a branch; e marca a task `em andamento` (e a spec, na primeira task).
+
+- **"Iniciar recusado":** nada mudou. Mostre ao usuário os problemas como vieram. Não edite a task nem
+  rode git para destravar: a aprovação vale para o texto commitado, e mudar a task volta ao
+  [Atualizar](#2-atualizar) e a uma aprovação nova. Mudança pendente, outra branch e falha do pull são do
+  usuário resolver.
+- **Achou algo desatualizado na task** antes de rodar? Pare e mostre ao usuário; não edite.
+- **Aviso de possível spec:** o iniciar seguiu. Diga ao usuário o critério e o motivo e pergunte se segue
+  como task ou vira spec.
+- **Deu certo:** a task (e a spec) ficam alteradas na branch nova, sem commit. Siga com a implementação.
 
 ## Entrega
 

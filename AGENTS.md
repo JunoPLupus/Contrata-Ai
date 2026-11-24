@@ -66,7 +66,9 @@ Comandos da API (rodar dentro de `api/`):
 
 - **Idioma:** responda e escreva documentação em **português (pt-BR)**.
 - **Git:** o agente **não** faz commit, push, merge, rebase nem cria branch. Pode usar só comandos de
-  leitura (`git status`, `git diff`, `git log`). Ao fim de cada tarefa, entregue:
+  leitura (`git status`, `git diff`, `git log`). Exceção: depois da aprovação do Juno, o `start_task.py`
+  (skill `task`, modo Iniciar) atualiza a `main` com `git pull --ff-only` e cria a branch da task; o agente
+  não roda esses comandos à mão. Ao fim de cada tarefa, entregue:
   - o **texto do commit** em Conventional Commits, seguindo o guia
     [`.agents/docs/guides/commits.md`](.agents/docs/guides/commits.md). O guia cobre o título, o
     corpo em lista, os rodapés `BREAKING CHANGE:` e `Task:` e a ordem recomendada dos tipos;

@@ -8,7 +8,7 @@
 - **Modo:** `agente implementa, Juno revisa`
 - **Spec:** não se aplica
 - **Bloqueada por:** não se aplica
-- **Branch:** `fix/juno/restringir-perfil-cliente` (sugerida; criada pelo Juno)
+- **Branch:** `fix/juno/restringir-perfil-cliente`
 
 ## 1. Contexto e critérios
 

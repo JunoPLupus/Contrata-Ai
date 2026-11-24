@@ -78,7 +78,7 @@ TASK_SPEC_OK = """# Task: Rotas de leitura e ações
 - **Modo:** `Juno implementa, agente guia e revisa`
 - **Spec:** [spec.md](../spec.md) · [design.md](../design.md)
 - **Bloqueada por:** [01-nucleo.md](01-nucleo.md)
-- **Branch:** `feat/juno/notificacoes-02` (sugerida; criada pelo Juno)
+- **Branch:** `feat/juno/notificacoes-02`
 
 ## 1. Contexto e critérios
 
@@ -188,13 +188,17 @@ class AvulsaTest(_Base):
     def test_cli_passa_e_falha_com_codigo_de_saida(self):
         """A linha de comando sai com 0 sem problemas e com 1 quando há erro, citando arquivo:linha."""
         ok = subprocess.run([sys.executable, str(SCRIPT), str(self.gravar(AVULSA_OK))], capture_output=True, text=True)
-        self.assertEqual((ok.returncode, ok.stdout.strip()), (0, "Nenhum problema encontrado."))
+        # A primeira linha: a fixture tem "Contrato da API: sim", e o aviso de possível spec vem depois (CA-13).
+        self.assertEqual((ok.returncode, ok.stdout.splitlines()[0]), (0, "Nenhum problema encontrado."))
 
         ruim = self.gravar(AVULSA_OK.replace("`aberta`", "`feito`"), "tasks/ruim.md")
         falha = subprocess.run([sys.executable, str(SCRIPT), str(ruim)], capture_output=True, text=True)
         self.assertEqual(falha.returncode, 1)
         self.assertIn("ruim.md:3 [ERRO] md.status-invalido status: valor 'feito' inválido", falha.stdout)
-        self.assertEqual(falha.stdout.strip().splitlines()[-1], "1 erro(s), 0 aviso(s)")  # linha de resumo no fim
+        # Sem cabeçalho: os achados primeiro e, no fim, o resumo (como na governança).
+        self.assertTrue(falha.stdout.startswith("ruim.md:3 [ERRO]"), falha.stdout)
+        # Resumo logo depois dos achados; o aviso de possível spec, se houver, vem depois de uma linha em branco.
+        self.assertEqual(falha.stdout.split("\n\n")[0].splitlines()[-1], "1 erro(s), 0 aviso(s)")
 
     def test_cli_arquivo_inexistente(self):
         """Arquivo que não existe interrompe com mensagem, sem traceback."""
@@ -429,6 +433,40 @@ class ModeloNovoTest(_Base):
         """Os dois valores do conjunto passam."""
         texto = AVULSA_OK.replace("`agente implementa, Juno revisa`", "`Juno implementa, agente guia e revisa`")
         self.assertEqual(self.mensagens(texto), [])
+
+    def test_decisao_nao_aplicada(self):
+        """'depende de Qn' sobrando com 'Em aberto' igual a 'nada' é acusado com a linha, e com item em aberto é aceito (CA-07)"""
+        sobrando = AVULSA_OK.replace("1. O use-case recebe os ids do token e aplica a regra.", "1. Regra no lugar que depende de Q2.")
+        self.assertNotEqual(sobrando, AVULSA_OK)
+        linha = sobrando.splitlines().index("1. Regra no lugar que depende de Q2.") + 1
+        self.assertIn(f"{linha} [ERRO] task.decisao-nao-aplicada decisão: 'depende de Q2' com 'Em aberto' igual a "
+                      "'nada' (troque pela decisão tomada, com o motivo)", self.erros(sobrando))
+        com_item = sobrando.replace("### Em aberto\n\nnada\n", "### Em aberto\n\n- Q2 — onde mora a regra?\n")
+        self.assertEqual(self.erros(com_item), [])
+        # Dentro de código ou de comentário, e "depende de Qn" sem número, não contam.
+        em_codigo = AVULSA_OK.replace("1. O use-case recebe os ids do token e aplica a regra.", "1. Regra (`depende de Q2`) <!-- depende de Q3 -->, "
+                                                                 "o marcador \"depende de Qn\".")
+        self.assertFalse(any("decisao-nao-aplicada" in e for e in self.erros(em_codigo)), self.erros(em_codigo))
+
+    def test_aviso_de_possivel_spec_so_na_linha_de_comando(self):
+        """o validador pela linha de comando mostra o aviso de possível spec sem mudar o exit, e o validate() não o devolve (CA-13)"""
+        com_banco = AVULSA_OK.replace("- **Banco:** não", "- **Banco:** sim — coleção nova")
+        caminho = self.gravar(com_banco)
+        processo = subprocess.run([sys.executable, str(SCRIPT), str(caminho)], capture_output=True, text=True)
+        self.assertEqual(processo.returncode, 0, processo.stdout)
+        self.assertIn("Aviso: esta task talvez seja spec", processo.stdout)
+        self.assertIn("- critério 1 (cria um agregado ou coleção nova, ou muda como os agregados se relacionam): "
+                      "eixo 'Banco' com 'sim'", processo.stdout)
+        self.assertEqual(vt.validate(caminho), [])  # nem erro nem aviso: a governança não vê o aviso
+        # Com erro, o exit continua 1 e o aviso aparece depois do resumo.
+        ruim = self.gravar(com_banco.replace("`aberta`", "`feito`"), "tasks/ruim.md")
+        falha = subprocess.run([sys.executable, str(SCRIPT), str(ruim)], capture_output=True, text=True)
+        self.assertEqual(falha.returncode, 1)
+        self.assertLess(falha.stdout.index("1 erro(s), 0 aviso(s)"), falha.stdout.index("Aviso: esta task"))
+        sem = self.gravar(AVULSA_OK.replace("- **Contrato da API:** sim — `GET /clientes/:id` passa a responder 403 "
+                                            "para outro cliente", "- **Contrato da API:** não"), "tasks/sem.md")
+        saida = subprocess.run([sys.executable, str(SCRIPT), str(sem)], capture_output=True, text=True).stdout
+        self.assertEqual(saida.strip(), "Nenhum problema encontrado.")
 
     def _com_andamento(self, status: str, entradas: str) -> str:
         return (AVULSA_OK.replace("`aberta`", f"`{status}`")

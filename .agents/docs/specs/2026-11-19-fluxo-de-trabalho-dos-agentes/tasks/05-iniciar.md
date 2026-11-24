@@ -1,9 +1,8 @@
 # Task: Iniciar
 
-- **Status:** `aberta`
+- **Status:** `concluída`
 - **Criado em:** 2026-11-20
-- **Atualizado em:** 2026-11-23 — Q6 a Q11 decididas, campo Branch só com o nome, modo leve obrigatório antes
-  do encerramento e releitura antes da aprovação
+- **Atualizado em:** 2026-11-24 — aprovada na revisão do Juno
 - **Tipo:** `docs`
 - **Alcance:** `documentação`
 - **Modo:** `agente implementa, Juno revisa`
@@ -255,6 +254,11 @@ nada
 - pela Q1 e Q11: `.agents/skills/task/scripts/validate_task.py` (o aviso no `main()` e a regra da decisão não
   aplicada);
 - pela Q6: `AGENTS.md` (só a frase da exceção);
+- pela rodada da revisão (2026-11-24, Q3): `.agents/scripts/lib/projeto.py` (`relative_to_root` com raiz
+  opcional, no lugar de uma cópia local no `start_task.py`);
+- pela rodada da revisão (2026-11-24, saída dos validadores): `validate_task.py` e `validate_spec.py` sem o
+  cabeçalho "N problema(s) encontrado(s) em X:", e `test_validate_spec.py` e `test_validate_task.py`
+  conferindo a saída nova;
 - o `design.md` desta spec já foi ajustado na abertura (ordem do iniciar, notas da 07 e da 08) e não muda na
   implementação; o ambiente do modo leve fica no workspace da skill `task` (fora do git).
 
@@ -280,8 +284,11 @@ Pare e avise antes: isso é mudança de escopo e precisa ser aprovada (e registr
   `git switch -c`), só depois das checagens e só no "iniciar"; a regra de Git do `AGENTS.md` ganha a exceção
   restrita a esse script (Q6)
 - **Testes existentes que mudam de propósito:** sim — `test_validate_spec.py` só se o `open_items` mudar de
-  assinatura ao ir para a lib; pela Q5, os de `test_create_task.py` (3) e `test_validate_task.py` (1) que
-  esperam "(sugerida; criada pelo Juno)" e a fixture `avulsa-ok.md`; a regra da Q11 não muda nenhum (fora dos
+  assinatura ao ir para a lib (não mudou; mudou pela saída sem cabeçalho, revisão de 2026-11-24, assim como o
+  teste de linha de comando do `test_validate_task.py`); pela Q5, os de `test_create_task.py` (3) e `test_validate_task.py` (1) que
+  esperam "(sugerida; criada pelo Juno)" e a fixture `avulsa-ok.md`; pela Q1, o teste de linha de comando do
+  `test_validate_task.py` (a fixture tem contrato "sim", e o aviso sai depois do resumo, que deixa de ser a
+  última linha; achado na implementação); a regra da Q11 não muda nenhum (fora dos
   workspaces, nenhum arquivo de `.agents/` tem "depende de Q" seguido de número; conferido na abertura)
 - **Documentação:** sim — skill `task` (modo Iniciar, passo 1.4, aviso e releitura no Atualizar, releitura no
   fim do Abrir), o modelo `task.md` (Q5) e a frase da exceção na regra de Git do `AGENTS.md` (Q6)
@@ -354,15 +361,190 @@ A task só está concluída com todos os comandos passando e a evidência regist
 - 2026-11-20 — abertura: base salva em `.agents/skills/governanca-workspace/base-05.txt` antes de pôr o link na
   lista do design (0 erros, 5 avisos de skill pendente: `adr` e `encerramento`). Na implementação, o
   `--salvar-base` roda de novo antes da primeira edição, na branch.
+- 2026-11-23 — início: aprovada pelo Juno em 2026-11-23 (abertura no commit `7f0ba9d6` da `main`); branch
+  `docs/juno/fluxo-de-trabalho-dos-agentes-05` criada pelo Juno; status `em andamento` à mão (a 05 é a última no
+  fluxo manual). Suítes antes de começar: lib 4, task 76, spec 20, evals 42, governança 74, todas OK. Base salva
+  de novo em `.agents/skills/governanca-workspace/base-05.txt` antes da primeira edição: 0 erros, 5 avisos
+  (`skill-pendente`: `adr` e `encerramento`).
+- 2026-11-23 — passos 1 a 8 implementados: lib (metadados, Andamento, `open_items` por seção, regra dos eixos e
+  `git_fluxo.py`), `validate_task.py` (regra da decisão não aplicada e aviso no `main()`), `start_task.py`,
+  campo Branch só com o nome, skill `task` e frase do `AGENTS.md`. O teste de linha de comando do
+  `test_validate_task.py` mudou de propósito pela Q1 (a fixture tem contrato "sim" e o resumo deixa de ser a
+  última linha); registrado no Impacto. Versão antiga da `SKILL.md` guardada em
+  `.agents/skills/task-workspace/modo-leve-05/skill-antiga/` para o modo leve.
+- 2026-11-23 — mutação manual: 31 mutantes, 30 mortos na primeira passada; vivo "campo Branch não regravado"
+  (as fixtures já traziam só o nome). Reforço: o caminho feliz parte de uma task com o texto antigo no campo;
+  o mutante morreu (31/31). Arquivos conferidos por md5 depois da rodada: todos restaurados.
+- 2026-11-23 — checagem manual num clone temporário (remoto `--bare` do repositório, com as mudanças da 05
+  commitadas no clone): task de fixture com item em aberto → "Iniciar recusado" com o item, `git status`
+  limpo, na `main`, sem branch nova; fixture corrigida → `main` atualizada, branch `fix/juno/checagem-manual`
+  ativa, task `em andamento` com Branch, "Atualizado em", entrada da aprovação com o commit de base e a base
+  (5 avisos) no bloco `text`; aviso do critério 4 mostrado; governança no clone depois disso: 0 erros. Clone
+  apagado; o repositório real seguiu na branch da 05, sem mudança fora dos previstos.
+- 2026-11-23 — modo leve adiado a pedido do Juno para depois do reset do limite semanal de tokens (89% usado).
+- 2026-11-24 — modo leve da oficina (Q9, Q10): ambientes fechados em
+  `.agents/skills/task-workspace/modo-leve-05/` (repositório git próprio cada um, montado por `montar.sh`:
+  `AGENTS.md` e `.agents/` da `HEAD` × atuais, task de fixture vinda da `avulsa-ok.md`), um subagente por vez,
+  asserções fixadas antes em `asercoes.json`. Rodada 1 do cenário 1 (antiga) descartada: a fixture repetia o
+  assunto da task concluída `2026-11-19-restringir-perfil-cliente.md`, com decisão oposta, e o item em aberto
+  contradizia as Decisões da fixture; o agente parou por isso, não pelo que o cenário mede. Refeita sem a
+  concluída no ambiente e com um item independente (mensagem do 403). Cenário 1 ("aprovada, pode começar",
+  item em aberto): antiga 4/4 (sem script; parou pelo item, não editou, pediu ao Juno para criar a branch);
+  nova 4/4 (rodou o `start_task.py`, relatou a recusa com o item, disse que não edita a task nem roda git para
+  destravar). Cenário 2 ("atualizar", campo novo na coleção `clientes`): antiga 1/4 (editou, validou e passou
+  Banco a "sim", mas sem aviso e concluiu sozinha "ainda me parece task"); nova 4/4 (relatou o aviso dos
+  critérios 1, 4 e 3 e perguntou ao Juno se segue task ou vira spec, Q5). Repositório real conferido depois
+  (md5 dos arquivos mudados e `git status` iguais aos de antes).
+- 2026-11-24 — revisão do Juno, rodada de organização (1 A, 2 A, 3 A): o `check_repository` continua no
+  `start_task.py` (regra do "iniciar"; o `git_fluxo.py` fica só com os comandos); `_` em toda função usada só
+  dentro do `start_task.py` (públicas: `start`, `main`, `branch_name`); o `_relativo` sai e o
+  `relative_to_root` do `projeto.py` ganha a raiz opcional (arquivo fora dos previstos, aprovado nesta rodada).
+  Suítes de novo: lib 10, task 96, spec 20, evals 42, governança 74, OK; mutação 32/32 (+1: a raiz ignorada).
+- 2026-11-24 — revisão do Juno, saída dos validadores (1 A, 2 A, 3 A): a linha `N erro(s), M aviso(s)` da
+  revisão da 01 (Q2 A) foi acrescentada pela 03 sem tirar o cabeçalho "N problema(s) encontrado(s) em X:", e o
+  total saía duas vezes. O cabeçalho sai do `validate_task.py` e do `validate_spec.py` (achados primeiro e o
+  resumo no fim, como na governança); sem achado, continua "Nenhum problema encontrado.". Testes de linha de
+  comando dos dois conferem a saída nova; mutação "cabeçalho de volta": 2/2 mortos. Suítes: lib 10, task 96,
+  spec 20, evals 42, governança 74, OK; `--comparar base-05.txt` sem erro novo.
+- 2026-11-24 — aprovada na revisão do Juno; status `concluída`. Comentário dele, fora desta task: enxugar o
+  `md_checks.py`, que está grande (fica para depois). O arquivo da task sai do commit 1 e vai sozinho para um
+  commit 3, de fechamento, para não estar em dois commits.
 
 ## 5. Fechamento
 
-- **O que foi feito:**
-- **Arquivos alterados:**
+- **O que foi feito:** o `start_task.py` faz o "iniciar" na ordem do design: bloco da task (status, spec,
+  validador, Em aberto) e, só com ela ok, bloco do repositório (árvore, `main`, branch), cada um com todos os
+  problemas; `git pull --ff-only`; governança importada e base no Andamento (bloco `text` ou "nenhum");
+  `git switch -c`; task `em andamento` com Branch, "Atualizado em" e a entrada da aprovação com o commit de
+  base; spec `aprovada` → `em andamento`; aviso dos eixos. A lib ganhou metadados, entrada no Andamento,
+  `open_items` por seção, a regra dos eixos e o `git_fluxo.py`. O `validate_task.py` acusa
+  `task.decisao-nao-aplicada` e mostra o aviso de possível spec só pela linha de comando. O campo Branch traz
+  só o nome (`create_task.py`, modelo). Skill `task`: modo Iniciar, aviso no Atualizar, releitura no fim do
+  Abrir e do Atualizar, passo 1.4. `AGENTS.md`: a frase da exceção na regra de Git.
+- **Arquivos alterados:** os previstos (com o `projeto.py` aprovado na revisão), e mais nenhum: criados `.agents/scripts/lib/git_fluxo.py`,
+  `.agents/skills/task/scripts/start_task.py` e `.agents/skills/task/scripts/testes/test_start_task.py`;
+  alterados `.agents/scripts/lib/md_checks.py`, `.agents/scripts/lib/projeto.py` (rodada da revisão),
+  `.agents/scripts/lib/testes/test_lib.py`,
+  `.agents/skills/spec/scripts/validate_spec.py`, `.agents/skills/task/scripts/validate_task.py`,
+  `.agents/skills/task/scripts/create_task.py`, `.agents/docs/templates/task.md`, `test_create_task.py`,
+  `test_validate_task.py`, `test_validate_spec.py` (revisão), `avulsa-ok.md`, `.agents/skills/task/SKILL.md`,
+  `AGENTS.md` e esta task.
 - **Decisões tomadas no caminho:**
-- **Testes antes de começar:**
-- **Testes no fim:**
+  - `open_items` na lib recebe a seção; o `validate_spec.py` mantém um `open_items(texto)` de uma linha que só
+    fixa a seção da spec, para o `create_design.py` (que o importa e está fora dos previstos) não mudar; sai
+    também um import sem uso do `md_utils`.
+  - o teste de linha de comando do `test_validate_task.py` muda de propósito pela Q1 (achado na
+    implementação; Impacto atualizado).
+  - módulo de git: `git_fluxo.py`; commit de base com SHA curto de 8 (como o histórico cita); "branch
+    existe" confere só a branch local.
+  - bloco `text` da base sem recuo, para o `read_base` ler sem conversão (testado).
+  - revisão de 2026-11-24 (1 A, 2 A, 3 A): `check_repository` fica no `start_task.py`; `_` nas funções
+    internas dele; `relative_to_root` (lib `projeto.py`) aceita a raiz e substitui o `_relativo` local.
+  - revisão de 2026-11-24 (1 A, 2 A, 3 A): os dois validadores perdem o cabeçalho "N problema(s)
+    encontrado(s) em X:" (o total já sai na última linha); sem achado, "Nenhum problema encontrado." fica.
+  - na aprovação (2026-11-24): esta task sai do commit 1 e ganha o commit 3, de fechamento, com o status
+    `concluída` (o mesmo arquivo não fica em dois commits).
+  - na skill, o Iniciar entrou como `## 4. Iniciar`, depois do Fechar, para não renumerar o Atualizar e o
+    Fechar (que outras partes citam por número); a `description` e a abertura citam o iniciar; o modelo usa
+    `<nome da branch>`.
+- **Testes antes de começar:** lib 4, task 76, spec 20, evals 42, governança 74, todos OK; governança 0 erros,
+  5 avisos (base `base-05.txt`).
+- **Testes no fim:** lib 10, task 96 (18 do `start_task`), spec 20, evals 42, governança 74, todos OK;
+  `--comparar base-05.txt`: 0 erros novos, 0 avisos novos, 5 já existiam; `quick_validate ../task`: válida.
+  Mutação manual 34/34 (um reforço; +3 depois da revisão). Checagem manual no clone temporário: recusa e caminho feliz ok. Modo
+  leve (2026-11-24): cenário 1, antiga 4/4 × nova 4/4 (a nova pelo script); cenário 2, antiga 1/4 × nova 4/4.
 - **Evidência por critério:**
-- **Checagens não feitas:**
-- **Ficou para depois:**
+  - CA-05 → "iniciar no caminho feliz avança a main, cria a branch e marca a task em andamento com a entrada
+    no Andamento (CA-05)" e "a base da governança vai para o Andamento e erro antigo não impede o iniciar
+    (CA-05)" passando;
+  - CA-06 → "task com status diferente de aberta é recusada com o status, sem mudar nada (CA-06)" e
+    "problemas do mesmo bloco aparecem juntos e o bloco do repositório só roda com a task ok (CA-06)"
+    passando;
+  - CA-07 → "task com item em aberto é recusada com os itens, sem mudar nada (CA-07)" e "'depende de Qn'
+    sobrando com 'Em aberto' igual a 'nada' é acusado com a linha, e com item em aberto é aceito (CA-07)"
+    passando;
+  - CA-08 → "task com erro de validação é recusada com os erros, sem mudar nada (CA-08)" passando;
+  - CA-09 → "repositório com mudanças pendentes é recusado com os arquivos, sem mudar nada (CA-09)" passando;
+  - CA-10 → "fora da main é recusado com a branch atual, sem mudar nada (CA-10)" passando;
+  - CA-11 → "branch da task já existente é recusada, sem mudar nada (CA-11)" passando;
+  - CA-12 → "main divergente do remoto é recusada com a mensagem do git, sem criar a branch (CA-12)" e
+    "remoto inacessível é recusado com a mensagem do git, sem criar a branch (CA-12)" passando;
+  - CA-13 → "a regra dos eixos aponta o critério 1 com banco, o 4 com contrato e o 3 com quatro eixos sim
+    (CA-13)", "o aviso de possível spec aparece e não impede o iniciar (CA-13)" e "o validador pela linha de
+    comando mostra o aviso de possível spec sem mudar o exit, e o validate() não o devolve (CA-13)" passando;
+  - CA-36 → "a primeira task põe a spec aprovada em andamento e as seguintes não mudam a spec (CA-36)" e
+    "task de spec com a spec fora de aprovada e em andamento é recusada com o status (CA-36)" passando.
+- **Checagens não feitas:** nenhuma (o modo leve, adiado para depois do reset de tokens, rodou em 2026-11-24;
+  resultado no Andamento e em "Testes no fim").
+- **Ficou para depois:** a linha da skill `task` na tabela do `AGENTS.md` ainda diz "Abrir, atualizar ou
+  fechar" (o resto do `AGENTS.md` é da 08); o status desta spec continua `aprovada`, embora 01, 02, 03 e 09
+  já tenham sido feitas no fluxo manual (o `start_task.py` só a passa a `em andamento` quando inicia uma task
+  dela; a 05 não a mudou, por estar fora dos previstos: decidir à mão ou na 04); a governança ainda tem duas
+  cópias do caminho relativo (`_rel` em `checagens/registros.py` e `relative_name` em `governanca.py`), que
+  podem usar o `relative_to_root` da lib: nenhuma task da spec mexe nesse código, e a governança estava em
+  "Não deve mudar" da 05 (decisão do Juno na revisão, 2026-11-24): task avulsa `refactor(agents)` depois da
+  spec, ou junto da 08. Na mesma task, a governança imprimir "Nenhum problema encontrado." sem achado (hoje
+  imprime `0 erro(s), 0 aviso(s)`), como os validadores (pedido do Juno, 2026-11-24).
 - **Commits entregues:**
+
+  ```text
+  feat(agents): Adiciona o iniciar da task com o start_task.py
+
+  - start_task.py confere a task e depois o repositório, em dois blocos
+    com todos os problemas de cada um, e só então faz o pull --ff-only,
+    grava a base da governança no Andamento, cria a branch e marca a
+    task (e a spec, na primeira task) em andamento;
+  - a lib ganha metadados, entrada no Andamento, open_items por seção,
+    a regra dos eixos do aviso de spec e o git_fluxo.py com os comandos
+    de git do fluxo;
+  - validate_task acusa "depende de Qn" com "Em aberto" igual a "nada" e
+    mostra o aviso de possível spec só pela linha de comando;
+  - o campo Branch passa a trazer só o nome, no create_task e no modelo;
+  - os validadores de task e spec perdem o cabeçalho "problema(s)
+    encontrado(s)": o total sai só na linha de resumo do fim.
+
+  Task: 2026-11-19-fluxo-de-trabalho-dos-agentes/tasks/05-iniciar.md
+  ```
+
+  Arquivos:
+  - `.agents/scripts/lib/git_fluxo.py`
+  - `.agents/scripts/lib/md_checks.py`
+  - `.agents/scripts/lib/projeto.py`
+  - `.agents/scripts/lib/testes/test_lib.py`
+  - `.agents/skills/spec/scripts/validate_spec.py`
+  - `.agents/skills/spec/scripts/testes/test_validate_spec.py`
+  - `.agents/skills/task/scripts/start_task.py`
+  - `.agents/skills/task/scripts/validate_task.py`
+  - `.agents/skills/task/scripts/create_task.py`
+  - `.agents/skills/task/scripts/testes/test_start_task.py`
+  - `.agents/skills/task/scripts/testes/test_validate_task.py`
+  - `.agents/skills/task/scripts/testes/test_create_task.py`
+  - `.agents/skills/task/scripts/testes/avulsa-ok.md`
+  - `.agents/docs/templates/task.md`
+
+  ```text
+  docs(agents): Ensina a skill task o iniciar e abre a exceção de Git
+
+  - a skill task ganha o modo Iniciar, o aviso de spec no Atualizar e a
+    releitura da task antes de pedir a aprovação;
+  - o AGENTS.md abre a exceção da regra de Git só para o start_task.py,
+    depois da aprovação do Juno.
+
+  Task: 2026-11-19-fluxo-de-trabalho-dos-agentes/tasks/05-iniciar.md
+  ```
+
+  Arquivos:
+  - `.agents/skills/task/SKILL.md`
+  - `AGENTS.md`
+
+  ```text
+  docs(agents): Fecha a task 05 da spec do fluxo de trabalho
+
+  - task 05 (iniciar) concluída, com o fechamento, o modo leve e os
+    ajustes da revisão registrados.
+
+  Task: 2026-11-19-fluxo-de-trabalho-dos-agentes/tasks/05-iniciar.md
+  ```
+
+  Arquivos:
+  - `.agents/docs/specs/2026-11-19-fluxo-de-trabalho-dos-agentes/tasks/05-iniciar.md`

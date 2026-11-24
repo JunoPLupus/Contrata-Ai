@@ -78,7 +78,10 @@ class ValidateSpecTest(unittest.TestCase):
                       "(resolva ou volte a `rascunho`): Notificar também por email? — bloqueia: design", saida)
         self.assertIn("spec.md:105 [ERRO] spec.aprovada-com-aberto em aberto: spec `aprovada` com item em aberto "
                       "(resolva ou volte a `rascunho`): Prazo do TTL: 30 ou 90 dias?", saida)
-        self.assertIn("2 erro(s), 0 aviso(s)", saida)
+        # Sem cabeçalho: os achados primeiro e, no fim, o resumo (como na governança).
+        self.assertNotIn("problema(s) encontrado(s)", saida)
+        self.assertTrue(saida.splitlines()[0].startswith("spec.md:"), saida)
+        self.assertEqual(saida.strip().splitlines()[-1], "2 erro(s), 0 aviso(s)")
 
     def test_secao_ausente_e_vazia(self):
         """Seção obrigatória ausente e seção vazia são erro."""

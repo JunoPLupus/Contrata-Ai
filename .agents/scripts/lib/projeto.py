@@ -24,10 +24,11 @@ def get_project_root() -> Path:
     raise SystemExit("Não encontrei a pasta '.agents' na raiz do projeto. Rode o script dentro do projeto.")
 
 
-def relative_to_root(path: Path) -> Path:
-    """Caminho relativo à raiz do projeto (saída mais curta); devolve o original se estiver fora dela."""
+def relative_to_root(path: Path, raiz: Path | None = None) -> Path:
+    """Caminho relativo à raiz (saída mais curta); devolve o original se estiver fora dela. Sem `raiz`, a do
+    projeto; com ela, outra (o repositório temporário dos testes, por exemplo)."""
     try:
-        return path.resolve().relative_to(get_project_root())
+        return path.resolve().relative_to((raiz or get_project_root()).resolve())
     except ValueError:
         return path
 

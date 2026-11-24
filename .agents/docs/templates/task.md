@@ -22,7 +22,7 @@ Apague estes comentários ao preencher.
 - **Modo:** `agente implementa, Juno revisa` | `Juno implementa, agente guia e revisa`
 - **Spec:** <links para o spec.md e o design.md da spec | não se aplica>
 - **Bloqueada por:** <nenhuma | NN-<assunto>.md | não se aplica>
-- **Branch:** <nome da branch, criada pelo Juno>
+- **Branch:** <nome da branch>
 
 ## 1. Contexto e critérios
 
