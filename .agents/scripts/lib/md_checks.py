@@ -144,6 +144,78 @@ def check_updated_at(arquivo: Path, texto: str) -> list[Finding]:
         return [erro(arquivo, numero, "md.atualizado-antes-da-criacao", f"atualizado em: {atualizado} é anterior ao 'Criado em' ({criado})")]
     return []
 
+
+def _metadata_line(rotulo: str) -> re.Pattern:
+    """Linha '- **Rótulo:** valor' mais as linhas recuadas logo abaixo (continuação do valor)."""
+    return re.compile(rf"^([ \t]*-?[ \t]*\*\*{re.escape(rotulo)}:\*\*)[^\n]*(?:\n[ \t]+\S[^\n]*)*", re.MULTILINE)
+
+
+def read_metadata(texto: str, rotulo: str) -> str | None:
+    """Valor da linha de metadado '- **Rótulo:**', com as continuações juntadas; None sem a linha."""
+    linha = _metadata_line(rotulo).search(texto)
+    if linha is None:
+        return None
+    return " ".join(linha.group(0)[len(linha.group(1)):].split())
+
+
+def set_metadata(texto: str, rotulo: str, valor: str) -> str:
+    """Troca o valor da linha de metadado '- **Rótulo:**' (e as continuações) por `valor`, numa linha só.
+    ValueError sem a linha: quem chama confere antes (o validador acusa metadado ausente)."""
+    texto_novo, trocas = _metadata_line(rotulo).subn(lambda m: f"{m.group(1)} {valor}", texto, count=1)
+    if trocas == 0:
+        raise ValueError(f"linha **{rotulo}:** não encontrada")
+    return texto_novo
+
+
+def set_updated_at(texto: str, dia: date, motivo: str) -> str:
+    """"**Atualizado em:** AAAA-MM-DD — motivo"."""
+    return set_metadata(texto, "Atualizado em", f"{dia.isoformat()} — {motivo}")
+
+
+def add_progress_entry(texto: str, secao: str, dia: date, entrada: str) -> str:
+    """Acrescenta '- AAAA-MM-DD — entrada' no fim da seção `secao` (o Andamento), antes da seção seguinte.
+    `entrada` pode ter várias linhas (um bloco de código logo abaixo, por exemplo). ValueError sem a seção."""
+    corpo = section_body(texto, secao)
+    if corpo is None:
+        raise ValueError(f"seção '## {secao}' não encontrada")
+    conteudo, inicio = corpo
+    fim = inicio + len(conteudo)
+    separador = "\n" if conteudo.strip() else "\n\n"  # seção vazia: linha em branco depois do título
+    novo = f"{texto[:fim].rstrip()}{separador}- {dia.isoformat()} — {entrada.rstrip()}\n"
+    depois = texto[fim:]
+    return novo + (f"\n{depois}" if depois else "")
+
+# endregion
+
+# region "Em aberto" (task, spec e design)
+
+_NADA = re.compile(r"^\s*nada\.?\s*$", re.IGNORECASE)
+
+
+def open_items(texto: str, secao: str, subsecao: str = "Em aberto") -> list[tuple[int, str]] | None:
+    """(linha, texto) de cada item de '### Em aberto' da seção `secao`; [] quando diz "nada"; None sem a
+    subseção (ausente é acusada pela checagem de subseções). Item = linha que abre um item de lista ou, sem
+    lista, cada parágrafo; escrito de qualquer jeito (sem marcador exato). Comentários não contam."""
+    corpo = subsection_body(texto, secao, subsecao)
+    if corpo is None:
+        return None
+    inicio, fim = corpo
+    trecho = COMENTARIO_PATTERN.sub(lambda m: "".join("\n" if c == "\n" else " " for c in m.group(0)),
+                                    texto[inicio:fim])
+    if not trecho.strip() or _NADA.match(trecho):
+        return []
+    itens: list[tuple[int, str]] = []
+    posicao = 0
+    anterior_vazia = True
+    for linha in trecho.split("\n"):
+        conteudo = linha.strip()
+        abre = conteudo and (linha[:1] not in (" ", "\t") and (conteudo.startswith(("-", "*")) or anterior_vazia))
+        if abre:
+            itens.append((line_of(texto, inicio + posicao), conteudo.lstrip("-* ").strip()))
+        anterior_vazia = not conteudo
+        posicao += len(linha) + 1
+    return itens
+
 # endregion
 
 # region Seções
@@ -294,6 +366,41 @@ def check_impact_axes(arquivo: Path, texto: str, inicio: int, fim: int, dono: st
             findings.append(erro(arquivo, linha, f"{dono}.impacto-eixo-sem-resposta",
                                  f"impacto: eixo '{eixo}' sem 'sim — …' ou 'não'"))
     return findings
+
+
+# Regra dos eixos (CA-13): eixo "sim" → critério de spec do AGENTS.md ("Spec ou task?") que parece valer.
+CRITERIOS_SPEC = {
+    1: "cria um agregado ou coleção nova, ou muda como os agregados se relacionam",
+    3: "vai virar mais de uma task",
+    4: "muda o contrato da API em mais de um recurso",
+}
+EIXOS_PARA_SPEC = 4  # quatro ou mais eixos "sim" → critério 3
+
+
+def possible_spec_criteria(texto: str, inicio: int, fim: int) -> list[tuple[int, str]]:
+    """(critério, motivo) de spec que os eixos do Impacto em texto[inicio:fim] apontam, na ordem 1, 4, 3:
+    banco "sim" → 1; contrato da API "sim" → 4; quatro ou mais eixos "sim" → 3. Só aponta: quem decide é o
+    Juno."""
+    eixos = labels(texto, inicio, fim)
+    sim = [eixo for eixo in EIXOS_IMPACTO if eixo in eixos and _SIM.match(eixos[eixo][1])]
+    criterios: list[tuple[int, str]] = []
+    if "Banco" in sim:
+        criterios.append((1, "eixo 'Banco' com 'sim'"))
+    if "Contrato da API" in sim:
+        criterios.append((4, "eixo 'Contrato da API' com 'sim'"))
+    if len(sim) >= EIXOS_PARA_SPEC:
+        criterios.append((3, f"{len(sim)} eixos do Impacto com 'sim' ({', '.join(sim)})"))
+    return criterios
+
+
+def format_spec_warning(criterios: list[tuple[int, str]]) -> list[str]:
+    """Linhas do aviso de possível spec ([] sem critério): o critério, o texto dele no AGENTS.md e o motivo."""
+    if not criterios:
+        return []
+    linhas = ["Aviso: esta task talvez seja spec (seção \"Spec ou task?\" do AGENTS.md):"]
+    linhas += [f"- critério {n} ({CRITERIOS_SPEC[n]}): {motivo}" for n, motivo in criterios]
+    linhas.append("Reavalie e pergunte ao Juno se segue como task ou vira spec; o aviso não bloqueia.")
+    return linhas
 
 # endregion
 
@@ -510,8 +617,9 @@ def check_links(arquivo: Path, texto: str, raiz: Path, ignorar: Callable[[str], 
 
 
 __all__ = [
-    "CA_ID_VALIDO", "CA_PASSO_LINHA", "CODIGO_VALIDO", "Finding", "aviso", "ca_numbers_cited", "ca_numbers_defined", "ca_titles",
-    "check_acceptance_criteria", "check_ca_refs_exist", "check_links", "check_paths_exist", "check_placeholders",
-    "check_sections", "check_status", "check_updated_at", "erro", "find_paths", "format_preview",
-    "read_status", "section_body", "section_titles",
+    "CA_ID_VALIDO", "CA_PASSO_LINHA", "CODIGO_VALIDO", "CRITERIOS_SPEC", "Finding", "add_progress_entry", "aviso",
+    "ca_numbers_cited", "ca_numbers_defined", "ca_titles", "check_acceptance_criteria", "check_ca_refs_exist",
+    "check_links", "check_paths_exist", "check_placeholders", "check_sections", "check_status", "check_updated_at",
+    "erro", "find_paths", "format_preview", "format_spec_warning", "open_items", "possible_spec_criteria",
+    "read_metadata", "read_status", "section_body", "section_titles", "set_metadata", "set_updated_at",
 ]

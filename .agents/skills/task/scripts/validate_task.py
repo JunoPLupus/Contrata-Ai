@@ -14,6 +14,7 @@ Verifica:
       Referências na seção 1 (e, na task de spec, Critérios de aceite); Fica fora, Decisões, Em aberto,
       Passos, Ler antes de começar, Arquivos previstos, Não deve mudar e Impacto na seção 2
 - [x] Impacto com os seis eixos, cada um "sim — o que muda" ou "não"
+- [x] "depende de Qn" fora de código com "Em aberto" igual a "nada": decisão respondida e não aplicada
 - [x] Modo com um dos dois valores do conjunto
 - [x] Andamento: entradas "- AAAA-MM-DD — texto"; a partir de `em andamento`, pelo menos uma
 - [x] Avulsa: critérios CA-NN (formato, únicos, Dado / Quando / Então)
@@ -32,6 +33,8 @@ As checagens comuns com a skill spec moram na lib global (.agents/scripts/lib/md
 públicas daqui são reaproveitadas pelos critérios dos evals (../evals/checks.py).
 
 Saída: `arquivo:linha [SEVERIDADE] código mensagem` e, no fim, `N erro(s), M aviso(s)`; exit 1 se houver erro.
+Pela linha de comando (só nela, fora do validate()), depois do resumo: o aviso de possível spec, quando a regra
+dos eixos do Impacto aponta um critério de spec; o aviso não muda o exit.
 
 Uso: python validate_task.py <arquivo da task> [--fechar]
 """
@@ -63,7 +66,10 @@ from md_checks import (  # noqa: E402  (precisa do sys.path ajustado acima)
     check_updated_at,
     erro,
     find_paths,
+    format_spec_warning,
     labels,
+    open_items,
+    possible_spec_criteria,
     read_status,
     section_body,
     subsection_body,
@@ -72,7 +78,7 @@ from md_checks import (  # noqa: E402  (precisa do sys.path ajustado acima)
 )
 from md_checks import check_subsections as check_required_subsections  # noqa: E402
 from md_utils import COMENTARIO_PATTERN, find_placeholders, line_of, mask_code_and_comments  # noqa: E402
-from projeto import get_project_root, read_text, relative_to_root  # noqa: E402
+from projeto import get_project_root, read_text  # noqa: E402
 
 Tipo = Literal["avulsa", "spec"]
 
@@ -129,6 +135,8 @@ _PRIMEIRO_CODIGO = re.compile(r"`([^`]+)`")
 _LINHA_TABELA = re.compile(r"^[ \t]*\|[ \t]*CA-(\d+)[ \t]*\|.*$", re.MULTILINE)
 _CA_QUALQUER = re.compile(r"\bCA-(\w*)")
 _TASK_IRMA = re.compile(r"(?:^|/)\d{2}-[\w-]+\.md$")
+
+_DEPENDE_DE_Q = re.compile(r"\b[Dd]epende de Q\d+\b")
 
 _ENTRADA_ANDAMENTO = re.compile(r"^- (\d{4}-\d{2}-\d{2})\s*[—–-]\s*\S")
 
@@ -294,6 +302,24 @@ def task_mode(texto: str) -> str | None:
         return None
     valor = _PRIMEIRO_CODIGO.search(linha.group(1))
     return valor.group(1) if valor else ""
+
+
+def check_unapplied_decisions(arquivo: Path, texto: str) -> list[Finding]:
+    """"depende de Qn" fora de código e comentário com "Em aberto" igual a "nada": a pergunta foi respondida
+    e o trecho não recebeu a decisão (CA-07). Com item no "Em aberto", o marcador é aceito."""
+    if open_items(texto, SECAO_O_QUE_FAZER) != []:
+        return []
+    return [
+        erro(arquivo, line_of(texto, m.start()), "task.decisao-nao-aplicada",
+             f"decisão: '{m.group(0)}' com 'Em aberto' igual a 'nada' (troque pela decisão tomada, com o motivo)")
+        for m in _DEPENDE_DE_Q.finditer(mask_code_and_comments(texto))
+    ]
+
+
+def impact_spec_criteria(texto: str) -> list[tuple[int, str]]:
+    """Critérios de spec que os eixos do Impacto apontam (regra dos eixos da lib); [] sem a subseção."""
+    corpo = subsection_body(texto, SECAO_O_QUE_FAZER, SUBSECAO_IMPACTO)
+    return possible_spec_criteria(texto, *corpo) if corpo else []
 
 
 def check_mode(arquivo: Path, texto: str) -> list[Finding]:
@@ -527,6 +553,7 @@ def validate(arquivo: Path, texto: str | None = None, fechar: bool = False, raiz
         *check_type_sections(arquivo, texto, tipo),
         *check_subsections(arquivo, texto, tipo),
         *check_impact(arquivo, texto),
+        *check_unapplied_decisions(arquivo, texto),
         *check_progress(arquivo, texto),
         *check_branch(arquivo, texto),
         *check_read_first(arquivo, texto, raiz),
@@ -559,11 +586,14 @@ def main() -> None:
     findings = validate(arquivo, fechar=args.fechar)
     if not findings:
         print("Nenhum problema encontrado.")
-        return
+    else:
+        print("\n".join(str(f) for f in findings))
+        print(summary_line(findings))
 
-    print(f"{len(findings)} problema(s) encontrado(s) em {relative_to_root(arquivo)}:")
-    print("\n".join(str(f) for f in findings))
-    print(summary_line(findings))
+    aviso_spec = format_spec_warning(impact_spec_criteria(read_text(arquivo)))
+    if aviso_spec:
+        print()
+        print("\n".join(aviso_spec))
 
     if any(f.severidade == "erro" for f in findings):
         sys.exit(1)

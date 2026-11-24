@@ -10,7 +10,7 @@ O corpo é o mesmo nos dois tipos; muda o que o script preenche:
   critério): sem "cobre", o script recusa. Status `bloqueada` se alguma dependência não está `concluída` (task
   em tasks/done/ conta como concluída).
 
-Preenche título, datas, status, tipo, Modo e branch sugerida (task de spec: `<tipo>/juno/<assunto da
+Preenche título, datas, status, tipo, Modo e o nome da branch (task de spec: `<tipo>/juno/<assunto da
 spec>-NN`); o fechamento (seção 5) nasce só com os rótulos. O resto do modelo
 fica para quem escreve a task (depois, confira com validate_task.py).
 
@@ -77,7 +77,7 @@ def montar(titulo: str, data: date, status: str, tipo: str, branch: str, tipo_ta
     conteudo = _trocar(conteudo, r"^- \*\*Tipo:\*\*.*$", f"- **Tipo:** `{tipo}`", "'- **Tipo:**'")
     conteudo = _trocar(conteudo, r"^- \*\*Modo:\*\*.*$", f"- **Modo:** `{MODOS[modo]}`", "'- **Modo:**'")
     conteudo = _trocar(conteudo, r"^- \*\*Branch:\*\*.*$",
-                       f"- **Branch:** `{branch}` (sugerida; criada pelo Juno)", "'- **Branch:**'")
+                       f"- **Branch:** `{branch}`", "'- **Branch:**'")
 
     avulsa = tipo_task == "avulsa"
     conteudo = _trocar(conteudo, r"^- \*\*Spec:\*\*.*$",

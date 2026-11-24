@@ -27,7 +27,7 @@ import re
 import sys
 from pathlib import Path
 
-from utils import get_project_root, read_text, relative_to_root, use_global_lib
+from utils import get_project_root, read_text, use_global_lib
 
 use_global_lib()
 from md_checks import (  # noqa: E402  (precisa do sys.path ajustado acima)
@@ -45,12 +45,12 @@ from md_checks import (  # noqa: E402  (precisa do sys.path ajustado acima)
     check_updated_at,
     erro,
     format_preview,
+    open_items as lib_open_items,
     read_status,
     subsection_body,
     summary_line,
     task_list_items,
 )
-from md_utils import COMENTARIO_PATTERN, line_of, mask_code_and_comments  # noqa: E402
 
 
 # region Variáveis auxiliares
@@ -59,7 +59,6 @@ _OPCOES_STATUS = ("rascunho", "aprovada", "em andamento", "concluída", "cancela
 
 # A partir da aprovação, o "Em aberto" do spec.md precisa dizer "nada".
 STATUS_SEM_ABERTO = ("aprovada", "em andamento", "concluída")
-_NADA = re.compile(r"^\s*nada\.?\s*$", re.IGNORECASE)
 
 SECAO_DECISOES_SPEC = "3. Decisões de produto"
 SUBSECAO_EM_ABERTO = "Em aberto"
@@ -105,28 +104,9 @@ def _check_placeholders(arquivo: Path) -> list[Finding]:
 
 
 def open_items(texto: str) -> list[tuple[int, str]] | None:
-    """(linha, texto) de cada item de '### Em aberto' do spec.md; [] quando diz "nada"; None sem a subseção
-    (ausente é acusada pela checagem de subseções). Item = linha que abre um item de lista ou, sem lista,
-    cada parágrafo; escrito de qualquer jeito (sem marcador exato). Comentários não contam."""
-    corpo = subsection_body(texto, SECAO_DECISOES_SPEC, SUBSECAO_EM_ABERTO)
-    if corpo is None:
-        return None
-    inicio, fim = corpo
-    trecho = COMENTARIO_PATTERN.sub(lambda m: "".join("\n" if c == "\n" else " " for c in m.group(0)),
-                                    texto[inicio:fim])
-    if not trecho.strip() or _NADA.match(trecho):
-        return []
-    itens: list[tuple[int, str]] = []
-    posicao = 0
-    anterior_vazia = True
-    for linha in trecho.split("\n"):
-        conteudo = linha.strip()
-        abre = conteudo and (linha[:1] not in (" ", "\t") and (conteudo.startswith(("-", "*")) or anterior_vazia))
-        if abre:
-            itens.append((line_of(texto, inicio + posicao), conteudo.lstrip("-* ").strip()))
-        anterior_vazia = not conteudo
-        posicao += len(linha) + 1
-    return itens
+    """Itens de '### Em aberto' do spec.md (leitura da lib, a mesma da task): [] quando diz "nada"; None sem
+    a subseção. Fica aqui só para fixar a seção da spec (o create_design.py importa daqui)."""
+    return lib_open_items(texto, SECAO_DECISOES_SPEC, SUBSECAO_EM_ABERTO)
 
 
 def _check_status(arquivo: Path) -> list[Finding]:
@@ -267,7 +247,6 @@ def main():
         print("Nenhum problema encontrado.")
         return
 
-    print(f"{len(todos)} problema(s) encontrado(s) em {relative_to_root(pasta)}:")
     print("\n\n".join(blocos))
     print(summary_line(todos))
 

@@ -59,7 +59,7 @@ class AvulsaTest(unittest.TestCase):
         self.assertIn("- **Atualizado em:** 1999-01-02 — criação\n", texto)
         self.assertIn("- **Tipo:** `fix`\n", texto)
         self.assertIn("- **Modo:** `agente implementa, Juno revisa`\n", texto)
-        self.assertIn("- **Branch:** `fix/juno/restringir-perfil-do-cliente` (sugerida; criada pelo Juno)\n", texto)
+        self.assertIn("- **Branch:** `fix/juno/restringir-perfil-do-cliente`\n", texto)
         self.assertIn("- **Spec:** não se aplica\n", texto)
         self.assertIn("- **Bloqueada por:** não se aplica\n", texto)
         self.assertIn("## 1. Contexto e critérios", texto)
@@ -137,7 +137,7 @@ class DeSpecTest(unittest.TestCase):
         self.assertIn("- **Bloqueada por:** 01-nucleo.md\n", texto)
         self.assertIn("- **Spec:** [spec.md](../spec.md) · [design.md](../design.md)\n", texto)
         self.assertIn("### Critérios de aceite\n\nCA-04 a CA-08\n", texto)
-        self.assertIn("- **Branch:** `feat/juno/notificacoes-02` (sugerida; criada pelo Juno)\n", texto)
+        self.assertIn("- **Branch:** `feat/juno/notificacoes-02`\n", texto)
         self.assertIn("- **Modo:** `agente implementa, Juno revisa`\n", texto)
         self.assertIn("## 1. Contexto e critérios", texto)
         self.assertNotRegex(texto, r"(?m)^### CA-01")  # a de spec cita os critérios do spec.md
@@ -191,7 +191,7 @@ class DeSpecTest(unittest.TestCase):
         design.write_text(texto, encoding="utf-8")
         _, task = self.criar_task("01")
         self.assertIn("### Critérios de aceite\n\nCA-03, CA-09\n", task)
-        self.assertIn("- **Branch:** `feat/juno/notificacoes-01` (sugerida; criada pelo Juno)\n", task)
+        self.assertIn("- **Branch:** `feat/juno/notificacoes-01`\n", task)
 
     def test_item_sem_cobre_e_recusado(self):
         """Item da lista sem "cobre" é recusado com a linha do design, sem criar a task (não vira "nenhum")."""
