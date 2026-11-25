@@ -2,9 +2,8 @@
 
 - **Spec:** [spec.md](spec.md)
 - **Criado em:** 2026-11-19
-- **Atualizado em:** 2026-11-24 — notas para a 06 (texto do Iniciar na skill `task`) e a 08 (refactor da
-  governança e do `md_checks.py`); antes, ao abrir a 04: o item 04 passa a se chamar "Aprovar e encerrar a
-  spec" e cobre também o CA-39
+- **Atualizado em:** 2026-11-24 — ao abrir a 06: a antiga 06 vira a 06 (encerrar e cancelar a task) e a 10
+  (conferência dos commits e texto do merge), e a 08 passa a depender também da 10 (Q1 da abertura da 06)
 
 ## Referências técnicas
 
@@ -87,6 +86,11 @@
 - Nome da branch montado pelo "iniciar" a partir do padrão que o validador já cobra (`tipo/juno/assunto`):
   avulsa usa o nome do arquivo sem a data (como `fix/juno/restringir-perfil-cliente`); task de spec usa o
   assunto da spec mais o número da task — derivado do padrão vigente no `validate_task.py`, sem rodada própria.
+- A antiga 06 ("Encerrar, cancelar e texto do merge") vira duas: a 06 fica com o encerrar, o cancelar e o
+  fechar sem mudar o status (CA-14, 15, 16, 34, 37, 38); a 10, bloqueada pela 06, com a conferência dos commits
+  e o texto do merge (CA-17, 18); a 08 passa a depender também da 10 — descartada: uma task só (PR grande, com
+  três funções num script, a skill `task` com modo leve e o guia de commits; a conferência não bloqueia o
+  encerrar) — Q1 da abertura da 06, 2026-11-24.
 
 ### Em aberto
 
@@ -201,7 +205,8 @@ e o item da lista do design é riscado com data e motivo → mesmo aviso da últ
   - CA-29 → teste da comparação com base em arquivo, mais a rodada da oficina na task 09.
   - CA-05 a 13, 36 → `start_task.py`, um teste por recusa, conferindo que nada mudou (arquivo e branches).
   - CA-14 → texto da skill `task` (eval da task 06: o fechar não muda o status).
-  - CA-15 a 17, 34, 37, 38 → `finish_task.py`; CA-18 → formato no `commits.md`, conferido no eval da task 06.
+  - CA-15, 16, 34, 37, 38 → `finish_task.py` (task 06); CA-17 → conferência dos commits e CA-18 → formato no
+    `commits.md`, conferido no eval (task 10).
   - CA-19, 35, 39 → `approve_spec.py`, `finish_spec.py` (CA-39 também no modo leve da skill `spec`); CA-31 a 33 → `validate_spec.py` e `create_design.py`.
   - CA-21 → eval da oficina com o cenário do perfil do cliente, nas skills `task` e `spec`.
   - CA-22 → texto do `AGENTS.md` e busca por comandos de git nos scripts (só o "iniciar" muda o repositório).
@@ -217,12 +222,13 @@ e o item da lista do design é riscado com data e motivo → mesmo aviso da últ
 - [03 — Modelos e validador de spec e design](tasks/03-modelos-e-validador-de-spec-e-design.md) — bloqueada por: 01 — cobre: CA-31, CA-32, CA-33
 - [04 — Aprovar e encerrar a spec](tasks/04-aprovar-e-encerrar-a-spec.md) — bloqueada por: 03 — cobre: CA-19, CA-35, CA-39
 - [05 — Iniciar](tasks/05-iniciar.md) — bloqueada por: 02, 03, 09 — cobre: CA-05, CA-06, CA-07, CA-08, CA-09, CA-10, CA-11, CA-12, CA-13, CA-36
-- 06 — Encerrar, cancelar e texto do merge — bloqueada por: 04, 05 — cobre: CA-14, CA-15,
-  CA-16, CA-17, CA-18, CA-34, CA-37, CA-38
+- [06 — Encerrar e cancelar a task](tasks/06-encerrar-e-cancelar-a-task.md) — bloqueada por: 04, 05 — cobre:
+  CA-14, CA-15, CA-16, CA-34, CA-37, CA-38
 - 07 — Passo de leitura nas skills de task e spec — bloqueada por: 02, 03 —
   cobre: CA-21
-- 08 — Instruções gerais e guias — bloqueada por: 05, 06 — cobre: CA-22
+- 08 — Instruções gerais e guias — bloqueada por: 05, 06, 10 — cobre: CA-22
 - [09 — Base de achados da governança](tasks/09-base-de-achados.md) — bloqueada por: 01 — cobre: CA-28, CA-29
+- 10 — Conferência dos commits e texto do merge — bloqueada por: 06 — cobre: CA-17, CA-18
 
 Notas para abrir as tasks (do modelo de spec do doe-palmas, avaliado ao abrir a 03; cada task decide):
 
