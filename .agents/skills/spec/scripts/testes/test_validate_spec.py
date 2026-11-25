@@ -74,9 +74,9 @@ class ValidateSpecTest(unittest.TestCase):
         codigo, saida = validar("aprovada-com-aberto")
         self.assertEqual(codigo, 1)
         # Os dois itens, escritos de jeitos diferentes (com "bloqueia: design" e em parágrafo solto), sem marcador exato.
-        self.assertIn("spec.md:103 [ERRO] spec.aprovada-com-aberto em aberto: spec `aprovada` com item em aberto "
-                      "(resolva ou volte a `rascunho`): Notificar também por email? — bloqueia: design", saida)
         self.assertIn("spec.md:105 [ERRO] spec.aprovada-com-aberto em aberto: spec `aprovada` com item em aberto "
+                      "(resolva ou volte a `rascunho`): Notificar também por email? — bloqueia: design", saida)
+        self.assertIn("spec.md:107 [ERRO] spec.aprovada-com-aberto em aberto: spec `aprovada` com item em aberto "
                       "(resolva ou volte a `rascunho`): Prazo do TTL: 30 ou 90 dias?", saida)
         # Sem cabeçalho: os achados primeiro e, no fim, o resumo (como na governança).
         self.assertNotIn("problema(s) encontrado(s)", saida)
@@ -89,14 +89,14 @@ class ValidateSpecTest(unittest.TestCase):
         self.assertEqual(codigo, 1)
         self.assertIn("seção: obrigatória ausente: ## 2. Escopo", saida)
         self.assertIn("seção: vazia: ## 3. Decisões de produto", saida)
-        self.assertIn("spec.md:76 [ERRO] spec.subsecao-ausente subseção: obrigatória ausente: ### Em aberto "
+        self.assertIn("spec.md:78 [ERRO] spec.subsecao-ausente subseção: obrigatória ausente: ### Em aberto "
                       "(## 3. Decisões de produto)", saida)
 
     def test_criterios_com_problemas(self):
         """Critério sem Quando, repetido ou fora do formato é erro; lacuna na sequência é aviso."""
         codigo, saida = validar("criterios-com-problemas")
         self.assertEqual(codigo, 1)
-        self.assertIn("spec.md:107 [ERRO] md.criterio-sem-passo critério: CA-01 sem Quando", saida)
+        self.assertIn("spec.md:109 [ERRO] md.criterio-sem-passo critério: CA-01 sem Quando", saida)
         self.assertIn("critério: CA-02 repetido", saida)
         self.assertIn("critério: ID 'CA-5' fora do formato CA-NN", saida)
         self.assertIn("[AVISO] md.criterio-lacuna critério: sequência com lacuna (CA-03, CA-05)", saida)
@@ -136,8 +136,8 @@ class SubsecoesTest(_ComCopia):
         self.mudar("design.md", "### Em aberto\n\nnada\n", "### Em aberto\n\n")
         codigo, saida = self.validar()
         self.assertEqual(codigo, 1)
-        self.assertIn("spec.md:42 [ERRO] spec.subsecao-ausente subseção: obrigatória ausente: ### Fica fora (## 2. Escopo)", saida)
-        self.assertIn("spec.md:23 [ERRO] spec.subsecao-vazia subseção: vazia: ### Problema", saida)
+        self.assertIn("spec.md:44 [ERRO] spec.subsecao-ausente subseção: obrigatória ausente: ### Fica fora (## 2. Escopo)", saida)
+        self.assertIn("spec.md:25 [ERRO] spec.subsecao-vazia subseção: vazia: ### Problema", saida)
         self.assertIn("design.md:19 [ERRO] spec.subsecao-ausente subseção: obrigatória ausente: ### Fechadas "
                       "(## 1. Decisões técnicas)", saida)
         self.assertIn("design.md:30 [ERRO] spec.subsecao-vazia subseção: vazia: ### Em aberto", saida)
@@ -181,6 +181,72 @@ class EmAbertoTest(_ComCopia):
                    "| Contrato concluído (bloqueia: aprovação) | as duas partes | UC21 |")
         codigo, saida = self.validar()
         self.assertEqual(codigo, 0, saida)
+
+
+class MetadadosDosScriptsTest(_ComCopia):
+    """"Aprovada em" e "Encerrada em", gravados pelo approve_spec.py e pelo finish_spec.py (CA-35, CA-19)."""
+
+    def status(self, novo: str) -> None:
+        texto = (self.pasta / "spec.md").read_text(encoding="utf-8")
+        atual = texto.split("- **Status:** `", 1)[1].split("`", 1)[0]
+        self.mudar("spec.md", f"- **Status:** `{atual}`", f"- **Status:** `{novo}`")
+
+    def test_aprovada_em(self):
+        """Aprovada em sem data com status aprovada, em andamento ou concluída é erro; com rascunho, aceita rascunho ou a data (CA-35)"""
+        self.mudar("spec.md", "- **Encerrada em:** em aberto", "- **Encerrada em:** 2026-11-20, pelo Juno")
+        self.mudar("spec.md", "- **Aprovada em:** 2026-11-15, pelo Juno", "- **Aprovada em:** rascunho")
+        for status in ("aprovada", "em andamento", "concluída"):
+            with self.subTest(status=status):
+                self.status(status)
+                codigo, saida = self.validar()
+                self.assertEqual(codigo, 1)
+                self.assertIn(f"spec.md:10 [ERRO] spec.aprovada-sem-data aprovada em: spec `{status}` sem "
+                              "'AAAA-MM-DD, pelo Juno' (o status muda pelo approve_spec.py, não à mão)", saida)
+        self.mudar("spec.md", "- **Encerrada em:** 2026-11-20, pelo Juno", "- **Encerrada em:** em aberto")
+        for status, valor in (("rascunho", "rascunho"), ("rascunho", "2026-11-15, pelo Juno"),
+                              ("cancelada", "2026-11-15, pelo Juno"), ("substituída", "rascunho"),
+                              ("aprovada", "2026-11-15, pelo Juno")):
+            with self.subTest(status=status, valor=valor):
+                self.status(status)
+                atual = (self.pasta / "spec.md").read_text(encoding="utf-8").split("- **Aprovada em:** ", 1)[1].split("\n", 1)[0]
+                self.mudar("spec.md", f"- **Aprovada em:** {atual}", f"- **Aprovada em:** {valor}")
+                codigo, saida = self.validar()
+                self.assertEqual(codigo, 0, saida)
+        # Data sem "pelo Juno", data inválida e valor qualquer também são erro; sem a linha, erro de ausente.
+        for valor, codigo_regra in (("2026-11-15", "spec.aprovada-sem-data"), ("2026-13-40, pelo Juno", "spec.aprovada-sem-data")):
+            self.mudar("spec.md", "- **Aprovada em:** 2026-11-15, pelo Juno", f"- **Aprovada em:** {valor}")
+            self.assertIn(codigo_regra, self.validar()[1])
+            self.mudar("spec.md", f"- **Aprovada em:** {valor}", "- **Aprovada em:** 2026-11-15, pelo Juno")
+        self.status("rascunho")
+        self.mudar("spec.md", "- **Aprovada em:** 2026-11-15, pelo Juno", "- **Aprovada em:** não aprovada")
+        self.assertIn("spec.md:10 [ERRO] spec.aprovada-em-invalida aprovada em: valor 'não aprovada' inválido com a "
+                      "spec `rascunho` (use 'rascunho' ou 'AAAA-MM-DD, pelo Juno')", self.validar()[1])
+        self.mudar("spec.md", "- **Aprovada em:** não aprovada\n", "")
+        self.assertIn("spec.md:1 [ERRO] spec.aprovada-em-ausente aprovada em: linha **Aprovada em:** não encontrada "
+                      "(valor inicial: rascunho)", self.validar()[1])
+
+    def test_encerrada_em(self):
+        """Encerrada em sem data com status concluída é erro; nos outros status, aceita em aberto (CA-19)"""
+        self.status("concluída")
+        codigo, saida = self.validar()
+        self.assertEqual(codigo, 1)
+        self.assertIn("spec.md:11 [ERRO] spec.encerrada-sem-data encerrada em: spec `concluída` sem "
+                      "'AAAA-MM-DD, pelo Juno' (o status muda pelo finish_spec.py, não à mão)", saida)
+        self.mudar("spec.md", "- **Encerrada em:** em aberto", "- **Encerrada em:** 2026-11-20, pelo Juno")
+        codigo, saida = self.validar()
+        self.assertEqual(codigo, 0, saida)
+        # Nos outros status, a data é erro (o encerramento só sai do script, junto do `concluída`).
+        self.status("em andamento")
+        self.assertIn("spec.md:11 [ERRO] spec.encerrada-em-invalida encerrada em: valor '2026-11-20, pelo Juno' "
+                      "inválido com a spec `em andamento` (use 'em aberto')", self.validar()[1])
+        self.mudar("spec.md", "- **Encerrada em:** 2026-11-20, pelo Juno", "- **Encerrada em:** em aberto")
+        for status in ("rascunho", "aprovada", "em andamento", "cancelada", "substituída"):
+            with self.subTest(status=status):
+                self.status(status)
+                codigo, saida = self.validar()
+                self.assertEqual(codigo, 0, saida)
+        self.mudar("spec.md", "- **Encerrada em:** em aberto\n", "")
+        self.assertIn("spec.encerrada-em-ausente", self.validar()[1])
 
 
 class ListaDeTasksTest(_ComCopia):

@@ -11,8 +11,6 @@ Três grupos:
 import re
 from pathlib import Path
 
-from md_checks import read_status
-
 _PASTAS_FORA = ("testes", "files", "__pycache__")
 
 TASK_VIVA = ("aberta", "bloqueada", "em andamento")
@@ -101,14 +99,6 @@ def spec_dirs(raiz: Path) -> list[Path]:
 def done_spec_dirs(raiz: Path) -> list[Path]:
     pasta = docs_dir(raiz) / "specs" / "done"
     return sorted(p for p in pasta.iterdir() if p.is_dir()) if pasta.is_dir() else []
-
-
-def spec_tasks(pasta_spec: Path) -> list[Path]:
-    return _md_sem_fora(pasta_spec / "tasks")
-
-
-def status_of(arquivo: Path) -> str | None:
-    return read_status(arquivo.read_text(encoding="utf-8"))[0]
 
 
 _BRANCH = re.compile(r"^[ \t]*-?[ \t]*\*\*Branch:\*\*[ \t]*`([^`<>\n]+)`", re.MULTILINE)

@@ -13,10 +13,10 @@ from pathlib import Path
 
 from utils import fill_template, read_text, relative_to_root
 from validate_spec import open_items
+from md_checks import read_status  # o utils já pôs a lib global no sys.path
 
 
 _TITULO_SPEC = re.compile(r"^# Spec: (.+)$", re.MULTILINE)
-_STATUS_SPEC = re.compile(r"\*\*Status:\*\*\s*`([^`]+)`")
 
 
 def main() -> None:
@@ -41,9 +41,9 @@ def main() -> None:
         raise SystemExit(f"Primeira linha '# Spec: <título>' não encontrada em '{spec}'.")
 
     # A skill só começa o design com a spec aprovada; o script reforça a regra.
-    status = _STATUS_SPEC.search(conteudo_spec)
-    if status is None or status.group(1) != "aprovada":
-        atual = status.group(1) if status else "ausente"
+    status, _ = read_status(conteudo_spec)
+    if status != "aprovada":
+        atual = status or "ausente"
         raise SystemExit(f"A spec precisa estar 'aprovada' para criar o design (status atual: {atual}).")
 
     itens = open_items(conteudo_spec)

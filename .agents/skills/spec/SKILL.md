@@ -1,6 +1,6 @@
 ---
 name: spec
-description: Cria ou atualiza uma spec do projeto (pasta em .agents/docs/specs/ com spec.md e design.md). Entrevista o usuário em rodadas até não sobrar decisão em aberto, escreve o spec.md (o quê e por quê), pede aprovação e então escreve o design.md (como, com a lista de tasks). Use quando um trabalho cumprir algum critério de spec do AGENTS.md, quando o usuário pedir uma spec, ou quando uma spec existente precisar mudar por algo descoberto na implementação (task nova, task cancelada, critério alterado). Não use para mudança pequena e já entendida (é task), para escrever os arquivos de task, para escrever ADR nem para implementar código.
+description: Cria ou atualiza uma spec do projeto (pasta em .agents/docs/specs/ com spec.md e design.md). Entrevista o usuário em rodadas até não sobrar decisão em aberto, escreve o spec.md (o quê e por quê), aprova pelo script e então escreve o design.md (como, com a lista de tasks); no fim, revisa as pendências com o usuário e encerra a spec pelo script. Use quando um trabalho cumprir algum critério de spec do AGENTS.md, quando o usuário pedir uma spec, aprovar uma spec ou pedir para encerrá-la, ou quando uma spec existente precisar mudar por algo descoberto na implementação (task nova, task cancelada, critério alterado). Não use para mudança pequena e já entendida (é task), para escrever os arquivos de task, para escrever ADR nem para implementar código.
 license: MIT (ver ORIGEM.md)
 ---
 
@@ -49,7 +49,7 @@ ADR, **atualizar esse documento vira uma task da lista** no `design.md`.
    usuário mantém o pedido **depois** de ver essa recomendação. Um pedido pequeno tratado como spec gera
    burocracia sem decisão nenhuma para registrar.
 2. **Spec nova ou existente?** Se já existe uma pasta em `.agents/docs/specs/` sobre o assunto, vá para o
-   passo 6 (atualizar). Senão, siga a ordem abaixo.
+   passo 6 (atualizar), ou para o 7 se o pedido é encerrá-la. Senão, siga a ordem abaixo.
 
 **Exemplo — pedido pequeno.** Pedido: "Crie uma spec para restringir o `GET /clientes/:id` a prestador
 logado ou ao próprio cliente (mesma regra da reputação)". Resposta esperada, sem criar nada:
@@ -188,7 +188,7 @@ muitas respostas já estão na conversa ou no código):
    ```
    Ele confere comentários, `<placeholders>` e datas do modelo que sobraram, seções obrigatórias (título
    exato do modelo, não vazias), subseções `###` (ausente ou vazia é erro; "não se aplica" vale), status,
-   "Em aberto" igual a "nada" a partir de `aprovada`, critérios `CA-NN` (formato, repetidos,
+   "Aprovada em" e "Encerrada em" coerentes com ele, "Em aberto" igual a "nada" a partir de `aprovada`, critérios `CA-NN` (formato, repetidos,
    Dado/Quando/Então) e links relativos, e lista cada problema como `arquivo:linha [ERRO|AVISO] código
    mensagem`, com a linha `N erro(s), M aviso(s)` no fim. Corrija e rode de
    novo até sair sem erro (exit 0); o que for genuinamente desconhecido vai para "Em aberto", não para o
@@ -196,9 +196,17 @@ muitas respostas já estão na conversa ou no código):
    Aviso de lacuna na sequência dos `CA-NN` é aceitável só quando um critério foi removido numa
    atualização (os IDs não são renumerados). O validador não substitui a varredura do passo 4: ele confere
    a forma, não o sentido.
-6. **Peça aprovação** com a mensagem do formato abaixo e revise até o usuário aprovar. Só então mude o
-   status para `aprovada` — e só com "Em aberto" igual a "nada" e nenhuma contradição sem decisão — e rode
-   o validador de novo: com `aprovada`, ele acusa cada item que sobrar em "Em aberto".
+6. **Peça aprovação** com a mensagem do formato abaixo e revise até o usuário aprovar. Com o "aprovado"
+   na conversa, rode o script (não mude o status à mão: o validador acusa `aprovada` sem a data que só o
+   script grava):
+   ```bash
+   rtk python3 .agents/skills/spec/scripts/approve_spec.py .agents/docs/specs/<pasta>
+   ```
+   Ele confere o status `rascunho`, o validador sem erro e o "Em aberto" igual a "nada", e só então grava
+   `aprovada` (ou `em andamento`, numa reaprovação com task da lista já iniciada), o "Aprovada em" e o
+   "Atualizado em". **"Aprovar recusado":** nada mudou; mostre os problemas ao usuário como vieram. Item em
+   aberto ou contradição volta à rodada (passo 4); não apague o item nem edite o status para destravar, porque
+   a aprovação vale para o texto que ele leu.
 
 **Formato da mensagem ao entregar o `spec.md`:**
 
@@ -278,7 +286,8 @@ critérios mudam. Quando isso acontecer:
    - registre a decisão nova com alternativas e motivo, e a data da conversa;
    - preencha `Atualizado em: AAAA-MM-DD — motivo` em cada documento alterado;
    - status: mudança que já veio decidida **mantém** o status; mudança que precisou de entrevista volta a
-     spec para `rascunho` até o usuário aprovar de novo;
+     spec para `rascunho` (o "Aprovada em" fica com a data antiga) até o usuário aprovar de novo, pelo
+     `approve_spec.py` (passo 6 da fase 2);
    - na lista de tasks do `design.md`: task nova entra com número e "bloqueada por"; task cancelada fica na
      lista, riscada, com o motivo, para que o histórico não se perca (se o arquivo dela já existir, o status
      dele também vira `cancelada`). Exemplo:
@@ -291,3 +300,54 @@ critérios mudam. Quando isso acontecer:
    que agora estão erradas; tasks abertas que precisam ser revistas.
 5. Conferência (`validate_spec.py` na pasta), aprovação do usuário e texto do commit (ex.:
    `docs(<escopo>): Atualiza spec de <assunto>`).
+
+## 7. Encerrar a spec
+
+Quando o usuário pedir para encerrar a spec (em geral, ao fechar a última task). O script muda o status para
+`concluída` e move a pasta para `specs/done/`; o que fica com você é decidir, com o usuário, o que ainda está
+pendente fora das tasks, porque depois de encerrada ninguém mais lê a spec.
+
+1. **Consulte, sem mudar nada:**
+   ```bash
+   rtk python3 .agents/skills/spec/scripts/finish_spec.py .agents/docs/specs/<pasta> --listar
+   ```
+   Ele lista as tasks pendentes e as pendências versionadas: o "Ficou para depois" de cada task e as notas
+   da lista de tasks do `design.md`, com arquivo e linha. Task pendente? Pare e diga quais: a spec só encerra
+   com todas `concluída` ou `cancelada` (cancelar é pela seção 6).
+2. **Junte o resto:** o "Fica fora" do `spec.md` e, quando as instruções locais do usuário apontarem para
+   anotações dele (estacionamento, notas), os itens de lá sobre este assunto.
+3. **Proponha o destino de cada item numa rodada** (seção "Decisões em rodadas" do `AGENTS.md`). Critério:
+   o item **serve ao objetivo da spec e não contradiz o "Fica fora"**? Então cabe nela: task nova na lista
+   (seção 6). Senão: task avulsa (skill `task`), outra spec, ou descartar (já resolvido ou sem valor). Item já
+   resolvido no código: diga onde, e proponha descartar.
+4. **Aplique as decisões** (task nova pela seção 6, avulsa pela skill `task`) e só então, com o "pode
+   encerrar" do usuário, rode o encerramento na branch da task que fecha a última pendência (sem branch, o
+   commit vai para a `main`):
+   ```bash
+   rtk python3 .agents/skills/spec/scripts/finish_spec.py .agents/docs/specs/<pasta>
+   ```
+   Ele confere status `em andamento`, validador sem erro, nenhuma task pendente e o destino livre; grava
+   `concluída`, "Encerrada em" e "Atualizado em" e move a pasta. Não rode git: entregue o texto do commit
+   (ex.: `docs(<escopo>): Encerra spec de <assunto>`) com a pasta movida na lista de arquivos.
+   **"Encerrar spec recusado":** nada mudou; mostre os problemas ao usuário como vieram, sem editar status
+   nem tasks para destravar.
+
+**Exemplo — "encerra a spec" com pendências fora das tasks.** O `--listar` mostra todas as tasks
+concluídas, `tasks/02-rotas.md:212 [Ficou para depois] paginação das notificações` e
+`design.md:80 [nota do design] - **03:** conferir o índice do TTL`. O "Fica fora" diz "notificação por email".
+Resposta, sem rodar o encerramento:
+
+```
+As tasks estão todas concluídas. Antes de encerrar, duas pendências ficaram fora delas:
+
+❓ **Q1 — Paginação das notificações** (Ficou para depois da 02): serve ao objetivo (o usuário vê as
+notificações) e não está no "Fica fora".
+- A. Task nova 09 na lista — a spec só encerra depois dela.
+- B. Task avulsa depois — a spec encerra agora.
+
+➡️ **A**: cabe no objetivo; fora dela, some com a spec encerrada.
+
+❓ **Q2 — Índice do TTL** (nota da 03 no design): …
+
+Com as respostas, aplico e rodo o encerramento.
+```

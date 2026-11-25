@@ -45,6 +45,7 @@ from md_checks import (  # noqa: E402
     open_items,
     read_metadata,
     read_status,
+    refusal_lines,
     set_metadata,
     set_updated_at,
 )
@@ -157,8 +158,7 @@ def start(arquivo: Path, raiz: Path, hoje: date | None = None,
 
     problemas = _check_task(arquivo, texto, raiz)
     if problemas:
-        return 1, [f"Iniciar recusado: a task {nome} tem {len(problemas)} problema(s); nada foi mudado.",
-                   *(f"- {p}" for p in problemas)]
+        return 1, refusal_lines("Iniciar", f"a task {nome}", problemas)
 
     branch = branch_name(arquivo, texto)
     if branch is None:
@@ -166,8 +166,7 @@ def start(arquivo: Path, raiz: Path, hoje: date | None = None,
 
     problemas = _check_repository(raiz, branch)
     if problemas:
-        return 1, [f"Iniciar recusado: o repositório tem {len(problemas)} problema(s); nada foi mudado.",
-                   *(f"- {p}" for p in problemas)]
+        return 1, refusal_lines("Iniciar", "o repositório", problemas)
 
     ok, mensagem = git_fluxo.pull_ff_only(raiz)
     if not ok:
