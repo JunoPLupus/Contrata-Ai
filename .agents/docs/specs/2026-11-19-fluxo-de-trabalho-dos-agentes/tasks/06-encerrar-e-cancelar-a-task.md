@@ -2,7 +2,8 @@
 
 - **Status:** `aberta`
 - **Criado em:** 2026-11-24
-- **Atualizado em:** 2026-11-24 — criação
+- **Atualizado em:** 2026-11-24 — encerrar confere a branch ativa (Q8) e a skill manda conferir a branch ao
+  retomar a task (Q9); a linha da skill `task` na tabela do `AGENTS.md` cobre todos os modos (Q10)
 - **Tipo:** `feat`
 - **Alcance:** `documentação`
 - **Modo:** `agente implementa, Juno revisa`
@@ -60,11 +61,12 @@ CA-14, CA-15, CA-16, CA-34, CA-37, CA-38
 - marcar uma pendência já resolvida para o `--listar` da spec não mostrá-la (2B da 04): task 07 (Q2 desta
   abertura);
 - qualquer comando de git que mude o repositório: o script só muda arquivos (status, Andamento, lugar da task,
-  lista do design); quem commita é o Juno, e a exceção da regra de Git continua só no `start_task.py` (CA-22);
+  lista do design) e só lê a branch ativa (Q8); quem commita é o Juno, e a exceção da regra de Git continua só no `start_task.py` (CA-22);
 - o encerramento da spec em si (o `finish_spec.py` e a seção 7 da skill `spec`, da 04): o script só avisa que
   ele pode rodar;
 - cancelar um item da lista do design que ainda não tem arquivo (continua pela seção 6 da skill `spec`);
-- o `AGENTS.md`, o `.agents/README.md` e os guias (task 08); a passada geral para enxugar a skill `task` (07);
+- o resto do `AGENTS.md` (só a linha da skill `task` na tabela muda, Q10), o `.agents/README.md` e os guias
+  (task 08); a passada geral para enxugar a skill `task` (07);
 - o eval completo da oficina na skill `task` (fica para a passada da 07; aqui, o modo leve e o ajuste do eval 7);
 - o exemplo de item riscado da seção 6 da skill `spec`, que passa a divergir do formato da Q5: ajuste para a 07.
 
@@ -110,8 +112,8 @@ Desta abertura (leitura do código, sem rodada própria):
   `start_task.py` e o `finish_spec.py` (Q7 da 05 e da 04).
 - Encerrar confere: status `em andamento`; `validate(…, fechar=True)` do `validate_task.py` sem erro; base do
   Andamento presente (Q3) e `compare` da governança sem erro novo (a governança roda como no `start_task.py`,
-  pelo `run` importado); avulsa: destino em `tasks/done/` ainda inexistente — derivado do CA-15 e do
-  `finish_spec.py`.
+  pelo `run` importado); branch ativa igual ao campo Branch (Q8); avulsa: destino em `tasks/done/` ainda
+  inexistente — derivado do CA-15 e do `finish_spec.py`.
 - Cancelar confere: status `aberta`, `bloqueada` ou `em andamento`; motivo não vazio; avulsa: destino livre; de
   spec: o item da task na lista do design existe. Sem validador nem governança (não há implementação a
   conferir) — derivado do CA-34 e do CA-38.
@@ -141,6 +143,21 @@ Desta abertura (segunda rodada, 2026-11-24):
   acompanhando; o eval completo da oficina continua na 07 — descartada: deixar para a 07 (o eval descreveria o
   comportamento antigo até lá) — Q7.
 
+Desta abertura (item do estacionamento do Juno "Ao abrir a 06", achado depois da aprovação, 2026-11-24):
+
+- O encerrar recusa quando a branch ativa (`current_branch` do `git_fluxo.py`, só leitura) é diferente do campo
+  Branch da task: "branch ativa X; a task é da Y" — descartada: deixar no estacionamento, com a conferência
+  manual no Fechar (é a checagem objetiva que pega o encerrar na branch errada) — Q8. O cancelar não confere
+  (task de spec cancelada sem branch é commitada na `main`, CA-38).
+- A skill `task` ganha uma linha: ao retomar uma task `em andamento`, conferir a branch antes de implementar —
+  descartadas: nada no texto (o script só pega no fim, quando corrigir custa mais); uma linha no `AGENTS.md`
+  (fica sempre no contexto) — Q9.
+- A linha da skill `task` na tabela "Skills" do `AGENTS.md` passa a "Abrir, iniciar, retomar, atualizar, fechar,
+  encerrar ou cancelar uma task (avulsa ou de spec)": hoje ela só cita abrir, atualizar e fechar, e o agente que
+  retoma uma task ou recebe o "aprovado" do fechamento pode não ler a skill — descartada: deixar para a 08 (até lá,
+  o modo Encerrar e a Q9 dependeriam de o agente abrir a skill por conta própria) — Q10, pergunta do Juno; segue
+  a Q6 da 05 (a 08 continua dona do resto do `AGENTS.md`).
+
 ### Em aberto
 
 nada
@@ -153,7 +170,7 @@ nada
    entregues"; função que risca o item NN da lista "## 6. Tasks" do design (pelas linhas do `TaskItem`), com a
    data e o motivo (Q5).
 2. **`finish_task.py caminho-da-task`** (encerrar): bloco único (status, validador com o fechamento, base presente e sem erro
-   novo, destino livre na avulsa) → status, "Atualizado em", entrada no Andamento → avulsa: caminho reescrito nos
+   novo, branch ativa igual à da task, destino livre na avulsa) → status, "Atualizado em", entrada no Andamento → avulsa: caminho reescrito nos
    "Commits entregues" e arquivo movido para `tasks/done/` (criada se faltar) → task de spec: aviso de última
    pendência. Saída: o que mudou, o caminho novo e os antigos da governança, ou "Encerrar recusado".
 3. **`finish_task.py caminho-da-task --cancelar "motivo"`**: bloco único (status, motivo, destino ou item da lista) →
@@ -171,7 +188,9 @@ nada
    do Fechar troca a mudança de status à mão pelo modo Encerrar; com o aviso de última pendência, o agente
    oferece o encerramento da spec (seção 7 da skill `spec`); a tabela "Qual modo?" ganha as linhas novas; nota
    da 06 no design: no Iniciar, a abertura precisa estar commitada e com push feitos pelo Juno antes, e o agente
-   roda o script só quando o Juno pedir; no Abrir, "não inicie". No `ORIGEM.md`, as duas citações (linhas 35 e 43)
+   roda o script só quando o Juno pedir; no Abrir, "não inicie"; ao retomar uma task `em andamento`, conferir a
+   branch antes de implementar (Q9). No `AGENTS.md`, só a linha da skill `task` na tabela (Q10), conferida
+   pela skill `governanca`. No `ORIGEM.md`, as duas citações (linhas 35 e 43)
    dizem que o encerramento foi planejado como skill própria e virou o modo Encerrar desta skill (o da spec, a
    seção 7 da skill `spec`), sem a forma "skill `encerramento`" que a governança lê como skill citada: o
    histórico continua contado, e os quatro avisos `governanca.skill-pendente` (dois na `SKILL.md`, dois no
@@ -197,13 +216,16 @@ nada
 - `.agents/docs/templates/task.md` — comentário do fechamento
 - `.agents/docs/guides/testing.md` — seção 3 (comandos dos scripts) e 5.2 (mutação manual)
 - `.agents/skills/oficina-de-skills/SKILL.md` — modo leve
+- `.agents/skills/governanca/SKILL.md` — conferir o conjunto antes de entregar mudança no `AGENTS.md` (Q10)
+- `.agents/scripts/lib/git_fluxo.py` — `current_branch` (Q8)
 
 ### Arquivos previstos
 
 - criados: `.agents/skills/task/scripts/finish_task.py`, `.agents/skills/task/scripts/testes/test_finish_task.py`;
 - alterados: `.agents/scripts/lib/md_checks.py` e `.agents/scripts/lib/testes/test_lib.py` (base do Andamento,
   caminho nos "Commits entregues", item riscado); `.agents/skills/task/SKILL.md`; `.agents/skills/task/ORIGEM.md`;
-  `.agents/docs/templates/task.md` (comentário do fechamento); esta task;
+  `.agents/docs/templates/task.md` (comentário do fechamento); `AGENTS.md` (linha da skill `task`, Q10); esta
+  task;
 - pela Q7: `.agents/skills/task/evals/evals.json`, `.agents/skills/task/evals/checks.py` e
   `.agents/skills/task/evals/test_checks.py` (eval 7);
 - o `design.md` desta spec só muda na abertura (link da 06, a 10 nova e a dependência da 08); o ambiente do modo
@@ -213,8 +235,8 @@ nada
 
 - o comportamento do `start_task.py`, do `create_task.py`, do `validate_task.py`, do `finish_spec.py` e da
   governança (o `finish_task.py` importa deles, como o `start_task.py` já faz);
-- o `git_fluxo.py` (o script não roda git);
-- a skill `spec`, o `AGENTS.md`, o `.agents/README.md` e os guias (07, 08 e 10);
+- o `git_fluxo.py` (o script só importa o `current_branch`, que já existe);
+- a skill `spec`, o resto do `AGENTS.md` (Q10), o `.agents/README.md` e os guias (07, 08 e 10);
 - as tasks concluídas e as tasks em `done/`; `api/` e `web/`.
 
 Precisou alterar um arquivo fora dos previstos, uma dependência, um schema ou um contrato da API?
@@ -232,7 +254,7 @@ Pare e avise antes: isso é mudança de escopo e precisa ser aprovada (e registr
   `test_checks.py` mudam (Q7); os testes do
   `test_lib.py`, do `test_start_task.py` e do `test_finish_spec.py` não mudam (procurado: nenhum monta o
   comentário do fechamento do modelo nem a skill `encerramento`)
-- **Documentação:** sim — skill `task` (Encerrar, cancelar, Fechar sem status, notas do Iniciar e do Abrir, sem a
+- **Documentação:** sim — linha da skill `task` na tabela do `AGENTS.md` (Q10); skill `task` (Encerrar, cancelar, Fechar sem status, notas do Iniciar e do Abrir, sem a
   skill `encerramento`), `ORIGEM.md` e o comentário do modelo de task; o design já ganhou a divisão na abertura
 
 Teste que quebrar e não estiver no eixo de testes é regressão até prova em contrário.
@@ -249,6 +271,7 @@ Andamento. Assim, o que já estava quebrado não se confunde com o que a task qu
 | CA-15 | `test_finish_task.py` — "fechamento com erro do validador é recusado com os erros, sem mudar nada (CA-15)" |
 | CA-15 | `test_finish_task.py` — "erro novo da governança em relação à base recusa só com os novos, sem mudar nada (CA-15)" |
 | CA-15 | `test_finish_task.py` — "task sem base de achados no Andamento é recusada; base 'nenhum' vale (CA-15)" |
+| CA-15 | `test_finish_task.py` — "branch ativa diferente da branch da task é recusada, sem mudar nada (CA-15)" |
 | CA-15 | `test_finish_task.py` — "problemas do bloco aparecem juntos numa execução só (CA-15)" |
 | CA-16 | `test_finish_task.py` — "avulsa encerrada fica concluída, com Atualizado em e Andamento, vai para tasks/done e tem o caminho reescrito nos Commits entregues (CA-16)" |
 | CA-16 | `test_finish_task.py` — "task de spec encerrada fica concluída e continua na pasta da spec (CA-16)" |
@@ -273,7 +296,7 @@ Comandos (a partir da raiz):
   .agents/skills/governanca/scripts/governanca.py --comparar .agents/skills/governanca-workspace/base-06.txt`:
   sem erro novo (os quatro avisos `governanca.skill-pendente` da skill `encerramento` devem sair como corrigidos)
 - dentro de `.agents/skills/oficina-de-skills/`: `rtk python3 scripts/quick_validate.py ../task`
-- **Mutação manual** (guia de testes, seção 5.2): tirar cada recusa do encerrar (status, validador, base
+- **Mutação manual** (guia de testes, seção 5.2): tirar cada recusa do encerrar (status, branch ativa, validador, base
   ausente, erro novo, destino existente) e do cancelar (status, motivo vazio, destino, item da lista); parar no
   primeiro problema do bloco; mudar o arquivo antes das checagens; tratar erro antigo como novo; tratar "nenhum"
   como base ausente; mover a avulsa sem mudar o status (ou o contrário); mover a task de spec; não reescrever o
