@@ -15,14 +15,11 @@ from coleta import (
     has_branch,
     loose_tasks,
     spec_dirs,
-    spec_tasks,
-    status_of,
 )
-from md_checks import Finding, erro
+from md_checks import TASK_FECHADA, Finding, erro, spec_tasks, status_of
 from projeto import read_text
 from skills import load_script
 
-_TASK_FECHADA = ("concluída", "cancelada")
 _SPEC_FECHADA = ("concluída", "cancelada", "substituída")
 
 
@@ -52,12 +49,12 @@ def check_place_status(raiz: Path) -> list[Finding]:
     findings: list[Finding] = []
     for task in done_tasks(raiz):
         status = status_of(task)
-        if status not in _TASK_FECHADA:
+        if status not in TASK_FECHADA:
             findings.append(erro(task, 1, "governanca.lugar-task-em-done", f"lugar: task em done/ com status {_status_txt(status)} "
                                           f"(em done/ só `concluída` ou `cancelada`)"))
     for task in loose_tasks(raiz):
         status = status_of(task)
-        if status in _TASK_FECHADA:
+        if status in TASK_FECHADA:
             findings.append(erro(task, 1, "governanca.lugar-avulsa-fechada", f"lugar: task avulsa `{status}` fora de done/ "
                                           f"(mova para .agents/docs/tasks/done/)"))
     for pasta in done_spec_dirs(raiz):

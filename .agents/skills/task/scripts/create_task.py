@@ -29,7 +29,7 @@ from datetime import date
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "scripts" / "lib"))
-from md_checks import read_status, section_body, task_list_items  # noqa: E402  (precisa do sys.path ajustado acima)
+from md_checks import section_body, spec_task_status, task_list_items  # noqa: E402  (precisa do sys.path ajustado acima)
 from projeto import fill_template, get_project_root, read_text, relative_to_root, slugify  # noqa: E402
 
 TIPOS_COMMIT = ("feat", "fix", "refactor", "test", "docs", "chore")
@@ -116,19 +116,6 @@ def ler_lista(design: Path) -> dict[str, dict]:
         for item in task_list_items(texto)
     }
 
-
-def status_da_task(pasta_tasks: Path, arquivo: str | None) -> str:
-    """Status atual de uma task da spec: lido do arquivo; em done/ é concluída; sem arquivo, 'não criada'."""
-    if arquivo is None:
-        return "não criada"
-    if (pasta_tasks / "done" / arquivo).exists():
-        return "concluída"
-    caminho = pasta_tasks / arquivo
-    if not caminho.exists():
-        return "não criada"
-    status, _ = read_status(read_text(caminho))
-    return status or "sem status"
-
 # endregion
 
 
@@ -180,7 +167,7 @@ def criar_de_spec(args: argparse.Namespace) -> None:
             raise SystemExit(f"A task {numero} depende da {dep}, que não está na lista do design.md.")
         nome = lista[dep]["arquivo"]
         nomes.append(nome or dep)
-        status = status_da_task(pasta_tasks, nome)
+        status = spec_task_status(pasta_tasks, nome)
         if status != "concluída":
             pendentes.append(f"{nome or dep} ({status})")
 

@@ -480,6 +480,45 @@ def task_list_items(texto: str) -> list[TaskItem]:
         ))
     return itens
 
+# region Status das tasks (de spec e avulsas) e rótulos do fechamento
+
+# Task fechada: não conta mais como pendência (em done/ só ficam estas).
+TASK_FECHADA = ("concluída", "cancelada")
+
+
+def status_of(arquivo: Path) -> str | None:
+    """Valor da linha **Status:** do arquivo (task ou spec); None sem a linha."""
+    return read_status(arquivo.read_text(encoding="utf-8"))[0]
+
+
+def spec_tasks(pasta_spec: Path) -> list[Path]:
+    """Arquivos .md de <pasta da spec>/tasks/, em ordem (sem subpastas como done/)."""
+    pasta = pasta_spec / "tasks"
+    return sorted(p for p in pasta.glob("*.md") if p.is_file()) if pasta.is_dir() else []
+
+
+def spec_task_status(pasta_tasks: Path, arquivo: str | None) -> str:
+    """Status atual de uma task da spec: lido do arquivo; em done/ é concluída; sem arquivo, 'não criada'."""
+    if arquivo is None:
+        return "não criada"
+    if (pasta_tasks / "done" / arquivo).exists():
+        return "concluída"
+    caminho = pasta_tasks / arquivo
+    if not caminho.exists():
+        return "não criada"
+    return status_of(caminho) or "sem status"
+
+
+def closing_labels(texto: str, secao: str) -> dict[str, tuple[int, str]]:
+    """Rótulo do fechamento (a seção `secao`) → (linha, valor). O valor inclui as linhas seguintes até o
+    próximo rótulo; sem a seção, {}."""
+    corpo = section_body(texto, secao)
+    if corpo is None:
+        return {}
+    conteudo, inicio = corpo
+    return labels(texto, inicio, inicio + len(conteudo))
+
+# endregion
 # endregion
 
 # region Resumo da saída
@@ -488,6 +527,13 @@ def summary_line(findings: list[Finding]) -> str:
     """Última linha da saída dos validadores: 'N erro(s), M aviso(s)'."""
     erros = sum(1 for f in findings if f.severidade == "erro")
     return f"{erros} erro(s), {len(findings) - erros} aviso(s)"
+
+
+def refusal_lines(acao: str, sujeito: str, problemas: list[str]) -> list[str]:
+    """Saída da recusa dos scripts do fluxo: '<Ação> recusado: <sujeito> tem N problema(s); nada foi mudado.' e
+    um '- problema' por linha (ex.: acao='Iniciar', sujeito='a task x.md')."""
+    return [f"{acao} recusado: {sujeito} tem {len(problemas)} problema(s); nada foi mudado.",
+            *(f"- {p}" for p in problemas)]
 
 # endregion
 

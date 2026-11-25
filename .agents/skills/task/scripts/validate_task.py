@@ -64,10 +64,10 @@ from md_checks import (  # noqa: E402  (precisa do sys.path ajustado acima)
     check_sections,
     check_status,
     check_updated_at,
+    closing_labels,
     erro,
     find_paths,
     format_spec_warning,
-    labels,
     open_items,
     possible_spec_criteria,
     read_status,
@@ -201,14 +201,6 @@ def criteria_table(texto: str) -> dict[int, list[tuple[int, bool]]]:
 
 
 
-
-def closing_labels(texto: str) -> dict[str, tuple[int, str]]:
-    """Rótulo da seção 6 → (linha, valor). O valor inclui as linhas seguintes até o próximo rótulo."""
-    secao = section_body(texto, _SECAO_FECHAMENTO)
-    if secao is None:
-        return {}
-    corpo, inicio = secao
-    return labels(texto, inicio, inicio + len(corpo))
 
 # endregion
 
@@ -502,7 +494,7 @@ def check_closing(arquivo: Path, texto: str, cas: set[int]) -> list[Finding]:
         findings.append(erro(arquivo, linha_status, "task.fechamento-status",
                              f"fechamento: status '{status}' ao fechar; use `concluída` ou `em andamento`"))
 
-    rotulos = closing_labels(texto)
+    rotulos = closing_labels(texto, _SECAO_FECHAMENTO)
     checagens = rotulos.get("Checagens não feitas")
     if checagens is None or not checagens[1]:
         linha = checagens[0] if checagens else 1
