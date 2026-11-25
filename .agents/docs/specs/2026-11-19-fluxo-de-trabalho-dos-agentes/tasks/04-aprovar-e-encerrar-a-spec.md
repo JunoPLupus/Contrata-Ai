@@ -1,8 +1,8 @@
 # Task: Aprovar e encerrar a spec
 
-- **Status:** `aberta`
+- **Status:** `concluída`
 - **Criado em:** 2026-11-24
-- **Atualizado em:** 2026-11-24 — criação
+- **Atualizado em:** 2026-11-24 — aprovada na revisão do Juno
 - **Tipo:** `docs`
 - **Alcance:** `documentação`
 - **Modo:** `agente implementa, Juno revisa`
@@ -366,14 +366,196 @@ A task só está concluída com todos os comandos passando e a evidência regist
 
 ## 4. Andamento
 
+- 2026-11-24 — iniciar: aprovada pelo Juno; branch `docs/juno/fluxo-de-trabalho-dos-agentes-04` criada a partir da `main` no commit de base `7f5386e9`.
+- 2026-11-24 — base de achados da governança (5):
+
+```text
+.agents/skills/spec/SKILL.md [AVISO] governanca.skill-pendente pendência: skill 'adr' citada, ainda não existe
+.agents/skills/task/ORIGEM.md [AVISO] governanca.skill-pendente pendência: skill 'encerramento' citada, ainda não existe
+.agents/skills/task/ORIGEM.md [AVISO] governanca.skill-pendente pendência: skill 'encerramento' citada, ainda não existe
+.agents/skills/task/SKILL.md [AVISO] governanca.skill-pendente pendência: skill 'encerramento' citada, ainda não existe
+.agents/skills/task/SKILL.md [AVISO] governanca.skill-pendente pendência: skill 'encerramento' citada, ainda não existe
+```
+
+- 2026-11-24 — antes de começar (comandos da seção 3): lib 10 testes ok; spec 20 ok; task 96 ok; evals da task
+  42 ok; governança 74 ok; `validate_spec.py` desta spec sem problema; `quick_validate.py ../spec` válido.
+- 2026-11-24 — passo 0 feito: `spec_task_status`, `spec_tasks`, `status_of`, `TASK_FECHADA`,
+  `closing_labels(texto, secao)` e `refusal_lines` na lib (nomes em inglês, como o resto da lib); o
+  `create_task.py`, o `validate_task.py`, o `start_task.py`, a `coleta.py`/`registros.py` e o
+  `create_design.py` (`read_status`) importam de lá. Suítes da lib, spec, task, evals e governança passaram
+  sem mudar nenhum teste.
+- 2026-11-24 — passos 1 a 6 feitos. As fixtures de spec ganharam duas linhas de metadado logo abaixo do
+  "Atualizado em", e os números de linha do `spec.md` citados no `test_validate_spec.py` e no
+  `test_create_design.py` subiram 2 (mudança de propósito, prevista no Impacto). Mutação manual: 28/28
+  detectadas. Checagem manual em `spec-workspace/checagem-04/`: aprovar (recusa com item em aberto e caminho
+  feliz) e encerrar (recusa com a 06 `em andamento` e caminho feliz, pasta em `specs/done/` da cópia) ok;
+  nenhum arquivo do repositório mudou. `--comparar base-04.txt`: 0 erros novos, 0 avisos novos, 5 já
+  existiam. Modo leve preparado em `spec-workspace/modo-leve-04/` (`montar.sh`, `asercoes.json`, asserções
+  fixadas antes de rodar); aguardando o Juno dizer quando rodar.
+- 2026-11-24 — modo leve adiado para depois do reset do limite de tokens (18:00), por decisão do Juno (limite
+  da sessão em 79%). Sem o resultado, a task não é encerrada.
+- 2026-11-24 — modo leve rodado depois do reset: 3 cenários × (antiga, nova), um subagente por vez, cada um
+  num ambiente do `montar.sh` (cópia fechada com `git init`); `git status` limpo nos seis ambientes e o do
+  repositório igual ao de antes. Asserções do `asercoes.json`:
+  - cenário 1 (aprovar com item em aberto): antiga — A2, A3 ok (A1 não conta), mas planeja gravar o status e o
+    `Aprovada em` à mão depois da resposta; nova — A1, A2, A3 ok: roda o `approve_spec.py`, relata a recusa
+    com `spec.md:105` e, depois da resposta, roda o script de novo;
+  - cenário 2 (encerrar com a 06 `em andamento`): antiga — B2, B3 ok (B1 não conta), acha a 06 lendo as
+    tasks à mão, diz que a skill `encerramento` não existe e propõe mover a pasta à mão; nova — B1, B2, B3 ok:
+    roda o `--listar` e descreve o caminho depois da 06 (rodada das pendências, encerramento na branch da
+    última task);
+  - cenário 3 (encerrar com pendências): antiga — C3, C4 ok (C1 não conta), C2 falha: acha as duas
+    pendências, mas não cruza a paginação com o "Fica fora", propõe fazer o encerramento à mão e toma o
+    "Encerra" como a aprovação; nova — C1 a C4 ok: roda o `--listar` antes de tudo, diz que a paginação
+    contradiz o "Fica fora" (`spec.md:75`) e que o índice do TTL serve ao objetivo, propõe destino para cada
+    uma (e para os itens do "Fica fora") numa rodada e só roda o encerramento depois do "pode encerrar".
+
 ## 5. Fechamento
 
-- **O que foi feito:**
-- **Arquivos alterados:**
+- **O que foi feito:** passo 0 (o comum ao fluxo na lib, sem mudar comportamento nem teste); na lib, as
+  pendências da spec (`spec_task_states`, `pending_tasks`) e as versionadas (`versioned_leftovers`,
+  `task_list_notes`); `approve_spec.py` (rascunho → `aprovada` ou `em andamento` na reaprovação, com
+  `Aprovada em`) e `finish_spec.py` (em andamento → `concluída`, `Encerrada em`, pasta para `done/`; `--listar`
+  sem mudar nada); modelo `spec.md` com os dois metadados e o `validate_spec.py` cobrando-os; skill `spec`:
+  passo 6 da fase 2 pelo script, seção 7 "Encerrar a spec" com a revisão das pendências (CA-39).
+- **Arquivos alterados:** os previstos e mais nenhum: criados `approve_spec.py`, `finish_spec.py`,
+  `test_approve_spec.py`, `test_finish_spec.py`; alterados `md_checks.py`, `test_lib.py`, `create_task.py`,
+  `validate_task.py`, `start_task.py`, `coleta.py`, `registros.py`, `create_design.py`, `validate_spec.py`,
+  `test_validate_spec.py`, `test_create_design.py`, o modelo `spec.md`, as seis fixtures de spec, os dois
+  `spec-notificacoes-aprovada.md` dos evals, a `spec/SKILL.md`, o `spec.md` desta spec e esta task.
 - **Decisões tomadas no caminho:**
-- **Testes antes de começar:**
-- **Testes no fim:**
+  - nomes em inglês na lib (`spec_task_status`, `status_of`, `spec_tasks`, `TASK_FECHADA`, `closing_labels`,
+    `refusal_lines`), como o resto dela; `TaskItem` ganhou `linha_fim` para separar item de nota;
+  - nota do design = item de lista ou parágrafo, com as linhas recuadas juntadas (como o "Em aberto"), não
+    cada linha; a linha "Notas para abrir as tasks:" também aparece como nota;
+  - o "Ficou para depois" é lido das tasks de `tasks/` (as de spec não vão para `done/`);
+  - destino = `done/` ao lado da pasta da spec (na spec real, `specs/done/`): a cópia de teste no workspace
+    não move nada para dentro do repositório;
+  - as fixtures ganharam duas linhas de metadado: os números de linha do `spec.md` no
+    `test_validate_spec.py` e no `test_create_design.py` subiram 2 (previsto no Impacto); o passo 0 foi
+    provado antes dessa troca;
+  - o comentário do modelo `spec.md` diz que os dois metadados são gravados pelos scripts; a `description` e
+    o passo 0 da skill `spec` citam o aprovar e o encerrar;
+  - rodada do `--listar` com o Juno (2026-11-24): 1A — a frase de introdução do bloco de notas continua
+    aparecendo como nota (a triagem a descarta), descartadas: ignorar parágrafo terminado em ":" (frágil) e
+    subseção própria para as notas agora (fora dos previstos; vai para a 07); 2A — pendência que já diz o
+    destino ("→ task 03") continua listada, e a triagem final confere se ele aconteceu, descartada: marcar a
+    resolvida (riscada) para o script ignorar (convenção nova, fora do escopo; avaliar na 06 ou na 07).
+- **Testes antes de começar:** lib 10, spec 20, task 96, evals 42, governança 74, todos OK; `validate_spec`
+  desta spec sem problema; governança 0 erros, 5 avisos (base no Andamento).
+- **Testes no fim:** lib 12, spec 37, task 96, evals 42, governança 74, todos OK; `validate_spec` desta spec
+  sem problema; `quick_validate ../spec` válida; `--comparar base-04.txt`: 0 erros novos, 0 avisos novos, 5 já
+  existiam. Mutação manual 28/28 (todas as da seção 3). Checagem manual em `spec-workspace/checagem-04/` ok.
+  Modo leve (3 cenários, antiga × nova): a nova passa em todas as asserções (A1–A3, B1–B3, C1–C4); a antiga
+  falha na C2 e não tem os scripts (A1, B1, C1 não contam); nenhum arquivo do repositório mudou (Andamento).
 - **Evidência por critério:**
-- **Checagens não feitas:**
-- **Ficou para depois:**
-- **Commits entregues:**
+  - CA-35 → os seis testes do `test_approve_spec.py` da tabela e "Aprovada em sem data com status aprovada,
+    em andamento ou concluída é erro; com rascunho, aceita rascunho ou a data (CA-35)" passando;
+  - CA-19 → os cinco testes do `test_finish_spec.py` da tabela, "Encerrada em sem data com status concluída é
+    erro; nos outros status, aceita em aberto (CA-19)" e "pendências da spec: item riscado é cancelada, item
+    sem arquivo é pendente e task fora da lista conta (CA-19)" passando;
+  - CA-39 → "--listar mostra as tasks pendentes, o Ficou para depois e as notas do design, sem mudar nada
+    (CA-39)", "a recusa por task pendente e o caminho feliz também mostram as pendências versionadas (CA-39)" e
+    "pendências versionadas: Ficou para depois com nada ou nenhum fica de fora, e notas do design entram com a
+    linha (CA-39)" passando.
+- **Checagens não feitas:** nenhuma.
+- **Ficou para depois:** subseção própria para as notas da lista de tasks no modelo do design (`### Notas`),
+  lida pelo `--listar` → task 07 (1C da rodada do `--listar`); marcar pendência já resolvida para o script
+  não listá-la → avaliar na 06 ou na 07 (2B da mesma rodada); na abertura da 06, pôr a `task/SKILL.md` e o
+  `task/ORIGEM.md` nos Arquivos previstos, com o objetivo de tirar a citação da skill `encerramento` (o modo
+  encerrar da `task` substitui a skill planejada; no `ORIGEM.md`, nota de que o plano mudou, sem reescrever o
+  histórico), o que remove os quatro avisos `governanca.skill-pendente` da base (sugestão aceita pelo Juno,
+  2026-11-24).
+- **Commits entregues:** (o `refactor` vem antes do `feat`, fora da ordem recomendada, porque o `feat` usa
+  o que ele leva para a lib; o `md_checks.py` está nos dois e precisa do staging area da IDE: no primeiro,
+  só a região "Status das tasks (de spec e avulsas) e rótulos do fechamento" e a função `refusal_lines`, na
+  região "Resumo da saída"; o `__all__` vai inteiro no segundo, porque nenhum import depende dele)
+
+  ```text
+  refactor(agents): Leva para a lib o status das tasks e a recusa
+
+  - spec_task_status, spec_tasks, status_of, TASK_FECHADA,
+    closing_labels e refusal_lines saem do create_task, do
+    validate_task, do start_task e da governança e vão para o
+    md_checks, para o aprovar e o encerrar da spec usarem também;
+  - create_design lê o status pelo read_status da lib;
+  - nenhum comportamento nem teste muda.
+
+  Task: 2026-11-19-fluxo-de-trabalho-dos-agentes/tasks/04-aprovar-e-encerrar-a-spec.md
+  ```
+
+  Arquivos:
+  - `.agents/scripts/lib/md_checks.py` (só a região do passo 0 e a `refusal_lines`)
+  - `.agents/skills/task/scripts/create_task.py`
+  - `.agents/skills/task/scripts/validate_task.py`
+  - `.agents/skills/task/scripts/start_task.py`
+  - `.agents/skills/governanca/scripts/checagens/coleta.py`
+  - `.agents/skills/governanca/scripts/checagens/registros.py`
+  - `.agents/skills/spec/scripts/create_design.py`
+
+  ```text
+  feat(agents): Adiciona o aprovar e o encerrar da spec por script
+
+  - approve_spec.py aprova a spec em rascunho sem item em aberto nem
+    erro do validador e grava o "Aprovada em"; na reaprovação com task
+    já iniciada, volta para em andamento;
+  - finish_spec.py encerra a spec em andamento sem task pendente: grava
+    concluída e o "Encerrada em" e move a pasta para specs/done/; com
+    --listar, só mostra as tasks pendentes e as pendências versionadas
+    (Ficou para depois das tasks e notas do design), sem mudar nada;
+  - a recusa dos dois mostra todos os problemas juntos e não muda nada;
+  - o modelo de spec ganha "Aprovada em" e "Encerrada em", cobrados
+    pelo validate_spec conforme o status; fixtures, evals e o spec.md
+    desta spec ganham as duas linhas (o deste também traz o status em
+    andamento gravado pelo iniciar da task 04).
+
+  Task: 2026-11-19-fluxo-de-trabalho-dos-agentes/tasks/04-aprovar-e-encerrar-a-spec.md
+  ```
+
+  Arquivos:
+  - `.agents/scripts/lib/md_checks.py` (o resto: pendências da spec e `linha_fim`/`task_list_notes`)
+  - `.agents/scripts/lib/testes/test_lib.py`
+  - `.agents/skills/spec/scripts/approve_spec.py`
+  - `.agents/skills/spec/scripts/finish_spec.py`
+  - `.agents/skills/spec/scripts/validate_spec.py`
+  - `.agents/skills/spec/scripts/testes/test_approve_spec.py`
+  - `.agents/skills/spec/scripts/testes/test_finish_spec.py`
+  - `.agents/skills/spec/scripts/testes/test_validate_spec.py`
+  - `.agents/skills/spec/scripts/testes/test_create_design.py`
+  - `.agents/skills/spec/scripts/testes/aprovada-com-aberto/spec.md`
+  - `.agents/skills/spec/scripts/testes/com-design/spec.md`
+  - `.agents/skills/spec/scripts/testes/criterios-com-problemas/spec.md`
+  - `.agents/skills/spec/scripts/testes/metadados-com-problemas/spec.md`
+  - `.agents/skills/spec/scripts/testes/secoes-ausente-e-vazia/spec.md`
+  - `.agents/skills/spec/scripts/testes/so-spec/spec.md`
+  - `.agents/skills/spec/evals/files/spec-notificacoes-aprovada.md`
+  - `.agents/skills/task/evals/files/spec-notificacoes-aprovada.md`
+  - `.agents/docs/templates/spec.md`
+  - `.agents/docs/specs/2026-11-19-fluxo-de-trabalho-dos-agentes/spec.md`
+
+  ```text
+  docs(agents): Ensina a skill spec a aprovar e encerrar por script
+
+  - o passo 6 da fase 2 aprova pelo approve_spec.py e diz o que fazer
+    na recusa; a seção 6 cobre a reaprovação;
+  - a seção 7 nova encerra a spec: --listar, destino de cada pendência
+    proposto ao Juno numa rodada (serve ao objetivo e não contradiz o
+    Fica fora) e o finish_spec.py só depois do "pode encerrar".
+
+  Task: 2026-11-19-fluxo-de-trabalho-dos-agentes/tasks/04-aprovar-e-encerrar-a-spec.md
+  ```
+
+  Arquivos:
+  - `.agents/skills/spec/SKILL.md`
+
+  ```text
+  docs(agents): Fecha a task 04 da spec do fluxo de trabalho
+
+  - task 04 (aprovar e encerrar a spec) concluída, com o fechamento, o
+    modo leve e as pendências para a 06 e a 07 registrados.
+
+  Task: 2026-11-19-fluxo-de-trabalho-dos-agentes/tasks/04-aprovar-e-encerrar-a-spec.md
+  ```
+
+  Arquivos:
+  - `.agents/docs/specs/2026-11-19-fluxo-de-trabalho-dos-agentes/tasks/04-aprovar-e-encerrar-a-spec.md`
