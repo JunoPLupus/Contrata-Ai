@@ -427,6 +427,7 @@ class TaskItem:
     riscada: bool
     bloqueada_por: str | None
     cobre: str | None
+    linha_fim: int = 0        # última linha do item (a de abertura, se não quebra linha)
 
 
 def task_list_items(texto: str) -> list[TaskItem]:
@@ -477,8 +478,39 @@ def task_list_items(texto: str) -> list[TaskItem]:
             riscada=bool(riscada),
             bloqueada_por=bloqueio.group(1).strip() if bloqueio else None,
             cobre=cobre.group(1).strip().rstrip(".") if cobre else None,
+            linha_fim=linha + len(partes) - 1,
         ))
     return itens
+
+
+def task_list_notes(texto: str) -> list[tuple[int, str]]:
+    """(linha, texto) de cada nota da lista "## 6. Tasks": o que não é item nem continuação de item. Cada nota é
+    um item de lista ou um parágrafo, com as linhas recuadas logo abaixo juntadas (como no "Em aberto")."""
+    secao = section_body(texto, SECAO_TASKS)
+    if secao is None:
+        return []
+    corpo, inicio = secao
+    dos_itens = {n for item in task_list_items(texto) for n in range(item.linha, item.linha_fim + 1)}
+    mascarado = COMENTARIO_PATTERN.sub(lambda m: "".join("\n" if c == "\n" else " " for c in m.group(0)), corpo)
+    notas: list[tuple[int, list[str]]] = []
+    posicao = 0
+    anterior_vazia = True
+    for linha in mascarado.split("\n"):
+        numero = line_of(texto, inicio + posicao)
+        posicao += len(linha) + 1
+        conteudo = linha.strip()
+        if numero in dos_itens or not conteudo:
+            anterior_vazia = True
+            continue
+        abre = linha[:1] not in (" ", "\t") and (conteudo.startswith(("-", "*")) or anterior_vazia)
+        if abre or not notas:
+            notas.append((numero, [conteudo]))
+        else:
+            notas[-1][1].append(conteudo)
+        anterior_vazia = False
+    return [(numero, " ".join(partes)) for numero, partes in notas]
+
+# endregion
 
 # region Status das tasks (de spec e avulsas) e rótulos do fechamento
 
@@ -519,6 +551,89 @@ def closing_labels(texto: str, secao: str) -> dict[str, tuple[int, str]]:
     return labels(texto, inicio, inicio + len(conteudo))
 
 # endregion
+
+# region Pendências de uma spec (o encerramento da spec e o aviso de última pendência)
+
+SECAO_FECHAMENTO_TASK = "5. Fechamento"
+ROTULO_FICOU_PARA_DEPOIS = "Ficou para depois"
+# Task de spec que já saiu de `aberta` e `bloqueada` (na reaprovação, a spec volta a `em andamento`).
+TASK_INICIADA = ("em andamento", *TASK_FECHADA)
+_SEM_PENDENCIA = re.compile(r"^\s*(?:nada|nenhum|nenhuma|não se aplica)\.?\s*$", re.IGNORECASE)
+_NN_NO_NOME = re.compile(r"^(\d{2})-")
+
+
+@dataclass(frozen=True)
+class SpecTask:
+    """Uma task da spec: um item da lista do design.md ou um arquivo de tasks/ fora dela."""
+
+    numero: str
+    titulo: str
+    status: str               # do arquivo; `cancelada` no item riscado; "não criada" sem arquivo
+    na_lista: bool
+
+    @property
+    def motivo(self) -> str:
+        """Por que a task conta como pendente (ou o status, se não conta)."""
+        status = self.status if self.status in ("não criada", "sem status") else f"`{self.status}`"
+        return status if self.na_lista else f"fora da lista com status {status}"
+
+
+def spec_task_states(pasta_spec: Path) -> list[SpecTask]:
+    """Todas as tasks da spec: os itens da lista "## 6. Tasks" do design.md (item riscado é `cancelada`; o resto,
+    o status do arquivo) e depois os arquivos de tasks/ que a lista não cita."""
+    design = pasta_spec / "design.md"
+    itens = task_list_items(design.read_text(encoding="utf-8")) if design.is_file() else []
+    pasta_tasks = pasta_spec / "tasks"
+    tarefas: list[SpecTask] = []
+    citados: set[str] = set()
+    for item in itens:
+        arquivo = Path(item.alvo).name if item.alvo else None
+        if arquivo:
+            citados.add(arquivo)
+        status = "cancelada" if item.riscada else spec_task_status(pasta_tasks, arquivo)
+        tarefas.append(SpecTask(item.numero, item.titulo, status, na_lista=True))
+    for arquivo in spec_tasks(pasta_spec):
+        if arquivo.name in citados:
+            continue
+        numero = _NN_NO_NOME.match(arquivo.name)
+        tarefas.append(SpecTask(numero.group(1) if numero else "??", arquivo.name,
+                                status_of(arquivo) or "sem status", na_lista=False))
+    return tarefas
+
+
+def pending_tasks(pasta_spec: Path) -> list[SpecTask]:
+    """Tasks da spec que ainda não estão `concluída` nem `cancelada` (inclusive as não criadas e as fora da
+    lista). Vazia: a spec pode ser encerrada."""
+    return [t for t in spec_task_states(pasta_spec) if t.status not in TASK_FECHADA]
+
+
+@dataclass(frozen=True)
+class Leftover:
+    """Uma pendência versionada fora das tasks: um "Ficou para depois" ou uma nota da lista do design."""
+
+    arquivo: Path
+    linha: int
+    origem: str               # "Ficou para depois" ou "nota do design"
+    texto: str
+
+
+def versioned_leftovers(pasta_spec: Path) -> list[Leftover]:
+    """O "Ficou para depois" preenchido de cada task de tasks/ ("nada", "nenhum" e "não se aplica" não contam) e
+    as notas da lista "## 6. Tasks" do design.md, com o arquivo e a linha."""
+    sobras: list[Leftover] = []
+    for arquivo in spec_tasks(pasta_spec):
+        rotulo = closing_labels(arquivo.read_text(encoding="utf-8"), SECAO_FECHAMENTO_TASK).get(ROTULO_FICOU_PARA_DEPOIS)
+        if rotulo is None:
+            continue
+        linha, valor = rotulo
+        if valor and not _SEM_PENDENCIA.match(valor):
+            sobras.append(Leftover(arquivo, linha, ROTULO_FICOU_PARA_DEPOIS, " ".join(valor.split())))
+    design = pasta_spec / "design.md"
+    if design.is_file():
+        sobras += [Leftover(design, linha, "nota do design", nota)
+                   for linha, nota in task_list_notes(design.read_text(encoding="utf-8"))]
+    return sobras
+
 # endregion
 
 # region Resumo da saída
@@ -663,9 +778,11 @@ def check_links(arquivo: Path, texto: str, raiz: Path, ignorar: Callable[[str], 
 
 
 __all__ = [
-    "CA_ID_VALIDO", "CA_PASSO_LINHA", "CODIGO_VALIDO", "CRITERIOS_SPEC", "Finding", "add_progress_entry", "aviso",
-    "ca_numbers_cited", "ca_numbers_defined", "ca_titles", "check_acceptance_criteria", "check_ca_refs_exist",
-    "check_links", "check_paths_exist", "check_placeholders", "check_sections", "check_status", "check_updated_at",
-    "erro", "find_paths", "format_preview", "format_spec_warning", "open_items", "possible_spec_criteria",
-    "read_metadata", "read_status", "section_body", "section_titles", "set_metadata", "set_updated_at",
+    "CA_ID_VALIDO", "CA_PASSO_LINHA", "CODIGO_VALIDO", "CRITERIOS_SPEC", "Finding", "TASK_FECHADA",
+    "add_progress_entry", "aviso", "ca_numbers_cited", "ca_numbers_defined", "ca_titles", "check_acceptance_criteria",
+    "check_ca_refs_exist", "check_links", "check_paths_exist", "check_placeholders", "check_sections", "check_status",
+    "check_updated_at", "closing_labels", "erro", "find_paths", "format_preview", "format_spec_warning", "open_items",
+    "possible_spec_criteria", "read_metadata", "read_status", "refusal_lines", "section_body", "section_titles",
+    "set_metadata", "set_updated_at", "spec_task_status", "spec_tasks", "status_of", "Leftover", "SpecTask",
+    "TASK_INICIADA", "pending_tasks", "spec_task_states", "task_list_items", "task_list_notes", "versioned_leftovers",
 ]

@@ -9,6 +9,9 @@ Verifica:
       Objetivo, Entra, Fica fora, Fechadas e Em aberto; no design.md, Fechadas, Em aberto, ADR novo? e Impacto
 - [x] design.md: Impacto com os seis eixos da task, cada um "sim — o que muda" ou "não"
 - [x] Status válido; a partir de `aprovada`, "Em aberto" do spec.md igual a "nada" (cada item é acusado)
+- [x] "Aprovada em": com `aprovada`, `em andamento` ou `concluída`, a data com "pelo Juno"; nos outros status,
+      `rascunho` ou a data (CA-35)
+- [x] "Encerrada em": com `concluída`, a data com "pelo Juno"; nos outros status, `em aberto` (CA-19)
 - [x] design.md: cada item da lista de tasks com "bloqueada por" e "cobre" (lido inteiro, mesmo quebrando linha;
       item riscado, de task cancelada, fica de fora)
 - [x] "Atualizado em" com data e motivo
@@ -25,6 +28,7 @@ Uso: python validate_spec.py <pasta da spec>
 import argparse
 import re
 import sys
+from datetime import date
 from pathlib import Path
 
 from utils import get_project_root, read_text, use_global_lib
@@ -46,6 +50,7 @@ from md_checks import (  # noqa: E402  (precisa do sys.path ajustado acima)
     erro,
     format_preview,
     open_items as lib_open_items,
+    read_metadata,
     read_status,
     subsection_body,
     summary_line,
@@ -59,6 +64,15 @@ _OPCOES_STATUS = ("rascunho", "aprovada", "em andamento", "concluída", "cancela
 
 # A partir da aprovação, o "Em aberto" do spec.md precisa dizer "nada".
 STATUS_SEM_ABERTO = ("aprovada", "em andamento", "concluída")
+
+# Metadados gravados pelos scripts (approve_spec.py e finish_spec.py): o valor do modelo, até o script rodar, e
+# depois "AAAA-MM-DD, pelo Juno". A data é exigida a partir do status que o script grava.
+APROVADA_EM = "Aprovada em"
+ENCERRADA_EM = "Encerrada em"
+STATUS_COM_APROVACAO = STATUS_SEM_ABERTO
+APROVADA_EM_INICIAL = "rascunho"
+ENCERRADA_EM_INICIAL = "em aberto"
+_DATA_PELO_JUNO = re.compile(r"^(\d{4}-\d{2}-\d{2}), pelo Juno$")
 
 SECAO_DECISOES_SPEC = "3. Decisões de produto"
 SUBSECAO_EM_ABERTO = "Em aberto"
@@ -126,6 +140,48 @@ def _check_status(arquivo: Path) -> list[Finding]:
                      f"{format_preview(item)}")
             )
 
+    return findings
+
+
+def _dated_by_juno(valor: str) -> bool:
+    """"AAAA-MM-DD, pelo Juno" com data válida."""
+    data = _DATA_PELO_JUNO.match(valor)
+    if data is None:
+        return False
+    try:
+        date.fromisoformat(data.group(1))
+    except ValueError:
+        return False
+    return True
+
+
+def _check_script_metadata(arquivo: Path) -> list[Finding]:
+    """"Aprovada em" e "Encerrada em" presentes e coerentes com o status (CA-35, CA-19): a data só sai do script,
+    então status mudado à mão para `aprovada` (ou `concluída`) sem a data é erro."""
+    if arquivo.name != "spec.md":
+        return []
+    texto = read_text(arquivo)
+    status, _ = read_status(texto)
+    findings: list[Finding] = []
+    regras = (
+        (APROVADA_EM, "aprovada", status in STATUS_COM_APROVACAO, APROVADA_EM_INICIAL, "approve_spec.py"),
+        (ENCERRADA_EM, "encerrada", status == "concluída", ENCERRADA_EM_INICIAL, "finish_spec.py"),
+    )
+    for rotulo, regra, exige_data, inicial, script in regras:
+        valor = read_metadata(texto, rotulo)
+        linha = next((i for i, l in enumerate(texto.splitlines(), 1) if f"**{rotulo}:**" in l), 1)
+        if valor is None:
+            findings.append(erro(arquivo, 1, f"spec.{regra}-em-ausente",
+                                 f"{rotulo.lower()}: linha **{rotulo}:** não encontrada (valor inicial: {inicial})"))
+        elif exige_data and not _dated_by_juno(valor):
+            findings.append(erro(arquivo, linha, f"spec.{regra}-sem-data",
+                                 f"{rotulo.lower()}: spec `{status}` sem 'AAAA-MM-DD, pelo Juno' (o status muda pelo "
+                                 f"{script}, não à mão)"))
+        elif not exige_data and valor != inicial and not (regra == "aprovada" and _dated_by_juno(valor)):
+            aceitos = f"'{inicial}' ou 'AAAA-MM-DD, pelo Juno'" if regra == "aprovada" else f"'{inicial}'"
+            findings.append(erro(arquivo, linha, f"spec.{regra}-em-invalida",
+                                 f"{rotulo.lower()}: valor '{format_preview(valor, 40)}' inválido com a spec "
+                                 f"`{status}` (use {aceitos})"))
     return findings
 
 
@@ -197,6 +253,7 @@ def _check_links(arquivo: Path, raiz: Path) -> list[Finding]:
 _CHECKS = (
     _check_placeholders,
     _check_status,
+    _check_script_metadata,
     _check_updated_at,
     _check_sections,
     _check_subsections,

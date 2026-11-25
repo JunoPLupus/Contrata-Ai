@@ -7,12 +7,16 @@ O COMO vai no design.md da mesma pasta; as tasks, em tasks/NN-<assunto>.md.
 Nada de caminhos de arquivo, nomes de classe ou trechos de código aqui: isso envelhece rápido
 e pertence ao design.md.
 Toda subseção "###" é obrigatória e nunca é apagada: "não se aplica" é resposta válida.
+"Aprovada em" e "Encerrada em" ficam com o valor do modelo: quem grava a data (e muda o status) são os
+scripts approve_spec.py e finish_spec.py da skill spec, depois da aprovação do Juno.
 Apague estes comentários ao preencher.
 -->
 
 - **Status:** `rascunho` | `aprovada` | `em andamento` | `concluída` | `cancelada` | `substituída`
 - **Criado em:** AAAA-MM-DD
 - **Atualizado em:** AAAA-MM-DD — <motivo da última mudança>
+- **Aprovada em:** rascunho
+- **Encerrada em:** em aberto
 - **Requisitos relacionados:** <ex.: RF08, RF15 de `docs/requisitos-e-casos-de-uso.md`>
 - **Substitui / substituída por:** <caminho da outra spec, se houver>
 

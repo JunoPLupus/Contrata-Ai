@@ -1,9 +1,10 @@
 # Spec: Fluxo de trabalho dos agentes
 
-- **Status:** `aprovada`
+- **Status:** `em andamento`
 - **Criado em:** 2026-11-19
-- **Atualizado em:** 2026-11-24 — CA-39 (pendências revistas antes de encerrar a spec), decidido pelo Juno na
-  abertura da task 04; aprovada pelo Juno em 2026-11-19
+- **Atualizado em:** 2026-11-24 — em andamento: primeira task iniciada pelo fluxo novo (04-aprovar-e-encerrar-a-spec.md)
+- **Aprovada em:** 2026-11-19, pelo Juno
+- **Encerrada em:** em aberto
 - **Requisitos relacionados:** nenhum (a spec trata do fluxo de trabalho com agentes, não do produto ContrataAí)
 - **Substitui / substituída por:** nenhuma
 

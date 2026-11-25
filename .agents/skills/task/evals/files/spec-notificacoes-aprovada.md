@@ -6,6 +6,8 @@
 - **Status:** `aprovada`
 - **Criado em:** 2026-11-15
 - **Atualizado em:** 2026-11-15 — aprovação
+- **Aprovada em:** 2026-11-15, pelo Juno
+- **Encerrada em:** em aberto
 - **Requisitos relacionados:** RF14, RN06, UC10, UC11, UC12, UC14, UC17, UC18, UC19, UC20, UC21, UC23 de
   `docs/requisitos-e-casos-de-uso.md`
 - **Substitui / substituída por:** —

@@ -3,7 +3,9 @@
 Rodar a partir da raiz do projeto:  python3 -m unittest discover -s <esta pasta> -v
 """
 
+import shutil
 import sys
+import tempfile
 import unittest
 from datetime import date
 from pathlib import Path
@@ -14,6 +16,7 @@ from md_checks import (  # noqa: E402
     add_progress_entry,
     format_spec_warning,
     open_items,
+    pending_tasks,
     possible_spec_criteria,
     read_metadata,
     set_metadata,
@@ -21,6 +24,7 @@ from md_checks import (  # noqa: E402
     subsection_body,
     summary_line,
     task_list_items,
+    versioned_leftovers,
 )
 from md_utils import mask_code  # noqa: E402
 from projeto import get_project_root, relative_to_root  # noqa: E402
@@ -192,6 +196,80 @@ class RegraDosEixosTest(unittest.TestCase):
         self.assertIn("Juno", linhas[-1])
         self.assertEqual(format_spec_warning([]), [])
 
+
+DESIGN_SPEC = """# Design: X
+
+## 6. Tasks
+
+- [01 — Núcleo](tasks/01-nucleo.md) — bloqueada por: nenhuma — cobre: CA-01
+- [02 — Rotas](tasks/02-rotas.md) — bloqueada por: 01 — cobre: CA-02,
+  CA-03
+- ~~[03 — Antiga](tasks/03-antiga.md) — bloqueada por: 01 — cobre: CA-04~~ — cancelada em 2026-11-20: motivo
+- 04 — Ainda sem arquivo — bloqueada por: 01 — cobre: nenhum
+- [05 — Link sem arquivo](tasks/05-x.md) — bloqueada por: 01 — cobre: nenhum
+- [06 — Já em done](tasks/06-done.md) — bloqueada por: 01 — cobre: nenhum
+
+Notas para abrir as tasks:
+
+- **02:** nota que quebra
+  linha e continua.
+- **06:** outra nota.
+"""
+
+
+def _task_spec(status: str, ficou: str = "") -> str:
+    return (f"# Task: x\n\n- **Status:** `{status}`\n\n## 5. Fechamento\n\n- **Testes no fim:** ok\n"
+            f"- **Ficou para depois:** {ficou}\n- **Commits entregues:** x\n")
+
+
+class PendenciasDaSpecTest(unittest.TestCase):
+    """Pendências de uma pasta de spec: o que o finish_spec.py confere e o "encerrar" da 06 vai contar."""
+
+    def setUp(self):
+        self.pasta = Path(tempfile.mkdtemp()) / "2026-11-15-x"
+        self.addCleanup(shutil.rmtree, self.pasta.parent)
+        (self.pasta / "tasks" / "done").mkdir(parents=True)
+        (self.pasta / "design.md").write_text(DESIGN_SPEC, encoding="utf-8")
+        self.task("01-nucleo.md", "concluída")
+        self.task("02-rotas.md", "em andamento")
+        self.task("done/06-done.md", "concluída")
+
+    def task(self, nome: str, status: str, ficou: str = "") -> None:
+        (self.pasta / "tasks" / nome).write_text(_task_spec(status, ficou), encoding="utf-8")
+
+    def test_pendencias_da_spec(self):
+        """pendências da spec: item riscado é cancelada, item sem arquivo é pendente e task fora da lista conta (CA-19)"""
+        self.task("03-antiga.md", "aberta")  # riscada na lista: cancelada, seja qual for o arquivo
+        self.task("09-extra.md", "bloqueada")
+        self.task("10-extra-fechada.md", "cancelada")
+        pendentes = [(t.numero, t.titulo, t.motivo) for t in pending_tasks(self.pasta)]
+        self.assertEqual(pendentes, [
+            ("02", "Rotas", "`em andamento`"),
+            ("04", "Ainda sem arquivo", "não criada"),
+            ("05", "Link sem arquivo", "não criada"),
+            ("09", "09-extra.md", "fora da lista com status `bloqueada`"),
+        ])
+        # Tudo fechado: nenhuma pendência (a 06 está em done/, a 03 riscada, a fora da lista cancelada).
+        for nome in ("02-rotas.md", "05-x.md", "09-extra.md"):
+            self.task(nome, "concluída")
+        (self.pasta / "design.md").write_text(DESIGN_SPEC.replace("- 04 — Ainda sem arquivo", "- ~~04 — Ainda sem arquivo"),
+                                              encoding="utf-8")
+        self.assertEqual(pending_tasks(self.pasta), [])
+
+    def test_pendencias_versionadas(self):
+        """pendências versionadas: Ficou para depois com nada ou nenhum fica de fora, e notas do design entram com a linha (CA-39)"""
+        self.task("01-nucleo.md", "concluída", "o refactor da saída → task avulsa.")
+        self.task("02-rotas.md", "em andamento", "nada")
+        self.task("03-antiga.md", "cancelada", "Nenhum.")
+        self.task("05-x.md", "concluída", "não se aplica")
+        self.task("09-extra.md", "concluída", "")
+        sobras = [(s.arquivo.name, s.linha, s.origem, s.texto) for s in versioned_leftovers(self.pasta)]
+        self.assertEqual(sobras, [
+            ("01-nucleo.md", 8, "Ficou para depois", "o refactor da saída → task avulsa."),
+            ("design.md", 13, "nota do design", "Notas para abrir as tasks:"),
+            ("design.md", 15, "nota do design", "- **02:** nota que quebra linha e continua."),
+            ("design.md", 17, "nota do design", "- **06:** outra nota."),
+        ])
 
 
 class RelativeToRootTest(unittest.TestCase):

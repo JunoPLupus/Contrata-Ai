@@ -48,8 +48,8 @@ class CreateDesignTest(unittest.TestCase):
         r = self.criar()
         self.assertNotEqual(r.returncode, 0)
         self.assertIn("A spec tem item em aberto; resolva antes de criar o design:\n"
-                      "- spec.md:103 Notificar também por email?\n"
-                      "- spec.md:105 Prazo do TTL: 30 ou 90 dias?", r.stderr)
+                      "- spec.md:105 Notificar também por email?\n"
+                      "- spec.md:107 Prazo do TTL: 30 ou 90 dias?", r.stderr)
         self.assertFalse((self.pasta / "design.md").exists())
 
     def test_recusa_spec_nao_aprovada(self):
