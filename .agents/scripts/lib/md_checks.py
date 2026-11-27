@@ -636,6 +636,91 @@ def versioned_leftovers(pasta_spec: Path) -> list[Leftover]:
 
 # endregion
 
+# region Encerrar e cancelar a task (base do Andamento, "Commits entregues", item riscado no design)
+
+ENTRADA_BASE = "base de achados da governança"
+_ENTRADA_BASE = re.compile(rf"^- \d{{4}}-\d{{2}}-\d{{2}} — {re.escape(ENTRADA_BASE)}(?:: (nenhum)|( \(\d+\)):)[ \t]*$",
+                           re.MULTILINE)
+_BLOCO_TEXT = re.compile(r"\A\s*```text\n(.*?)^```", re.MULTILINE | re.DOTALL)
+
+
+def progress_base(texto: str, secao: str) -> str | None:
+    """Base de achados gravada pelo "iniciar" na seção `secao` (o Andamento): o conteúdo do bloco ```text logo
+    depois de "base de achados da governança (N):"; "" com "base de achados da governança: nenhum" (base vazia
+    válida); None sem a entrada (ou com o bloco faltando). Com mais de uma entrada, vale a última."""
+    corpo = section_body(texto, secao)
+    if corpo is None:
+        return None
+    conteudo, _ = corpo
+    entradas = list(_ENTRADA_BASE.finditer(conteudo))
+    if not entradas:
+        return None
+    ultima = entradas[-1]
+    if ultima.group(1):
+        return ""
+    bloco = _BLOCO_TEXT.match(conteudo[ultima.end():])
+    return bloco.group(1) if bloco else None
+
+
+ROTULO_COMMITS = "Commits entregues"
+_ITEM_ARQUIVO = re.compile(r"^([ \t]*[-*][ \t]+`?)([^`\s]+)(`?.*)$")
+
+
+def rewrite_commit_paths(texto: str, secao: str, antigo: str, novo: str) -> tuple[str, int]:
+    """Troca o caminho `antigo` por `novo` nos itens das listas "Arquivos:" do rótulo "Commits entregues" da
+    seção `secao` (o fechamento). Só o item que é exatamente o caminho (com ou sem crases) muda. Devolve o texto
+    e quantos itens mudaram; sem o rótulo, o texto como veio e 0."""
+    corpo = section_body(texto, secao)
+    if corpo is None:
+        return texto, 0
+    conteudo, inicio = corpo
+    rotulos = list(_ROTULO.finditer(mask_code_and_comments(conteudo)))
+    for i, rotulo in enumerate(rotulos):
+        if rotulo.group(1) != ROTULO_COMMITS:
+            continue
+        de = inicio + rotulo.start()
+        ate = inicio + (rotulos[i + 1].start() if i + 1 < len(rotulos) else len(conteudo))
+        linhas = texto[de:ate].split("\n")
+        trocas = 0
+        na_lista = False  # depois de "Arquivos:", até a primeira linha que não é item (vazia logo depois vale)
+        com_item = False
+        for n, linha in enumerate(linhas):
+            if linha.strip() == "Arquivos:":
+                na_lista, com_item = True, False
+                continue
+            item = _ITEM_ARQUIVO.match(linha) if na_lista else None
+            if item is None:
+                na_lista = na_lista and not com_item and not linha.strip()
+                continue
+            com_item = True
+            if item.group(2) == antigo:
+                linhas[n] = f"{item.group(1)}{novo}{item.group(3)}"
+                trocas += 1
+        return texto[:de] + "\n".join(linhas) + texto[ate:], trocas
+    return texto, 0
+
+
+_PREFIXO_ITEM = re.compile(r"^([ \t]*[-*][ \t]+(?:\[[ xX]\][ \t]*)?)(.*)$")
+
+
+def strike_task_item(texto: str, numero: str, dia: date, motivo: str) -> str:
+    """Risca o item NN da lista "## 6. Tasks" do design: o item inteiro (link, "bloqueada por" e "cobre", com as
+    linhas de continuação juntadas numa só) fica entre `~~`, seguido de " — cancelada em AAAA-MM-DD: motivo". O
+    marcador e a caixa ("[ ]") ficam de fora do risco. ValueError sem o item, ou com ele já riscado."""
+    item = next((i for i in task_list_items(texto) if i.numero == numero), None)
+    if item is None:
+        raise ValueError(f"item {numero} não encontrado na lista '## {SECAO_TASKS}'")
+    if item.riscada:
+        raise ValueError(f"item {numero} já está riscado na lista '## {SECAO_TASKS}'")
+    linhas = texto.split("\n")
+    inteiro = " ".join(linha.strip() for linha in linhas[item.linha - 1:item.linha_fim])
+    recuo = linhas[item.linha - 1][:len(linhas[item.linha - 1]) - len(linhas[item.linha - 1].lstrip())]
+    prefixo, resto = _PREFIXO_ITEM.match(inteiro).groups()
+    linhas[item.linha - 1:item.linha_fim] = [f"{recuo}{prefixo}~~{resto}~~ — cancelada em {dia.isoformat()}: {motivo}"]
+    return "\n".join(linhas)
+
+# endregion
+
 # region Resumo da saída
 
 def summary_line(findings: list[Finding]) -> str:
@@ -782,7 +867,8 @@ __all__ = [
     "add_progress_entry", "aviso", "ca_numbers_cited", "ca_numbers_defined", "ca_titles", "check_acceptance_criteria",
     "check_ca_refs_exist", "check_links", "check_paths_exist", "check_placeholders", "check_sections", "check_status",
     "check_updated_at", "closing_labels", "erro", "find_paths", "format_preview", "format_spec_warning", "open_items",
-    "possible_spec_criteria", "read_metadata", "read_status", "refusal_lines", "section_body", "section_titles",
+    "possible_spec_criteria", "progress_base", "read_metadata", "read_status", "refusal_lines",
+    "rewrite_commit_paths", "section_body", "section_titles", "strike_task_item", "ENTRADA_BASE", "ROTULO_COMMITS",
     "set_metadata", "set_updated_at", "spec_task_status", "spec_tasks", "status_of", "Leftover", "SpecTask",
     "TASK_INICIADA", "pending_tasks", "spec_task_states", "task_list_items", "task_list_notes", "versioned_leftovers",
 ]

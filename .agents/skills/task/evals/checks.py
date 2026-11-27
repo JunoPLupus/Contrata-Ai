@@ -233,12 +233,16 @@ def _eval_5(outputs: Path) -> Resultado:
     r[chaves[2]] = (cas_depois == cas_antes, f"original: {cas_antes}; gravada: {cas_depois}")
     return r
 
+
 _ALVO_ACEITE = ".agents/docs/tasks/2026-11-18-aceite-exige-solicitacao-aberta.md"
+_ALVO_ACEITE_DONE = ".agents/docs/tasks/done/2026-11-18-aceite-exige-solicitacao-aberta.md"
 _SO_A_TASK = "[script] Grava só a própria task, fora de done/"
+_SO_A_TASK_DONE = "[script] Grava só a própria task, em done/"
+_ENCERRADA = re.compile(r"^- \d{4}-\d{2}-\d{2} — encerrada: aprovada pelo Juno", re.MULTILINE)
 
 
 def _so_a_task(arquivos: list[str], alvo: str) -> tuple[bool, str]:
-    """Só o arquivo da task, no caminho dela (mover para done/ é da skill encerramento, depois da aprovação)."""
+    """Só o arquivo da task, no caminho esperado (antes da aprovação, o dela; depois do encerrar, o de done/)."""
     return (arquivos == [alvo], f"arquivos gravados: {arquivos}")
 
 
@@ -261,30 +265,34 @@ def _eval_6(outputs: Path) -> Resultado:
 
 
 def _eval_7(outputs: Path) -> Resultado:
+    """O "aprovado" roda o encerrar (finish_task.py): a task vai para done/, concluída, com o caminho reescrito."""
     arquivos = _arquivos(outputs)
     original = (_EVALS / "files" / "task-aceite-em-revisao.md").read_text(encoding="utf-8")
     chaves = (
-        "[script] Marca concluída com Atualizado em de aprovação (CA-02)",
-        "[script] Não altera a seção 5 (fechamento) do arquivo de apoio",
+        "[script] Encerrada pelo finish_task.py: concluída em done/, com Atualizado em e Andamento de aprovação (CA-16)",
+        "[script] Não altera a seção 5 (fechamento), salvo o caminho reescrito nos Commits entregues",
     )
-    r: Resultado = {_SO_A_TASK: _so_a_task(arquivos, _ALVO_ACEITE)}
-    if _ALVO_ACEITE not in arquivos:
+    r: Resultado = {_SO_A_TASK_DONE: _so_a_task(arquivos, _ALVO_ACEITE_DONE)}
+    if _ALVO_ACEITE_DONE not in arquivos:
         for chave in chaves:
-            r[chave] = (False, f"a task não foi gravada no caminho dela; arquivos: {arquivos}")
+            r[chave] = (False, f"a task não foi gravada em done/; arquivos: {arquivos}")
         return r
 
-    texto = _ler(outputs, _ALVO_ACEITE)
+    texto = _ler(outputs, _ALVO_ACEITE_DONE)
     status = _status(texto)
     antes = _ATUALIZADO.search(original).group(1).strip()
     depois_m = _ATUALIZADO.search(texto)
     depois = depois_m.group(1).strip() if depois_m else ""
-    formato = check_updated_at(outputs / _ALVO_ACEITE, texto)
-    ok = (status == "concluída" and depois != antes and not formato
-          and "aprova" in depois.lower())
-    r[chaves[0]] = (ok, f"status: {status}; atualizado em: '{depois[:80]}'; formato: {_mensagens(formato)}")
+    formato = check_updated_at(outputs / _ALVO_ACEITE_DONE, texto)
+    andamento = bool(_ENCERRADA.search(texto))
+    ok = (status == "concluída" and depois != antes and not formato and "aprova" in depois.lower() and andamento)
+    r[chaves[0]] = (ok, f"status: {status}; atualizado em: '{depois[:80]}'; formato: {_mensagens(formato)}; "
+                        f"entrada 'encerrada: aprovada pelo Juno' no Andamento: {andamento}")
 
-    igual = _fechamento(texto) == _fechamento(original)
-    r[chaves[1]] = (igual, "fechamento igual ao do arquivo de apoio" if igual else "fechamento mudou")
+    esperado = _fechamento(original).replace(f"`{_ALVO_ACEITE}`", f"`{_ALVO_ACEITE_DONE}`")
+    igual = _fechamento(texto) == esperado
+    r[chaves[1]] = (igual, "fechamento igual ao do arquivo de apoio, com o caminho em done/" if igual
+                    else "fechamento diferente do arquivo de apoio com o caminho em done/")
     return r
 
 # endregion

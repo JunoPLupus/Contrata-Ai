@@ -113,15 +113,15 @@
       "id": 7,
       "name": "aprovar-fechamento",
       "prompt": "Revisei o fechamento da task do aceite de orçamento exigir solicitação aberta (.agents/skills/task/evals/files/task-aceite-em-revisao.md — trate como .agents/docs/tasks/2026-11-18-aceite-exige-solicitacao-aberta.md). Está tudo certo, aprovado.",
-      "expected_output": "O agente muda o status para 'concluída' e o 'Atualizado em' para a data de hoje com o motivo da aprovação, não mexe no resto do fechamento, não move a task para done/ e entrega o texto do commit.",
+      "expected_output": "O agente roda o finish_task.py (o encerrar) em vez de mudar o status à mão: a task fica 'concluída', com o 'Atualizado em' e a entrada no Andamento de aprovação, e vai para .agents/docs/tasks/done/, com o caminho reescrito nos 'Commits entregues'; o resto do fechamento não muda; o agente entrega os textos de commit com o caminho novo.",
       "files": [
         "evals/files/task-aceite-em-revisao.md"
       ],
       "expectations": [
-        "[script] Marca concluída com Atualizado em de aprovação (CA-02)",
-        "[script] Não altera a seção 5 (fechamento) do arquivo de apoio",
-        "[script] Grava só a própria task, fora de done/",
-        "Diz ao usuário o que mudou na task (status e 'Atualizado em') e entrega o texto do commit"
+        "[script] Encerrada pelo finish_task.py: concluída em done/, com Atualizado em e Andamento de aprovação (CA-16)",
+        "[script] Não altera a seção 5 (fechamento), salvo o caminho reescrito nos Commits entregues",
+        "[script] Grava só a própria task, em done/",
+        "Roda o finish_task.py (não muda o status nem move a task à mão) e entrega os textos de commit com o caminho novo em done/"
       ]
     }
   ]

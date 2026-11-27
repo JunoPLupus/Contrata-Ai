@@ -156,5 +156,5 @@ Skills são procedimentos passo a passo para tarefas recorrentes. Ficam em
 |---|---|
 | Criar, adaptar, traduzir ou melhorar uma skill | [`oficina-de-skills`](.agents/skills/oficina-de-skills/SKILL.md) |
 | Criar ou atualizar uma spec (`spec.md` + `design.md`) | [`spec`](.agents/skills/spec/SKILL.md) |
-| Abrir, atualizar ou fechar uma task (avulsa ou de spec) | [`task`](.agents/skills/task/SKILL.md) |
+| Abrir, iniciar, retomar, atualizar, fechar, encerrar ou cancelar uma task (avulsa ou de spec) | [`task`](.agents/skills/task/SKILL.md) |
 | Conferir o conjunto de instruções (antes de entregar mudança em `AGENTS.md` ou `.agents/`, ou quando o CI delas falhar) | [`governanca`](.agents/skills/governanca/SKILL.md) |

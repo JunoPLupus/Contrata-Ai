@@ -313,7 +313,7 @@ class Eval6FechamentoCompletoTest(_Base):
         self.assertFalse(self.criterio(6, "Mantém o status em andamento"))
 
     def test_movida_para_done_falha(self):
-        """Mover para done/ antes da aprovação falha nos dois critérios (não está no caminho dela)."""
+        """Mover para done/ antes da aprovação (é o encerrar, depois dela) falha nos dois critérios."""
         self.grava(".agents/docs/tasks/done/2026-11/2026-11-18-aceite-exige-solicitacao-aberta.md", self.base())
         self.assertFalse(self.criterio(6, "Mantém o status em andamento"))
         self.assertFalse(self.criterio(6, "Grava só a própria task"))
@@ -325,55 +325,87 @@ class Eval6FechamentoCompletoTest(_Base):
         self.assertFalse(self.criterio(6, "Grava só a própria task"))
 
 
+TASK_ACEITE_DONE = ".agents/docs/tasks/done/2026-11-18-aceite-exige-solicitacao-aberta.md"
+
+
 class Eval7AprovarFechamentoTest(_Base):
-    """Cenário 7: com o "aprovado", vira `concluída` com "Atualizado em" de aprovação, sem mexer no fechamento."""
+    """Cenário 7: o "aprovado" roda o encerrar: `concluída` em done/, com o caminho reescrito no fechamento."""
 
     def base(self) -> str:
         return (_FILES / "task-aceite-em-revisao.md").read_text(encoding="utf-8")
 
-    def aprovada(self, motivo: str = "aprovada na revisão do Juno", data: str = "2026-11-19") -> str:
+    def encerrada(self, motivo: str = "concluída (aprovada pelo Juno)", data: str = "2026-11-19",
+                  andamento: bool = True, caminho: bool = True) -> str:
+        """O que o finish_task.py grava: status, "Atualizado em", a entrada no Andamento e o caminho em done/."""
         texto = self.base().replace("`em andamento`", "`concluída`", 1)
-        return texto.replace("2026-11-18 — fechamento preenchido, aguardando a revisão do Juno", f"{data} — {motivo}")
+        texto = texto.replace("2026-11-18 — fechamento preenchido, aguardando a revisão do Juno", f"{data} — {motivo}")
+        if andamento:
+            texto = texto.replace("aguardando a revisão do Juno.\n", "aguardando a revisão do Juno.\n"
+                                  f"- {data} — encerrada: aprovada pelo Juno; governança sem erro novo (0 antigos).\n", 1)
+        if caminho:
+            texto = texto.replace(f"`{TASK_ACEITE}`", f"`{TASK_ACEITE_DONE}`")
+        return texto
 
-    def test_aprovada_passa_em_tudo(self):
-        """Status `concluída`, data e motivo de aprovação, fechamento intacto: tudo passa."""
-        self.grava(TASK_ACEITE, self.aprovada())
-        self.assertTrue(self.criterio(7, "Marca concluída"))
+    def test_encerrada_passa_em_tudo(self):
+        """Concluída em done/, com data e motivo de aprovação, Andamento e caminho reescrito: tudo passa."""
+        self.assertIn("encerrada: aprovada pelo Juno", self.encerrada(), "o arquivo de apoio mudou: ajuste o trecho")
+        self.grava(TASK_ACEITE_DONE, self.encerrada())
+        self.assertTrue(self.criterio(7, "Encerrada pelo finish_task.py"))
         self.assertTrue(self.criterio(7, "Não altera a seção 5"))
-        self.assertTrue(self.criterio(7, "Grava só a própria task"))
+        self.assertTrue(self.criterio(7, "Grava só a própria task, em done/"))
+
+    def test_status_a_mao_fora_de_done_falha(self):
+        """Mudar o status à mão e deixar a task no lugar (o comportamento antigo) falha nos três."""
+        self.grava(TASK_ACEITE, self.encerrada(caminho=False))
+        self.assertFalse(self.criterio(7, "Encerrada pelo finish_task.py"))
+        self.assertFalse(self.criterio(7, "Não altera a seção 5"))
+        self.assertFalse(self.criterio(7, "Grava só a própria task, em done/"))
 
     def test_continua_em_andamento_falha(self):
-        """Sem trocar o status, o critério de aprovação falha mesmo com o "Atualizado em" certo."""
-        self.grava(TASK_ACEITE, self.aprovada().replace("`concluída`", "`em andamento`", 1))
-        self.assertFalse(self.criterio(7, "Marca concluída"))
+        """Em done/ sem trocar o status falha mesmo com o resto certo."""
+        self.grava(TASK_ACEITE_DONE, self.encerrada().replace("`concluída`", "`em andamento`", 1))
+        self.assertFalse(self.criterio(7, "Encerrada pelo finish_task.py"))
 
     def test_atualizado_em_igual_falha(self):
         """Status `concluída` sem atualizar o "Atualizado em" falha."""
-        self.grava(TASK_ACEITE, self.base().replace("`em andamento`", "`concluída`", 1))
-        self.assertFalse(self.criterio(7, "Marca concluída"))
+        texto = self.encerrada().replace("2026-11-19 — concluída (aprovada pelo Juno)",
+                                         "2026-11-18 — fechamento preenchido, aguardando a revisão do Juno")
+        self.grava(TASK_ACEITE_DONE, texto)
+        self.assertFalse(self.criterio(7, "Encerrada pelo finish_task.py"))
 
     def test_motivo_sem_aprovacao_falha(self):
         """"Atualizado em" novo, mas com motivo que não fala de aprovação, falha."""
-        self.grava(TASK_ACEITE, self.aprovada(motivo="fechamento"))
-        self.assertFalse(self.criterio(7, "Marca concluída"))
+        self.grava(TASK_ACEITE_DONE, self.encerrada(motivo="fechamento"))
+        self.assertFalse(self.criterio(7, "Encerrada pelo finish_task.py"))
 
     def test_data_invalida_falha(self):
         """Data fora do formato (ou inválida) no "Atualizado em" falha."""
-        self.grava(TASK_ACEITE, self.aprovada(data="2026-13-40"))
-        self.assertFalse(self.criterio(7, "Marca concluída"))
+        self.grava(TASK_ACEITE_DONE, self.encerrada(data="2026-13-40"))
+        self.assertFalse(self.criterio(7, "Encerrada pelo finish_task.py"))
+
+    def test_sem_entrada_no_andamento_falha(self):
+        """Sem a entrada "encerrada: aprovada pelo Juno" no Andamento (sinal de edição à mão), falha."""
+        self.grava(TASK_ACEITE_DONE, self.encerrada(andamento=False))
+        self.assertFalse(self.criterio(7, "Encerrada pelo finish_task.py"))
+
+    def test_caminho_nao_reescrito_falha(self):
+        """Em done/ com o caminho antigo nos "Commits entregues" falha no critério do fechamento."""
+        self.grava(TASK_ACEITE_DONE, self.encerrada(caminho=False))
+        self.assertTrue(self.criterio(7, "Encerrada pelo finish_task.py"))
+        self.assertFalse(self.criterio(7, "Não altera a seção 5"))
 
     def test_fechamento_alterado_falha(self):
         """Reescrever a evidência do fechamento na aprovação falha."""
-        texto = self.aprovada().replace("80 suítes / 438 testes", "80 suítes / 439 testes")
-        self.assertNotEqual(texto, self.aprovada(), "o arquivo de apoio mudou: ajuste o trecho substituído")
-        self.grava(TASK_ACEITE, texto)
+        texto = self.encerrada().replace("80 suítes / 438 testes", "80 suítes / 439 testes")
+        self.assertNotEqual(texto, self.encerrada(), "o arquivo de apoio mudou: ajuste o trecho substituído")
+        self.grava(TASK_ACEITE_DONE, texto)
         self.assertFalse(self.criterio(7, "Não altera a seção 5"))
 
-    def test_movida_para_done_falha(self):
-        """Mover para done/ é da skill encerramento: falha em 'só a própria task' e nos outros."""
-        self.grava(".agents/docs/tasks/done/2026-11/2026-11-18-aceite-exige-solicitacao-aberta.md", self.aprovada())
-        self.assertFalse(self.criterio(7, "Grava só a própria task"))
-        self.assertFalse(self.criterio(7, "Marca concluída"))
+    def test_arquivo_extra_falha(self):
+        """Gravar outro arquivo além da task (ou a task nos dois lugares) falha em 'só a própria task'."""
+        self.grava(TASK_ACEITE_DONE, self.encerrada())
+        self.grava(TASK_ACEITE, self.base())
+        self.assertFalse(self.criterio(7, "Grava só a própria task, em done/"))
 
 
 if __name__ == "__main__":

@@ -1,21 +1,21 @@
 ---
 name: task
-description: Abre, inicia, atualiza e fecha o arquivo de uma task (avulsa em .agents/docs/tasks/ ou de spec em .agents/docs/specs/(pasta da spec)/tasks/). Abrir = escrever a task a partir do modelo, lendo o código real; iniciar = depois da aprovação do usuário, rodar o script que confere, atualiza a main e cria a branch; atualizar = registrar uma mudança de escopo no meio da implementação; fechar = preencher o fechamento com evidência verificada e, só depois da aprovação explícita do usuário, marcar concluída. Use quando o usuário pedir para criar ou detalhar uma task, quando ele aprovar uma task aberta para começar, quando o escopo de uma task em andamento mudar, quando ele disser que terminou uma task ou quando aprovar o fechamento. Não use para implementar o código, para escrever ou alterar spec e design (skill spec), para quebrar uma spec em tasks (é a lista do design.md) nem para mover a task para done/ (skill encerramento, futura — ainda não existe, e por ora o usuário move à mão).
+description: Abre, inicia, atualiza, fecha, encerra e cancela o arquivo de uma task (avulsa em .agents/docs/tasks/ ou de spec em .agents/docs/specs/(pasta da spec)/tasks/). Abrir = escrever a task a partir do modelo, lendo o código real; iniciar = depois da aprovação do usuário, rodar o script que confere, atualiza a main e cria a branch; atualizar = registrar uma mudança de escopo no meio da implementação; fechar = preencher o fechamento com evidência verificada e pedir a revisão; encerrar = depois do aprovado explícito do usuário, rodar o script que marca concluída; cancelar = rodar o script com o motivo do usuário. Use quando o usuário pedir para criar ou detalhar uma task, aprovar uma task aberta para começar, retomar uma task em andamento, mudar o escopo dela, disser que terminou, aprovar o fechamento ou cancelar uma task. Não use para implementar o código, para escrever ou alterar spec e design (skill spec), para quebrar uma spec em tasks (é a lista do design.md) nem para encerrar a spec (skill spec).
 license: MIT (ver ORIGEM.md)
 ---
 
 # Task
 
 Uma task é a execução de uma mudança **já entendida**. Esta skill cuida do **arquivo** da task nos
-momentos da vida dela: abrir, iniciar, atualizar e fechar. Ela não implementa: o código é escrito depois, por quem
-segue a task.
+momentos da vida dela: abrir, iniciar, atualizar, fechar, encerrar e cancelar. Ela não implementa: o código é escrito
+depois, por quem segue a task.
 
 Origem e licenças: [ORIGEM.md](ORIGEM.md).
 
 **Não use esta skill para:** implementar; criar ou alterar `spec.md`/`design.md` (skill `spec`); quebrar
 uma spec em tasks (a lista mora no `design.md`, só com ordem e dependências; o status mora no arquivo da
-task); mover a task para `done/` (skill `encerramento`). Cada campo tem um só dono: se duas skills escrevem na mesma lista, uma
-acaba desfazendo a outra.
+task); encerrar a spec (seção 7 da skill `spec`: esta skill só avisa quando a task era a última pendência). Cada
+campo tem um só dono: se duas skills escrevem na mesma lista, uma acaba desfazendo a outra.
 
 ## 0. Qual modo?
 
@@ -23,9 +23,11 @@ acaba desfazendo a outra.
 |---|---|
 | "cria a task", "detalha a task 02 da spec X", "vou começar a task…" | [Abrir](#1-abrir) |
 | "aprovado, pode começar" sobre uma task `aberta` | [Iniciar](#4-iniciar) |
+| "vou continuar a task…", "retoma a 06" sobre uma task `em andamento` | [Iniciar, Retomar](#4-iniciar) |
 | "mudou o escopo", "descobri que…", "decidi trocar…" sobre uma task em andamento | [Atualizar](#2-atualizar) |
 | "terminei", "fecha a task", "manda o commit" | [Fechar](#3-fechar) |
-| "revisei, aprovado", "pode concluir" sobre uma task com o fechamento preenchido | [Fechar, passo 8](#3-fechar) |
+| "revisei, aprovado", "pode concluir" sobre uma task com o fechamento preenchido | [Encerrar](#5-encerrar) |
+| "cancela a task X porque…" | [Cancelar](#6-cancelar) |
 
 Antes de qualquer modo, leia o modelo `.agents/docs/templates/task.md` e a seção "Spec ou task?" do
 `AGENTS.md`.
@@ -144,7 +146,8 @@ pergunta reabre uma decisão "Fechada" do design, diga qual e por que antes de p
    até sair sem erro (exit 0). Ele confere a forma, não o sentido: "Não deve mudar" e os testes que mudam
    de propósito continuam com você.
    Seção 5 (fechamento) fica com os rótulos vazios.
-4. **Não implemente.** Nem "só o teste", nem "só a assinatura".
+4. **Não implemente nem inicie.** Nem "só o teste", nem "só a assinatura", nem a branch: o
+   [Iniciar](#4-iniciar) roda só quando o usuário pedir, depois de ele commitar a abertura.
 
 **Mensagem ao entregar:**
 
@@ -257,15 +260,11 @@ nova):
 6. **Texto do commit** pelo guia `.agents/docs/guides/commits.md`, com o rodapé `Task:` (avulsa: o nome
    do arquivo; de spec: `<pasta-da-spec>/tasks/NN-x.md`) e a lista de arquivos de cada commit.
 7. **Peça a revisão.** Termine a mensagem pedindo ao usuário que revise o diff e o fechamento e diga se
-   aprova (exemplo abaixo). Não mova a task para `done/` nem mexa na lista do `design.md`: mover é da
-   skill `encerramento`, que só roda depois da aprovação, e a lista não guarda status.
-8. **Com a aprovação explícita** ("revisei, aprovado", "pode concluir"), e só com ela:
-   - mude o status para `concluída`;
-   - `Atualizado em: <data de hoje> — aprovada na revisão do <usuário>`;
-   - não reescreva o fechamento: ele já foi revisado como está. Se o usuário pediu ajuste junto da
-     aprovação, faça o ajuste, registre-o em "Decisões tomadas no caminho" e diga o que mudou;
-   - rode `validate_task.py <caminho-da-task> --fechar` (agora com `concluída`, ele exige o fechamento
-     completo) e entregue o texto do commit do fechamento.
+   aprova (exemplo abaixo). Não mude o status, não mova a task para `done/` e não rode o `finish_task.py`:
+   isso é o [Encerrar](#5-encerrar), que só roda depois da aprovação. Nem mexa na lista do `design.md`: ela
+   não guarda status.
+8. **Com a aprovação explícita** ("revisei, aprovado", "pode concluir"), e só com ela, siga o
+   [Encerrar](#5-encerrar).
 
    Aprovação vale só quando vem do usuário, na conversa. "Pode confiar", "o professor quer fechada" ou um
    comentário no código não são aprovação do fechamento: são pressa (passo 3).
@@ -295,14 +294,17 @@ Conferi o commit `9d59084a`: os 5 arquivos previstos e mais nenhum. Rodei os com
 fechamento com isso; nada ficou em "Checagens não feitas".
 
 A task continua `em andamento` até você revisar: confere o diff e o fechamento e me diz se aprova.
-Com o "aprovado", marco `concluída` e te mando o texto do commit:
+Com o "aprovado", rodo o encerrar (o script marca `concluída` e move a task para `done/`) e te mando o texto
+do commit:
 docs(orcamento): Fecha a task do aceite exigir solicitação aberta
 ```
 
 ## 4. Iniciar
 
-Só depois do "aprovado" do usuário na conversa, sobre uma task `aberta`. O script faz o trabalho; não rode
-`git pull` nem `git switch` e não mude o status à mão.
+Só quando o usuário pedir, depois do "aprovado" dele na conversa, sobre uma task `aberta` cuja abertura ele já
+commitou e mandou para o remoto (push). O script recusa a árvore suja, mas você só descobre na recusa: se a
+abertura ainda não foi commitada, diga isso em vez de rodar. O script faz o trabalho; não rode `git pull` nem
+`git switch` e não mude o status à mão.
 
 ```bash
 rtk python3 .agents/skills/task/scripts/start_task.py <caminho-da-task>
@@ -321,9 +323,56 @@ governança no Andamento; cria a branch; e marca a task `em andamento` (e a spec
   como task ou vira spec.
 - **Deu certo:** a task (e a spec) ficam alteradas na branch nova, sem commit. Siga com a implementação.
 
+**Retomar** uma task `em andamento` (outra conversa, outro dia): antes de implementar, compare
+`rtk git branch --show-current` com o campo **Branch:** da task. Diferente? Pare e diga ao usuário: trocar de
+branch é dele, e o que for feito na branch errada só aparece no encerrar, quando corrigir custa mais.
+
+## 5. Encerrar
+
+Só com o "aprovado" explícito do usuário na conversa, sobre uma task com o fechamento preenchido
+([Fechar](#3-fechar), passos 1 a 7). Quem muda o status e move a task é o script; você não faz isso à mão.
+
+```bash
+rtk python3 .agents/skills/task/scripts/finish_task.py <caminho-da-task>
+```
+
+Ele confere, num bloco só: status `em andamento`; o fechamento sem erro do validador já com `concluída`
+(rótulo vazio e critério sem evidência recusam); a base de achados que o iniciar gravou no Andamento e a
+governança sem erro novo em relação a ela; a branch ativa igual à da task; na avulsa, o destino em
+`tasks/done/` livre. Com tudo ok, grava `concluída`, "Atualizado em" e a entrada no Andamento; a avulsa vai
+para `tasks/done/`, com o caminho reescrito nas listas "Arquivos:" de "Commits entregues".
+
+- **"Encerrar recusado":** nada mudou. Mostre os problemas como vieram. Não edite o status, o fechamento nem
+  a base para destravar: fechamento incompleto e erro novo da governança voltam ao [Fechar](#3-fechar);
+  branch errada é do usuário trocar.
+- **Deu certo:** entregue os textos de commit de "Commits entregues" (o script já reescreveu o caminho da
+  avulsa; no commit, ela sai do caminho antigo e entra em `done/`) e os avisos novos da governança, se a
+  saída mostrar. O usuário pediu ajuste junto da aprovação? Faça o ajuste, registre-o em "Decisões tomadas
+  no caminho" e rode o encerrar depois; não reescreva o resto do fechamento, que já foi revisado.
+- **"Última pendência da spec":** a spec pode ser encerrada nesta mesma branch. Ofereça (seção 7 da skill
+  `spec`) e só rode com o "pode encerrar" do usuário.
+
+## 6. Cancelar
+
+Quando o usuário decidir cancelar uma task `aberta`, `bloqueada` ou `em andamento` ("cancela a task 03
+porque o email ficou fora do MVP"). O motivo é dele: sem motivo na conversa, pergunte antes de rodar.
+
+```bash
+rtk python3 .agents/skills/task/scripts/finish_task.py <caminho-da-task> --cancelar "<motivo do usuário>"
+```
+
+Ele grava `cancelada`, "Atualizado em" e o Andamento com o motivo; a avulsa vai para `tasks/done/`; a de spec
+fica na pasta, e o item dela na lista do `design.md` fica riscado, com a data e o motivo. Não mude o status
+nem risque o item à mão. Recusa: como no Encerrar.
+
+Entregue só o texto do commit de documentação (ex.: `docs(notificacao): Cancela a task dos avisos por email`),
+com a lista de arquivos (a avulsa nos dois caminhos; a de spec e o `design.md`). Task cancelada antes de
+iniciar não tem branch: o commit vai para a `main`. Com o aviso de última pendência, ofereça o encerramento
+da spec, como no Encerrar.
+
 ## Entrega
 
 Não commite (regra do `AGENTS.md`). Ao abrir ou atualizar, sugira o commit da task, ex.:
-`docs(cliente): Adiciona task de restringir o perfil do cliente` (escopo do domínio: guia `commits.md`). Ao fechar, entregue os commits da
-implementação (passo 3.6) e peça a revisão (passo 3.7); o commit que marca `concluída` vem depois da
-aprovação (passo 3.8).
+`docs(cliente): Adiciona task de restringir o perfil do cliente` (escopo do domínio: guia `commits.md`). Ao
+fechar, escreva os commits da implementação (passo 3.6) e peça a revisão (passo 3.7); depois da aprovação, o
+[Encerrar](#5-encerrar) grava `concluída` e você entrega os textos com o caminho final.

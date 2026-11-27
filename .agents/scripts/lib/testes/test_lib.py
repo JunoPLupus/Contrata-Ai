@@ -18,9 +18,12 @@ from md_checks import (  # noqa: E402
     open_items,
     pending_tasks,
     possible_spec_criteria,
+    progress_base,
     read_metadata,
+    rewrite_commit_paths,
     set_metadata,
     set_updated_at,
+    strike_task_item,
     subsection_body,
     summary_line,
     task_list_items,
@@ -270,6 +273,114 @@ class PendenciasDaSpecTest(unittest.TestCase):
             ("design.md", 15, "nota do design", "- **02:** nota que quebra linha e continua."),
             ("design.md", 17, "nota do design", "- **06:** outra nota."),
         ])
+
+
+class EncerrarECancelarTest(unittest.TestCase):
+    """O que o finish_task.py usa da lib: a base do Andamento, o caminho nos "Commits entregues" e o item riscado."""
+
+    BASE = (".agents/skills/spec/SKILL.md [AVISO] governanca.skill-pendente pendência: skill 'adr' citada\n"
+            "AGENTS.md [ERRO] md.link-quebrado link: destino não existe: x.md\n")
+
+    def _andamento(self, *entradas: str) -> str:
+        return "# Task: x\n\n## 4. Andamento\n\n" + "".join(entradas) + "\n## 5. Fechamento\n\n- **O que foi feito:** x\n"
+
+    def test_base_do_andamento(self):
+        """base do Andamento: o bloco text depois da entrada, 'nenhum' é base vazia e sem entrada é None"""
+        iniciar = "- 2026-11-23 — iniciar: aprovada pelo Juno; branch `x` criada.\n"
+        com_bloco = self._andamento(iniciar, f"- 2026-11-23 — base de achados da governança (2):\n\n```text\n{self.BASE}```\n",
+                                    "- 2026-11-24 — testes antes da primeira edição: ok.\n")
+        self.assertEqual(progress_base(com_bloco, "4. Andamento"), self.BASE)
+        self.assertEqual(progress_base(self._andamento(iniciar, "- 2026-11-23 — base de achados da governança: nenhum\n"),
+                                       "4. Andamento"), "")
+        self.assertIsNone(progress_base(self._andamento(iniciar), "4. Andamento"))
+        # A entrada sem o bloco logo abaixo não é base (não dá para comparar).
+        self.assertIsNone(progress_base(self._andamento("- 2026-11-23 — base de achados da governança (2):\n\nperdi o bloco\n"),
+                                        "4. Andamento"))
+        # Com duas entradas (a task iniciada de novo), vale a última.
+        duas = self._andamento(f"- 2026-11-23 — base de achados da governança (2):\n\n```text\n{self.BASE}```\n",
+                               "- 2026-11-24 — base de achados da governança: nenhum\n")
+        self.assertEqual(progress_base(duas, "4. Andamento"), "")
+        # A base citada fora do Andamento (no fechamento, por exemplo) não conta.
+        fora = self._andamento(iniciar) + "- 2026-11-23 — base de achados da governança: nenhum\n"
+        self.assertIsNone(progress_base(fora, "4. Andamento"))
+
+    FECHAMENTO = """## 5. Fechamento
+
+- **O que foi feito:** ver `.agents/docs/tasks/2026-11-18-x.md`.
+- **Commits entregues:**
+
+  ```text
+  fix(x): Faz x
+
+  Task: 2026-11-18-x.md
+  ```
+
+  Arquivos:
+  - `api/x.ts`
+  - `.agents/docs/tasks/2026-11-18-x.md` (fechamento)
+
+  ```text
+  docs(x): Fecha a task
+
+  - .agents/docs/tasks/2026-11-18-x.md
+  ```
+
+  Arquivos:
+
+  - .agents/docs/tasks/2026-11-18-x.md
+  - `.agents/docs/tasks/2026-11-18-x.md.bak`
+
+  Texto solto com .agents/docs/tasks/2026-11-18-x.md
+"""
+
+    def test_reescreve_o_caminho_nos_commits_entregues(self):
+        """caminho nos Commits entregues: só os itens das listas Arquivos que são o caminho mudam"""
+        antigo, novo = ".agents/docs/tasks/2026-11-18-x.md", ".agents/docs/tasks/done/2026-11-18-x.md"
+        texto, trocas = rewrite_commit_paths(self.FECHAMENTO, "5. Fechamento", antigo, novo)
+        self.assertEqual(trocas, 2)
+        self.assertIn(f"  - `{novo}` (fechamento)\n", texto)
+        self.assertIn(f"\n  - {novo}\n", texto)
+        # Fora das listas "Arquivos:" (outro rótulo, a mensagem do commit, texto solto) e outro arquivo: não mudam.
+        self.assertIn(f"- **O que foi feito:** ver `{antigo}`.", texto)
+        self.assertIn(f"  - {antigo}\n  ```", texto)
+        self.assertIn(f"`{antigo}.bak`", texto)
+        self.assertIn(f"Texto solto com {antigo}", texto)
+        self.assertEqual(rewrite_commit_paths("# x\n\n## 5. Fechamento\n\n- **O que foi feito:** x\n",
+                                              "5. Fechamento", antigo, novo)[1], 0)
+
+    DESIGN = """# Design: X
+
+## 6. Tasks
+
+- [ ] [01 — Núcleo](tasks/01-nucleo.md) — bloqueada por: nenhuma — cobre: CA-01,
+  CA-02
+- [02 — Rotas](tasks/02-rotas.md) — bloqueada por: 01 — cobre: CA-03
+- ~~[03 — Antiga](tasks/03-antiga.md) — bloqueada por: 01 — cobre: CA-04~~ — cancelada em 2026-11-20: motivo
+
+## 7. Depois
+"""
+
+    def test_risca_o_item_inteiro_com_data_e_motivo(self):
+        """item riscado: o item inteiro fica entre ~~, numa linha, com a data e o motivo; o resto não muda"""
+        texto = strike_task_item(self.DESIGN, "01", date(2026, 11, 25), "ficou fora do MVP")
+        self.assertIn("- [ ] ~~[01 — Núcleo](tasks/01-nucleo.md) — bloqueada por: nenhuma — cobre: CA-01, CA-02~~"
+                      " — cancelada em 2026-11-25: ficou fora do MVP\n- [02 — Rotas]", texto)
+        itens = {i.numero: i for i in task_list_items(texto)}
+        self.assertTrue(itens["01"].riscada)
+        self.assertEqual((itens["01"].alvo, itens["01"].cobre), ("tasks/01-nucleo.md", "CA-01, CA-02"))
+        self.assertFalse(itens["02"].riscada)
+        self.assertEqual(texto.replace(texto.split("\n")[4] + "\n", ""),
+                         self.DESIGN.replace("- [ ] [01 — Núcleo](tasks/01-nucleo.md) — bloqueada por: nenhuma — cobre: CA-01,\n  CA-02\n", ""))
+        sem_caixa = strike_task_item(self.DESIGN, "02", date(2026, 11, 25), "motivo")
+        self.assertIn("\n- ~~[02 — Rotas](tasks/02-rotas.md) — bloqueada por: 01 — cobre: CA-03~~ — cancelada em "
+                      "2026-11-25: motivo\n", sem_caixa)
+
+    def test_item_ausente_ou_ja_riscado(self):
+        """item riscado: sem o item, ou com ele já riscado, é ValueError"""
+        with self.assertRaisesRegex(ValueError, "item 09 não encontrado"):
+            strike_task_item(self.DESIGN, "09", date(2026, 11, 25), "x")
+        with self.assertRaisesRegex(ValueError, "item 03 já está riscado"):
+            strike_task_item(self.DESIGN, "03", date(2026, 11, 25), "x")
 
 
 class RelativeToRootTest(unittest.TestCase):
