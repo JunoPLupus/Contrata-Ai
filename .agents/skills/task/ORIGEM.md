@@ -32,15 +32,18 @@ de tamanho quando usuário e agente concordam que é task; rodada curta (critér
 decisões técnicas, que vão para a seção 3 porque avulsa não tem `design.md`); branch sugerida
 `<tipo>/juno/<assunto>`; "Não deve mudar" e "testes que vão mudar de propósito" sempre procurados;
 conferência com `rtk grep` (substituída pelos scripts, ver abaixo); fechamento só com evidência verificada pelo agente; dono único de cada campo
-(o `done/` é da skill `encerramento`; a lista do `design.md` guarda só ordem e dependências, e o
-status mora no arquivo da task — mudança de 2026-11-18). Testes da skill: cenários em `evals/`, com
+(o `done/` ficou planejado para uma skill própria de encerramento; a lista do `design.md` guarda só ordem e
+dependências, e o status mora no arquivo da task — mudança de 2026-11-18). Em 2026-11-25 (task 06 da spec do
+fluxo de trabalho), esse encerramento virou o modo Encerrar desta skill, com o `finish_task.py`; o da spec é a
+seção 7 da skill `spec`. Testes da skill: cenários em `evals/`, com
 critérios `[script]` conferidos por `evals/checks.py` (testado em `evals/test_checks.py`).
 
 **Scripts (`scripts/`, 2026-11-18):** escritos neste projeto, no padrão dos scripts da skill `spec`.
 `create_task.py` substitui a cópia manual do modelo (avulsa, ou de spec a partir da lista do `design.md`,
 com status `bloqueada` quando a dependência não está concluída); `validate_task.py` substitui a
 conferência com `rtk grep` e ganhou a flag `--fechar` para as regras de fechamento (não há
-`close_task.py`: mover para `done/` é da futura skill `encerramento`, que cobre task e spec). As
+`close_task.py`: mover para `done/` ficou para um encerramento planejado como skill própria, de task e spec;
+em 2026-11-25 ele virou o `finish_task.py` desta skill e, para a spec, o `finish_spec.py` da skill `spec`). As
 checagens comuns com o `validate_spec.py` (placeholders, status, "Atualizado em", seções, `CA-NN`,
 caminhos e links) moram na lib `.agents/scripts/lib/md_checks.py`, e o `evals/checks.py` chama o
 `validate_task.py` em vez de repetir as regras. Testes em `scripts/testes/` (unittest).

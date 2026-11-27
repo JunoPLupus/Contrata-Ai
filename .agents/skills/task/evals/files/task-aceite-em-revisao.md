@@ -172,6 +172,7 @@ A task só está concluída com todos os comandos passando e a evidência regist
 
 - 2026-11-18 — início da implementação; antes de começar: `npx tsc --noEmit` ok, unitários 80 / 435,
   integração 9 / 105 (Docker `node:22`).
+- 2026-11-18 — base de achados da governança: nenhum
 - 2026-11-18 — implementação no commit `9d59084a`; 6 mutantes, 6 mortos.
 - 2026-11-18 — fechamento preenchido; aguardando a revisão do Juno.
 
