@@ -1,9 +1,8 @@
 # Task: Encerrar e cancelar a task
 
-- **Status:** `aberta`
+- **Status:** `concluída`
 - **Criado em:** 2026-11-24
-- **Atualizado em:** 2026-11-24 — encerrar confere a branch ativa (Q8) e a skill manda conferir a branch ao
-  retomar a task (Q9); a linha da skill `task` na tabela do `AGENTS.md` cobre todos os modos (Q10)
+- **Atualizado em:** 2026-11-27 — concluída (aprovada pelo Juno)
 - **Tipo:** `feat`
 - **Alcance:** `documentação`
 - **Modo:** `agente implementa, Juno revisa`
@@ -174,8 +173,8 @@ nada
    "Commits entregues" e arquivo movido para `tasks/done/` (criada se faltar) → task de spec: aviso de última
    pendência. Saída: o que mudou, o caminho novo e os antigos da governança, ou "Encerrar recusado".
 3. **`finish_task.py caminho-da-task --cancelar "motivo"`**: bloco único (status, motivo, destino ou item da lista) →
-   status, "Atualizado em", Andamento → avulsa para `tasks/done/`; de spec, item riscado no design (Q5) e aviso
-   de última pendência. Saída: o que mudou, ou "Cancelar recusado".
+   status, "Atualizado em", Andamento → avulsa para `tasks/done/`; de spec, item riscado no design (Q5), com o
+   "Atualizado em" do design (Q1 da implementação), e aviso de última pendência. Saída: o que mudou, ou "Cancelar recusado".
 4. **Testes**: `test_finish_task.py` em `.agents/skills/task/scripts/testes/`, com a task (avulsa e de spec, com o
    design) montada num diretório temporário e a governança injetada (como o `test_start_task.py`); cada recusa
    confere que a task, o design e o lugar do arquivo não mudaram; os testes das funções novas da lib em
@@ -227,7 +226,8 @@ nada
   `.agents/docs/templates/task.md` (comentário do fechamento); `AGENTS.md` (linha da skill `task`, Q10); esta
   task;
 - pela Q7: `.agents/skills/task/evals/evals.json`, `.agents/skills/task/evals/checks.py` e
-  `.agents/skills/task/evals/test_checks.py` (eval 7);
+  `.agents/skills/task/evals/test_checks.py` (eval 7); pela Q2 da implementação,
+  `.agents/skills/task/evals/files/task-aceite-em-revisao.md` (a entrada da base no Andamento);
 - o `design.md` desta spec só muda na abertura (link da 06, a 10 nova e a dependência da 08); o ambiente do modo
   leve fica no workspace da skill `task` (fora do git).
 
@@ -251,7 +251,7 @@ Pare e avise antes: isso é mudança de escopo e precisa ser aprovada (e registr
   Git continua só no `start_task.py`
 - **Testes existentes que mudam de propósito:** sim — o eval 7 da skill `task` ("aprovar-fechamento") espera a
   mudança de status à mão e a task fora de `done/`, o oposto do encerrar: as asserções, o `_eval_7` do `checks.py` e os testes dele no
-  `test_checks.py` mudam (Q7); os testes do
+  `test_checks.py` mudam (Q7), e o arquivo de apoio dele ganha a base no Andamento (Q2 da implementação); os testes do
   `test_lib.py`, do `test_start_task.py` e do `test_finish_spec.py` não mudam (procurado: nenhum monta o
   comentário do fechamento do modelo nem a skill `encerramento`)
 - **Documentação:** sim — linha da skill `task` na tabela do `AGENTS.md` (Q10); skill `task` (Encerrar, cancelar, Fechar sem status, notas do Iniciar e do Abrir, sem a
@@ -324,14 +324,158 @@ A task só está concluída com todos os comandos passando e a evidência regist
 
 ## 4. Andamento
 
+- 2026-11-25 — iniciar: aprovada pelo Juno; branch `feat/juno/fluxo-de-trabalho-dos-agentes-06` criada a partir da `main` no commit de base `ce8da902`.
+- 2026-11-25 — base de achados da governança (5):
+
+```text
+.agents/skills/spec/SKILL.md [AVISO] governanca.skill-pendente pendência: skill 'adr' citada, ainda não existe
+.agents/skills/task/ORIGEM.md [AVISO] governanca.skill-pendente pendência: skill 'encerramento' citada, ainda não existe
+.agents/skills/task/ORIGEM.md [AVISO] governanca.skill-pendente pendência: skill 'encerramento' citada, ainda não existe
+.agents/skills/task/SKILL.md [AVISO] governanca.skill-pendente pendência: skill 'encerramento' citada, ainda não existe
+.agents/skills/task/SKILL.md [AVISO] governanca.skill-pendente pendência: skill 'encerramento' citada, ainda não existe
+```
+
+- 2026-11-25 — testes antes da primeira edição (seção 3): lib 12 OK; scripts da `task` 96 OK; evals da `task` 42
+  OK; scripts da `spec` 37 OK; governança 74 OK; `validate_spec.py` da spec sem problema; `quick_validate ../task`
+  válido.
+- 2026-11-25 — passos 1 a 6 implementados: lib (`progress_base`, `rewrite_commit_paths`, `strike_task_item`),
+  `finish_task.py` e `test_finish_task.py`, comentário do modelo, `ORIGEM.md`, skill `task` (Encerrar,
+  Cancelar, Retomar, Fechar sem status, notas do Abrir e do Iniciar), linha do `AGENTS.md` e eval 7. O encerrar
+  valida o texto já encerrado (status `concluída`): só assim o validador acusa rótulo vazio e critério sem
+  evidência, como o CA-15 pede (com `em andamento`, o `--fechar` aceita fechamento parcial).
+- 2026-11-25 — mutação manual: 34 mutantes; 33 mortos de primeira; o vivo ("base procurada fora do Andamento")
+  morreu depois de corrigir o teste da lib, que usava um texto fora do formato de entrada.
+- 2026-11-25 — checagem manual numa cópia em `.agents/skills/task-workspace/modo-leve-06/checagem-manual/`
+  (git e governança da cópia): recusa só com o erro novo; encerrar move a avulsa e reescreve o caminho;
+  cancelar a 02 de notificações risca o item sem erro novo no `validate_spec`; o repositório real não mudou.
+- 2026-11-25 — modo leve: ambiente (`montar.sh`) e asserções (`asercoes.json`) fixados em
+  `.agents/skills/task-workspace/modo-leve-06/`, antes de rodar; aguardando o Juno dizer quando rodar.
+- 2026-11-25 — rodada da implementação (Juno: 1A, 2A, 3A): o cancelar grava também o "Atualizado em" do design;
+  o arquivo de apoio do eval 7 ganha `base de achados da governança: nenhum`; modo leve agora. Mutante novo
+  (cancelar sem o "Atualizado em" do design) morto: 35 de 35.
+- 2026-11-25 — modo leve rodado (6 subagentes, um por vez; resultado em
+  `.agents/skills/task-workspace/modo-leve-06/resultado.md`): a nova passa nas 10 asserções; a antiga falha
+  em A2, A3, C2 e C3 (status e design à mão, sem `done/`, sem oferecer o encerramento da spec) e passa em B1 a
+  B3. Repositório real sem mudança dos subagentes.
+- 2026-11-25 — fechamento: comandos da seção 3 de novo, todos verdes; governança `--comparar` com a base: 
+
+```text
+Já existiam antes da mudança (só informados):
+.agents/skills/spec/SKILL.md:16 [AVISO] governanca.skill-pendente pendência: skill 'adr' citada, ainda não existe
+
+Corrigidos:
+.agents/skills/task/ORIGEM.md [AVISO] governanca.skill-pendente pendência: skill 'encerramento' citada, ainda não existe
+.agents/skills/task/ORIGEM.md [AVISO] governanca.skill-pendente pendência: skill 'encerramento' citada, ainda não existe
+.agents/skills/task/SKILL.md [AVISO] governanca.skill-pendente pendência: skill 'encerramento' citada, ainda não existe
+.agents/skills/task/SKILL.md [AVISO] governanca.skill-pendente pendência: skill 'encerramento' citada, ainda não existe
+
+0 erro(s) novo(s), 0 aviso(s) novo(s), 1 já existiam, 4 corrigido(s)
+```
+- 2026-11-27 — encerrada: aprovada pelo Juno; governança sem erro novo (1 antigos).
+
 ## 5. Fechamento
 
-- **O que foi feito:**
-- **Arquivos alterados:**
+- **O que foi feito:** `finish_task.py` na skill `task`, com o encerrar (status, validador no texto já
+  encerrado, base do Andamento e governança sem erro novo, branch ativa, destino livre → `concluída`, Andamento,
+  avulsa em `tasks/done/` com o caminho reescrito nos "Commits entregues") e o `--cancelar "motivo"` (status,
+  motivo, destino ou item da lista → `cancelada`, avulsa em `done/`, item da spec riscado e "Atualizado em" do
+  design); aviso de última pendência da spec nos dois. Na lib, `progress_base`, `rewrite_commit_paths` e
+  `strike_task_item`. Skill `task` com os modos Encerrar, Cancelar e Retomar, o Fechar sem status, as notas
+  do Abrir e do Iniciar e sem a skill `encerramento`; `ORIGEM.md`, comentário do modelo, linha do `AGENTS.md`
+  (Q10) e o eval 7 (Q7).
+- **Arquivos alterados:** os previstos, e mais o arquivo de apoio do eval 7
+  (`evals/files/task-aceite-em-revisao.md`), pela Q2 da implementação. Fora do git: o ambiente do modo leve e
+  da checagem manual em `.agents/skills/task-workspace/modo-leve-06/` e a `base-06.txt` da governança.
 - **Decisões tomadas no caminho:**
-- **Testes antes de começar:**
-- **Testes no fim:**
+  - o encerrar valida o texto já encerrado (status `concluída`): só assim o validador acusa rótulo vazio e
+    critério sem evidência (CA-15); com `em andamento`, o `--fechar` aceita fechamento parcial;
+  - Q1 (1A): ao cancelar uma task de spec, o script grava também o "Atualizado em" do design, com a
+    data do dia, "task NN cancelada:" e o motivo (regra da seção 6 da skill `spec`); design sem a linha é recusa — descartada: só riscar;
+  - Q2 (2A): o arquivo de apoio do eval 7 ganha `base de achados da governança: nenhum` no Andamento, senão o
+    `finish_task.py` recusaria e os critérios novos nunca passariam — descartada: deixar para a 07;
+  - Q3 (3A): modo leve rodado nesta sessão, sem adiar.
+- **Testes antes de começar:** lib 12 OK; scripts da `task` 96 OK; evals da `task` 42 OK; scripts da `spec` 37
+  OK; governança 74 OK; `validate_spec.py` sem problema; `quick_validate ../task` válido.
+- **Testes no fim:** lib 16 OK; scripts da `task` 115 OK (19 do `test_finish_task.py`); evals da `task` 45 OK;
+  scripts da `spec` 37 OK; governança 74 OK; `validate_spec.py` sem problema; `quick_validate ../task` válido;
+  `governanca.py --comparar base-06.txt`: 0 erro novo, 0 aviso novo, 1 antigo, 4 corrigidos (os
+  `governanca.skill-pendente` da skill `encerramento`). Mutação manual: 35 mutantes, 35 mortos (o único vivo da
+  primeira passada morreu com o teste da lib corrigido). Checagem manual na cópia com git próprio: recusa só
+  com o erro novo, encerrar e cancelar como esperado, repositório real sem mudança. Modo leve: nova 10/10.
 - **Evidência por critério:**
-- **Checagens não feitas:**
-- **Ficou para depois:**
+  - CA-14 → modo leve, cenário 2: "fechar com evidência completa mantém em andamento e pede a revisão (CA-14)"
+    passando na nova (B1 a B4);
+  - CA-15 → testes "task fora de em andamento…", "fechamento com erro do validador…", "erro novo da
+    governança…", "task sem base de achados…", "branch ativa diferente…" e "problemas do bloco aparecem
+    juntos…" (CA-15) passando;
+  - CA-16 → "avulsa encerrada fica concluída…" e "task de spec encerrada fica concluída…" (CA-16) passando;
+  - CA-34 → "avulsa aberta, bloqueada ou em andamento cancelada…" e "cancelar sem motivo ou com status
+    concluída…" (CA-34) passando;
+  - CA-37 → "encerrar a última pendência da spec avisa…" (CA-37) passando;
+  - CA-38 → "task de spec cancelada fica na pasta…" e "cancelar a última pendência da spec avisa…" (CA-38)
+    passando.
+- **Checagens não feitas:** nenhuma.
+- **Ficou para depois:** cancelar a única task que cobre um grupo de `CA-NN` deixa a spec encerrável com
+  critérios sem task, e nem o `finish_spec.py` nem a skill `spec` avisam (achado do modo leve, cenário 3: os
+  dois agentes perceberam sozinhos) → decidir com o Juno (07 ou avulsa); o exemplo de item riscado da seção 6
+  da skill `spec` diverge do formato da Q5 (já previsto para a 07).
 - **Commits entregues:**
+
+  ```text
+  feat(agents): Adiciona o encerrar e o cancelar da task por script
+
+  - finish_task.py encerra a task aprovada: confere status, fechamento
+    já como concluída, governança contra a base do Andamento e a branch
+    ativa num bloco só; grava concluída e move a avulsa para done/,
+    com o caminho reescrito nos Commits entregues;
+  - --cancelar "motivo" grava cancelada, move a avulsa para done/ e,
+    na task de spec, risca o item do design e atualiza a data dele;
+  - os dois avisam quando a task era a última pendência da spec;
+  - a lib ganha a leitura da base do Andamento, a troca de caminho nos
+    Commits entregues e o item riscado da lista de tasks;
+  - o comentário do fechamento no modelo de task aponta o encerrar.
+
+  Task: 2026-11-19-fluxo-de-trabalho-dos-agentes/tasks/06-encerrar-e-cancelar-a-task.md
+  ```
+
+  Arquivos:
+  - `.agents/scripts/lib/md_checks.py`
+  - `.agents/scripts/lib/testes/test_lib.py`
+  - `.agents/skills/task/scripts/finish_task.py`
+  - `.agents/skills/task/scripts/testes/test_finish_task.py`
+  - `.agents/docs/templates/task.md`
+
+  ```text
+  docs(agents): Ensina a skill task o encerrar, o cancelar e o retomar
+
+  - a skill task ganha os modos Encerrar e Cancelar pelo finish_task.py
+    e a conferência da branch ao retomar; o Fechar não muda o status;
+  - o Abrir não inicia, e o Iniciar só roda com a abertura commitada;
+  - sai a citação da skill encerramento, que virou o modo Encerrar;
+  - o eval 7 passa a esperar o finish_task.py, e o arquivo de apoio
+    dele ganha a base no Andamento;
+  - a linha da skill task na tabela do AGENTS.md cobre todos os modos.
+
+  Task: 2026-11-19-fluxo-de-trabalho-dos-agentes/tasks/06-encerrar-e-cancelar-a-task.md
+  ```
+
+  Arquivos:
+  - `.agents/skills/task/SKILL.md`
+  - `.agents/skills/task/ORIGEM.md`
+  - `.agents/skills/task/evals/evals.json`
+  - `.agents/skills/task/evals/checks.py`
+  - `.agents/skills/task/evals/test_checks.py`
+  - `.agents/skills/task/evals/files/task-aceite-em-revisao.md`
+  - `AGENTS.md`
+
+  ```text
+  docs(agents): Fecha a task 06 da spec do fluxo de trabalho
+
+  - task 06 (encerrar e cancelar a task) com o fechamento, a mutação, a
+    checagem manual e o modo leve registrados.
+
+  Task: 2026-11-19-fluxo-de-trabalho-dos-agentes/tasks/06-encerrar-e-cancelar-a-task.md
+  ```
+
+  Arquivos:
+  - `.agents/docs/specs/2026-11-19-fluxo-de-trabalho-dos-agentes/tasks/06-encerrar-e-cancelar-a-task.md`
